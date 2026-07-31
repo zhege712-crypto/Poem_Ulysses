@@ -298,7 +298,7 @@ footer a{ color:var(--accent-gold); }
         <li><a href="index.html">首页</a></li>
         <li><a href="directory.html">目录</a></li>
         <li><a href="about.html">关于</a></li>
-        <li><a href="https://github.com/YOUR_USERNAME/YOUR_REPO/discussions/new/choose" target="_blank">投稿</a></li>
+        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank">投稿</a></li>
       </ul>
     </nav>
   </div>
@@ -409,16 +409,16 @@ fetch('data/poems.json?t=' + Date.now())
       '<div class="poem-content">' + escapeHtml(poem.content) + '</div>' +
       imgHtml;
 
-    // ===== Giscus 评论 =====
+    // ===== Giscus 评论（已用正确的 ID 替换） =====
     var commentsWrap = document.getElementById('comments-wrap');
     commentsWrap.style.display = 'block';
     var container = document.getElementById('giscus-container');
     var script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
     script.setAttribute('data-repo', 'zhege712-crypto/Poem_Ulysses');
-    script.setAttribute('data-repo-id', 'R_kgDOTWw-Ew');
+    script.setAttribute('data-repo-id', 'R_kgDOTo0tAw');
     script.setAttribute('data-category', 'Announcements');
-    script.setAttribute('data-category-id', 'DIC_kwDOTWw-E84DBOn-');
+    script.setAttribute('data-category-id', 'DIC_kwDOTo0tA84DCXH7');
     script.setAttribute('data-mapping', 'specific');
     script.setAttribute('data-term', 'poem-' + poem.id);
     script.setAttribute('data-strict', '0');
@@ -473,20 +473,6 @@ fetch('data/poems.json?t=' + Date.now())
       applyTheme(this.getAttribute('data-theme'));
     });
   });
-})();
-
-// ===== 替换 GitHub 占位 =====
-(function(){
-  var links = document.querySelectorAll('a[href*="YOUR_USERNAME"]');
-  links.forEach(function(a){
-    a.href = a.href.replace(/YOUR_USERNAME/g, 'zhege712-crypto');
-    a.href = a.href.replace(/YOUR_REPO/g, 'Poem_Ulysses');
-  });
-  var giscusScript = document.querySelector('script[data-repo*="YOUR_USERNAME"]');
-  if(giscusScript){
-    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_USERNAME/g, 'zhege712-crypto'));
-    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_REPO/g, 'Poem_Ulysses'));
-  }
 })();
 </script>
 </body>
