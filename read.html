@@ -415,7 +415,7 @@ fetch('data/poems.json?t=' + Date.now())
     var container = document.getElementById('giscus-container');
     var script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', 'zhege712-crypto/-Poem_Ulysses');
+    script.setAttribute('data-repo', 'zhege712-crypto/Poem_Ulysses');
     script.setAttribute('data-repo-id', 'R_kgDOTWw-Ew');
     script.setAttribute('data-category', 'Announcements');
     script.setAttribute('data-category-id', 'DIC_kwDOTWw-E84DBOn-');
@@ -480,12 +480,12 @@ fetch('data/poems.json?t=' + Date.now())
   var links = document.querySelectorAll('a[href*="YOUR_USERNAME"]');
   links.forEach(function(a){
     a.href = a.href.replace(/YOUR_USERNAME/g, 'zhege712-crypto');
-    a.href = a.href.replace(/YOUR_REPO/g, '-Poem_Ulysses');
+    a.href = a.href.replace(/YOUR_REPO/g, 'Poem_Ulysses');
   });
   var giscusScript = document.querySelector('script[data-repo*="YOUR_USERNAME"]');
   if(giscusScript){
     giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_USERNAME/g, 'zhege712-crypto'));
-    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_REPO/g, '-Poem_Ulysses'));
+    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_REPO/g, 'Poem_Ulysses'));
   }
 })();
 </script>
