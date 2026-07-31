@@ -239,48 +239,6 @@ button:disabled{ background:var(--fog); cursor:not-allowed; }
 }
 .manage-item .mi-del:hover{ background:var(--accent-red); color:var(--white); }
 
-.photo-item{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:12px 0;
-  border-bottom:1px solid var(--paper-2);
-}
-.photo-item img{
-  width:56px;
-  height:56px;
-  object-fit:cover;
-  flex-shrink:0;
-  border-radius:2px;
-}
-.photo-item .pi-title{ font-size:0.85rem; flex:1; min-width:120px; }
-.photo-item .pi-date{
-  font-family:var(--font-mono);
-  font-size:0.66rem;
-  color:var(--steel);
-  display:block;
-  margin-top:2px;
-}
-.photo-item input[type=text]{
-  width:150px;
-  padding:8px 10px;
-  font-size:0.82rem;
-}
-.photo-item .pi-save{
-  margin-top:0;
-  padding:8px 14px;
-  font-size:0.7rem;
-}
-.photo-item .pi-del{
-  margin-top:0;
-  padding:8px 12px;
-  font-size:0.7rem;
-  background:transparent;
-  color:var(--accent-red);
-  border:1px solid var(--accent-red);
-}
-.photo-item .pi-del:hover{ background:var(--accent-red); color:var(--white); }
-
 .side-theme{
   position:fixed;
   right:28px;
@@ -448,9 +406,9 @@ footer a{ color:var(--accent-gold); }
   <div class="panel">
     <h2>① 仓库与密钥设置</h2>
     <label>GitHub 用户名（仓库所有者）</label>
-    <input type="text" id="gh-owner" placeholder="例如 zhege712-crypto">
+    <input type="text" id="gh-owner" placeholder="例如 zhege712-crypto" value="zhege712-crypto">
     <label>仓库名</label>
-    <input type="text" id="gh-repo" placeholder="例如 poetry-odyssey">
+    <input type="text" id="gh-repo" placeholder="例如 Poem_Ulysses" value="Poem_Ulysses">
     <label>Personal Access Token</label>
     <input type="password" id="gh-token" placeholder="ghp_ 开头的一长串字符">
     <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:0.82rem; color:var(--charcoal);">
@@ -502,40 +460,6 @@ footer a{ color:var(--accent-gold); }
     <button id="refresh-list-btn" type="button" style="background:var(--charcoal);">刷新列表</button>
     <div class="status" id="manage-status"></div>
   </div>
-
-  <div class="panel">
-    <h2>④ 上传照片</h2>
-    <div class="row">
-      <div>
-        <label>标题</label>
-        <input type="text" id="ph-title" placeholder="给这张照片起个名字">
-      </div>
-      <div>
-        <label>分类</label>
-        <input type="text" id="ph-category" placeholder="例如：风景 / 人像" list="ph-category-list">
-        <datalist id="ph-category-list"></datalist>
-      </div>
-    </div>
-    <label>日期</label>
-    <div class="date-group">
-      <input type="text" id="ph-date" placeholder="2026-07-31">
-      <button type="button" class="btn-sm" data-target="ph-date" data-precision="year">年</button>
-      <button type="button" class="btn-sm" data-target="ph-date" data-precision="month">年月</button>
-      <button type="button" class="btn-sm" data-target="ph-date" data-precision="day">完整</button>
-    </div>
-    <label>照片文件</label>
-    <input type="file" id="ph-file" accept="image/*">
-    <button id="photo-upload-btn">上传</button>
-    <div class="status" id="photo-status"></div>
-  </div>
-
-  <div class="panel">
-    <h2>⑤ 管理照片分类</h2>
-    <div class="hint" style="margin-top:0;">修改分类后点"保存"，作品页会自动更新分组。</div>
-    <div id="photo-manage-list" style="margin-top:16px;"></div>
-    <button id="refresh-photo-btn" type="button" style="background:var(--charcoal);">刷新列表</button>
-    <div class="status" id="photo-manage-status"></div>
-  </div>
 </div>
 
 <footer>© 2026 诗歌漂流 · 后台管理</footer>
@@ -566,7 +490,7 @@ footer a{ color:var(--accent-gold); }
   var errorMsg = document.getElementById('password-error');
   var contentWrapper = document.querySelector('.content-wrapper');
 
-  var PASSWORD = 'umbrella2026'; // 改成你自己的密码
+  var PASSWORD = 'umbrella2026';
 
   if (sessionStorage.getItem('admin_authenticated') === 'true') {
     overlay.classList.add('hidden');
@@ -618,13 +542,7 @@ var els = {
   author: document.getElementById('p-author'),
   image: document.getElementById('p-image'),
   btn: document.getElementById('publish-btn'),
-  status: document.getElementById('status'),
-  phTitle: document.getElementById('ph-title'),
-  phCategory: document.getElementById('ph-category'),
-  phDate: document.getElementById('ph-date'),
-  phFile: document.getElementById('ph-file'),
-  phBtn: document.getElementById('photo-upload-btn'),
-  phStatus: document.getElementById('photo-status')
+  status: document.getElementById('status')
 };
 
 function fillDate(inputId, precision) {
@@ -650,8 +568,8 @@ document.querySelectorAll('.date-group .btn-sm').forEach(function(btn){
   if(saved){
     try{
       var c = JSON.parse(saved);
-      els.owner.value = c.owner || '';
-      els.repo.value = c.repo || '';
+      els.owner.value = c.owner || 'zhege712-crypto';
+      els.repo.value = c.repo || 'Poem_Ulysses';
       els.token.value = c.token || '';
       els.remember.checked = true;
     }catch(e){}
@@ -661,7 +579,6 @@ document.querySelectorAll('.date-group .btn-sm').forEach(function(btn){
   var m = String(now.getMonth() + 1).padStart(2, '0');
   var d = String(now.getDate()).padStart(2, '0');
   if (!els.date.value) els.date.value = y + '-' + m + '-' + d;
-  if (!els.phDate.value) els.phDate.value = y + '-' + m + '-' + d;
   els.author.value = '匿名';
 })();
 
@@ -669,15 +586,13 @@ function setStatus(text, type){
   els.status.textContent = text;
   els.status.className = 'status show ' + type;
 }
-function setPhStatus(text, type){
-  els.phStatus.textContent = text;
-  els.phStatus.className = 'status show ' + type;
-}
+
 function escapeHtml(s){
   var d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
 }
+
 function fileToBase64(file){
   return new Promise(function(resolve, reject){
     var reader = new FileReader();
@@ -686,6 +601,7 @@ function fileToBase64(file){
     reader.readAsDataURL(file);
   });
 }
+
 function ghRequest(path, options, owner, repo, token){
   return fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, Object.assign({
     headers: {
@@ -744,9 +660,10 @@ els.btn.addEventListener('click', async function(){
     if(getRes.ok){
       var fileData = await getRes.json();
       sha = fileData.sha;
-      poems = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+      var decoded = decodeURIComponent(escape(atob(fileData.content)));
+      poems = JSON.parse(decoded);
     } else if(getRes.status !== 404){
-      throw new Error('读取 poems.json 失败');
+      throw new Error('读取 data/poems.json 失败');
     }
 
     var newPoem = {
@@ -769,7 +686,7 @@ els.btn.addEventListener('click', async function(){
       method: 'PUT',
       body: JSON.stringify(putBody)
     }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('保存失败'); }
+    if(!putRes.ok){ throw new Error('保存 data/poems.json 失败'); }
 
     setStatus('✓ 发布成功！', 'ok');
     els.title.value = '';
@@ -808,7 +725,8 @@ async function loadManageList(){
     var res = await ghRequest('data/poems.json', {}, owner, repo, token);
     if(!res.ok){ throw new Error('找不到 data/poems.json'); }
     var fileData = await res.json();
-    var poems = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+    var decoded = decodeURIComponent(escape(atob(fileData.content)));
+    var poems = JSON.parse(decoded);
 
     if(poems.length === 0){
       manageListEl.innerHTML = '<div class="hint">目前没有已发布的诗</div>';
@@ -890,10 +808,11 @@ async function saveFullPoem(id, fields){
   setManageStatus('保存中…', 'loading');
   try{
     var getRes = await ghRequest('data/poems.json', {}, owner, repo, token);
-    if(!getRes.ok){ throw new Error('读取失败'); }
+    if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
     var sha = fileData.sha;
-    var poems = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+    var decoded = decodeURIComponent(escape(atob(fileData.content)));
+    var poems = JSON.parse(decoded);
 
     var target = poems.find(function(p){ return p.id === id; });
     if(target){
@@ -910,7 +829,7 @@ async function saveFullPoem(id, fields){
       method: 'PUT',
       body: JSON.stringify({ message: '修改: ' + (target ? target.title : id), content: newContentB64, sha: sha })
     }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('保存失败'); }
+    if(!putRes.ok){ throw new Error('保存 data/poems.json 失败'); }
 
     setManageStatus('✓ 已保存', 'ok');
     loadManageList();
@@ -928,10 +847,11 @@ async function deletePoem(id){
   setManageStatus('删除中…', 'loading');
   try{
     var getRes = await ghRequest('data/poems.json', {}, owner, repo, token);
-    if(!getRes.ok){ throw new Error('读取失败'); }
+    if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
     var sha = fileData.sha;
-    var poems = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
+    var decoded = decodeURIComponent(escape(atob(fileData.content)));
+    var poems = JSON.parse(decoded);
 
     var target = poems.find(function(p){ return p.id === id; });
     var remaining = poems.filter(function(p){ return p.id !== id; });
@@ -941,7 +861,7 @@ async function deletePoem(id){
       method: 'PUT',
       body: JSON.stringify({ message: '删除: ' + (target ? target.title : id), content: newContentB64, sha: sha })
     }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('更新失败'); }
+    if(!putRes.ok){ throw new Error('更新 data/poems.json 失败'); }
 
     if(target && target.images){
       for(var i = 0; i < target.images.length; i++){
@@ -965,200 +885,9 @@ async function deletePoem(id){
 
 document.getElementById('refresh-list-btn').addEventListener('click', loadManageList);
 
-// ===== 上传照片 =====
-els.phBtn.addEventListener('click', async function(){
-  var owner = els.owner.value.trim();
-  var repo = els.repo.value.trim();
-  var token = els.token.value.trim();
-  var title = els.phTitle.value.trim();
-  var category = els.phCategory.value.trim() || '未分类';
-  var date = els.phDate.value.trim();
-  var file = els.phFile.files[0];
-
-  if(!owner || !repo || !token){ setPhStatus('请先填写①的仓库信息和密钥', 'err'); return; }
-  if(!title || !file){ setPhStatus('标题和照片不能为空', 'err'); return; }
-  if(!date){ setPhStatus('请填写日期', 'err'); return; }
-
-  els.phBtn.disabled = true;
-  setPhStatus('上传中…', 'loading');
-
-  try{
-    var base64 = await fileToBase64(file);
-    var safeName = Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
-    var imagePath = 'images/' + safeName;
-
-    var imgRes = await ghRequest(imagePath, {
-      method: 'PUT',
-      body: JSON.stringify({ message: '照片: ' + title, content: base64 })
-    }, owner, repo, token);
-    if(!imgRes.ok){ throw new Error('照片上传失败'); }
-
-    var sha = null;
-    var photos = [];
-    var getRes = await ghRequest('data/photos.json', {}, owner, repo, token);
-    if(getRes.ok){
-      var fileData = await getRes.json();
-      sha = fileData.sha;
-      photos = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-    } else if(getRes.status !== 404){
-      throw new Error('读取 photos.json 失败');
-    }
-
-    photos.push({ id: String(Date.now()), title: title, date: date, category: category, image: imagePath });
-
-    var newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(photos, null, 2))));
-    var putBody = { message: '新增照片: ' + title, content: newContentB64 };
-    if(sha){ putBody.sha = sha; }
-
-    var putRes = await ghRequest('data/photos.json', {
-      method: 'PUT', body: JSON.stringify(putBody)
-    }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('保存失败'); }
-
-    setPhStatus('✓ 上传成功！', 'ok');
-    els.phTitle.value = '';
-    els.phCategory.value = '';
-    els.phFile.value = '';
-    loadPhotoManageList();
-  } catch(err){
-    setPhStatus('✗ ' + err.message, 'err');
-  } finally {
-    els.phBtn.disabled = false;
-  }
-});
-
-// ===== 管理照片 =====
-var photoListEl = document.getElementById('photo-manage-list');
-var photoManageStatusEl = document.getElementById('photo-manage-status');
-var categoryListEl = document.getElementById('ph-category-list');
-
-function setPhotoManageStatus(text, type){
-  photoManageStatusEl.textContent = text;
-  photoManageStatusEl.className = 'status show ' + type;
-}
-
-async function loadPhotoManageList(){
-  var owner = els.owner.value.trim();
-  var repo = els.repo.value.trim();
-  var token = els.token.value.trim();
-  if(!owner || !repo || !token){
-    photoListEl.innerHTML = '<div class="hint">先填好①的仓库信息和密钥</div>';
-    return;
-  }
-  photoListEl.innerHTML = '<div class="hint">加载中…</div>';
-  try{
-    var res = await ghRequest('data/photos.json', {}, owner, repo, token);
-    if(!res.ok){ throw new Error('找不到 data/photos.json'); }
-    var fileData = await res.json();
-    var photos = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-
-    if(photos.length === 0){
-      photoListEl.innerHTML = '<div class="hint">目前没有照片</div>';
-      return;
-    }
-
-    var cats = Array.from(new Set(photos.map(function(p){ return p.category || '未分类'; })));
-    categoryListEl.innerHTML = cats.map(function(c){ return '<option value="' + escapeHtml(c) + '">'; }).join('');
-
-    photoListEl.innerHTML = '';
-    photos.forEach(function(p){
-      var row = document.createElement('div');
-      row.className = 'photo-item';
-      row.innerHTML =
-        '<img src="' + escapeHtml(p.image) + '" alt="">' +
-        '<div class="pi-title">' + escapeHtml(p.title) + '<span class="pi-date">' + escapeHtml(p.date) + '</span></div>' +
-        '<input type="text" class="pi-cat" value="' + escapeHtml(p.category || '未分类') + '">' +
-        '<button class="pi-save" type="button">保存</button>' +
-        '<button class="pi-del" type="button">删除</button>';
-      row.querySelector('.pi-save').addEventListener('click', function(){
-        savePhotoCategory(p.id, row.querySelector('.pi-cat').value.trim() || '未分类');
-      });
-      row.querySelector('.pi-del').addEventListener('click', function(){
-        deletePhoto(p.id);
-      });
-      photoListEl.appendChild(row);
-    });
-  } catch(err){
-    photoListEl.innerHTML = '<div class="hint">加载失败：' + err.message + '</div>';
-  }
-}
-
-async function savePhotoCategory(id, newCategory){
-  var owner = els.owner.value.trim();
-  var repo = els.repo.value.trim();
-  var token = els.token.value.trim();
-
-  setPhotoManageStatus('保存中…', 'loading');
-  try{
-    var getRes = await ghRequest('data/photos.json', {}, owner, repo, token);
-    if(!getRes.ok){ throw new Error('读取失败'); }
-    var fileData = await getRes.json();
-    var sha = fileData.sha;
-    var photos = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-
-    var target = photos.find(function(p){ return p.id === id; });
-    if(target){ target.category = newCategory; }
-
-    var newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(photos, null, 2))));
-    var putRes = await ghRequest('data/photos.json', {
-      method: 'PUT',
-      body: JSON.stringify({ message: '修改分类', content: newContentB64, sha: sha })
-    }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('保存失败'); }
-
-    setPhotoManageStatus('✓ 已保存', 'ok');
-    loadPhotoManageList();
-  } catch(err){
-    setPhotoManageStatus('✗ ' + err.message, 'err');
-  }
-}
-
-async function deletePhoto(id){
-  var owner = els.owner.value.trim();
-  var repo = els.repo.value.trim();
-  var token = els.token.value.trim();
-  if(!confirm('确定要删除吗？')) return;
-
-  setPhotoManageStatus('删除中…', 'loading');
-  try{
-    var getRes = await ghRequest('data/photos.json', {}, owner, repo, token);
-    if(!getRes.ok){ throw new Error('读取失败'); }
-    var fileData = await getRes.json();
-    var sha = fileData.sha;
-    var photos = JSON.parse(decodeURIComponent(escape(atob(fileData.content))));
-
-    var target = photos.find(function(p){ return p.id === id; });
-    var remaining = photos.filter(function(p){ return p.id !== id; });
-
-    var newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(remaining, null, 2))));
-    var putRes = await ghRequest('data/photos.json', {
-      method: 'PUT',
-      body: JSON.stringify({ message: '删除照片', content: newContentB64, sha: sha })
-    }, owner, repo, token);
-    if(!putRes.ok){ throw new Error('更新失败'); }
-
-    if(target && target.image){
-      try{
-        var imgGetRes = await ghRequest(target.image, {}, owner, repo, token);
-        if(imgGetRes.ok){
-          var imgData = await imgGetRes.json();
-          await ghRequest(target.image, { method: 'DELETE', body: JSON.stringify({ message: '删除文件', sha: imgData.sha }) }, owner, repo, token);
-        }
-      }catch(e){}
-    }
-
-    setPhotoManageStatus('✓ 已删除', 'ok');
-    loadPhotoManageList();
-  } catch(err){
-    setPhotoManageStatus('✗ ' + err.message, 'err');
-  }
-}
-
-document.getElementById('refresh-photo-btn').addEventListener('click', loadPhotoManageList);
-
+// ===== 首次加载 =====
 if(els.owner.value && els.repo.value && els.token.value){
   loadManageList();
-  loadPhotoManageList();
 }
 
 // ===== 主题 =====
