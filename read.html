@@ -316,7 +316,7 @@ footer a{ color:var(--accent-gold); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/YOUR_USERNAME" target="_blank">@YOUR_USERNAME</a> 维护
+  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护
 </footer>
 
 <div class="lightbox" id="lightbox">
@@ -415,7 +415,7 @@ fetch('data/poems.json?t=' + Date.now())
     var container = document.getElementById('giscus-container');
     var script = document.createElement('script');
     script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', 'YOUR_USERNAME/YOUR_REPO');
+    script.setAttribute('data-repo', 'zhege712-crypto/-Poem_Ulysses');
     script.setAttribute('data-repo-id', 'R_kgDOTWw-Ew');
     script.setAttribute('data-category', 'Announcements');
     script.setAttribute('data-category-id', 'DIC_kwDOTWw-E84DBOn-');
@@ -479,13 +479,13 @@ fetch('data/poems.json?t=' + Date.now())
 (function(){
   var links = document.querySelectorAll('a[href*="YOUR_USERNAME"]');
   links.forEach(function(a){
-    a.href = a.href.replace(/YOUR_USERNAME/g, 'YOUR_GITHUB_USERNAME');
-    a.href = a.href.replace(/YOUR_REPO/g, 'poetry-odyssey');
+    a.href = a.href.replace(/YOUR_USERNAME/g, 'zhege712-crypto');
+    a.href = a.href.replace(/YOUR_REPO/g, '-Poem_Ulysses');
   });
   var giscusScript = document.querySelector('script[data-repo*="YOUR_USERNAME"]');
   if(giscusScript){
-    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_USERNAME/g, 'YOUR_GITHUB_USERNAME'));
-    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_REPO/g, 'poetry-odyssey'));
+    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_USERNAME/g, 'zhege712-crypto'));
+    giscusScript.setAttribute('data-repo', giscusScript.getAttribute('data-repo').replace(/YOUR_REPO/g, '-Poem_Ulysses'));
   }
 })();
 </script>
