@@ -197,7 +197,6 @@ nav a.active::after{ width:100%; }
   display:block;
 }
 
-/* ===== 目录控制 ===== */
 .controls{
   display:flex;
   justify-content:space-between;
@@ -355,7 +354,6 @@ nav a.active::after{ width:100%; }
   color:var(--steel);
 }
 
-/* ===== 树状图 ===== */
 .tree-branch > .branch-head{
   display:flex;
   align-items:center;
@@ -460,7 +458,7 @@ footer a{ color:var(--accent-gold); }
         <li><a href="index.html">首页</a></li>
         <li><a href="directory.html" class="active">目录</a></li>
         <li><a href="about.html">关于</a></li>
-        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank">鎶曠ǹ</a></li>
+        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank">投稿</a></li>
       </ul>
     </nav>
   </div>
@@ -513,7 +511,6 @@ footer a{ color:var(--accent-gold); }
 </div>
 
 <script>
-// ===== 工具 =====
 function formatPoemDate(dateStr) {
   if (!dateStr || dateStr.trim() === '') return '年代不详';
   var parts = dateStr.trim().split('-');
@@ -549,7 +546,6 @@ var allPoems = [];
 var listEl = document.getElementById('catalog-list');
 var hintEl = document.getElementById('search-hint');
 
-// ===== 列表渲染 =====
 function rowHtml(p){
   var authorHtml = p.author ? '<br><span class="c-author">' + escapeHtml(p.author) + '</span>' : '';
   return '<a class="catalog-row" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
@@ -594,7 +590,6 @@ function renderCatalog(poems){
   }).join('');
 }
 
-// ===== 树状图 =====
 var viewMode = localStorage.getItem('catalog_view') === 'tree' ? 'tree' : 'list';
 var collapsed = {};
 try{ collapsed = JSON.parse(localStorage.getItem('catalog_collapsed') || '{}'); }catch(e){ collapsed = {}; }
@@ -646,7 +641,6 @@ function render(poems){
   if(viewMode === 'tree'){ renderTree(poems); } else { renderCatalog(poems); }
 }
 
-// ===== 折叠事件 =====
 listEl.addEventListener('click', function(e){
   var head = e.target.closest('.branch-head');
   if(!head) return;
@@ -657,7 +651,6 @@ listEl.addEventListener('click', function(e){
   localStorage.setItem('catalog_collapsed', JSON.stringify(collapsed));
 });
 
-// ===== 视图切换 =====
 (function(){
   var toggleBtns = document.querySelectorAll('#view-toggle button');
   toggleBtns.forEach(function(btn){
@@ -671,14 +664,12 @@ listEl.addEventListener('click', function(e){
   });
 })();
 
-// ===== 随机 =====
 document.getElementById('random-btn').addEventListener('click', function(){
   if(!allPoems.length) return;
   var pick = allPoems[Math.floor(Math.random() * allPoems.length)];
   window.location.href = 'read.html?id=' + encodeURIComponent(pick.id);
 });
 
-// ===== 搜索 =====
 function doSearch(query){
   query = query.trim().toLowerCase();
   if(!query){
@@ -699,7 +690,6 @@ document.getElementById('search-input').addEventListener('input', function(e){
   doSearch(e.target.value);
 });
 
-// ===== 加载数据 =====
 fetch('data/poems.json?t=' + Date.now())
   .then(function(r){ return r.json(); })
   .then(function(poems){
@@ -714,7 +704,6 @@ fetch('data/poems.json?t=' + Date.now())
     listEl.innerHTML = '<div class="empty-state">目录加载失败，检查 data/poems.json 是否存在。</div>';
   });
 
-// ===== 主题 =====
 (function(){
   var btns = document.querySelectorAll('#theme-side .theme-btn');
   if(!btns.length) return;
@@ -745,15 +734,6 @@ fetch('data/poems.json?t=' + Date.now())
     btn.addEventListener('click', function(){
       applyTheme(this.getAttribute('data-theme'));
     });
-  });
-})();
-
-// ===== 替换 GitHub 占位 =====
-(function(){
-  var links = document.querySelectorAll('a[href*="YOUR_USERNAME"]');
-  links.forEach(function(a){
-    a.href = a.href.replace(/YOUR_USERNAME/g, 'YOUR_GITHUB_USERNAME');
-    a.href = a.href.replace(/YOUR_REPO/g, 'poetry-odyssey');
   });
 })();
 </script>

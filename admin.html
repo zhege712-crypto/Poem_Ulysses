@@ -662,18 +662,17 @@ els.btn.addEventListener('click', async function(){
       imagePaths.push(imgPath);
     }
 
-    // ---- 读取当前 poems.json ----
+    // ---- 读取当前 poems.json（加时间戳防缓存） ----
     setStatus('读取数据…', 'loading');
     var sha = null;
     var poems = [];
-    var getRes = await ghRequest('data/poems.json', {}, owner, repo, token);
+    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(getRes.ok){
       var fileData = await getRes.json();
       sha = fileData.sha;
       var decoded = decodeURIComponent(escape(atob(fileData.content)));
       poems = JSON.parse(decoded);
     } else if(getRes.status === 404){
-      // 文件不存在，创建一个空数组
       poems = [];
     } else {
       var errText = await getRes.text();
@@ -748,7 +747,8 @@ async function loadManageList(){
   }
   manageListEl.innerHTML = '<div class="hint">加载中…</div>';
   try{
-    var res = await ghRequest('data/poems.json', {}, owner, repo, token);
+    // ★★★ 关键修复：加上 ?t= 时间戳，强制刷新缓存 ★★★
+    var res = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(!res.ok){
       if(res.status === 404){
         manageListEl.innerHTML = '<div class="hint">还没有诗，去发布一首吧。</div>';
@@ -839,7 +839,8 @@ async function saveFullPoem(id, fields){
 
   setManageStatus('保存中…', 'loading');
   try{
-    var getRes = await ghRequest('data/poems.json', {}, owner, repo, token);
+    // ★★★ 读取时加时间戳 ★★★
+    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
     var sha = fileData.sha;
@@ -878,7 +879,8 @@ async function deletePoem(id){
 
   setManageStatus('删除中…', 'loading');
   try{
-    var getRes = await ghRequest('data/poems.json', {}, owner, repo, token);
+    // ★★★ 读取时加时间戳 ★★★
+    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
     var sha = fileData.sha;
