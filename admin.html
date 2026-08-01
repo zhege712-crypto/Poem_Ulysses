@@ -636,7 +636,6 @@ els.btn.addEventListener('click', async function(){
   setStatus('发布中…', 'loading');
 
   try{
-    // ---- 保存凭据 ----
     if(els.remember.checked){
       localStorage.setItem('gh_admin_creds', JSON.stringify({owner:owner, repo:repo, token:token}));
     } else {
@@ -662,21 +661,39 @@ els.btn.addEventListener('click', async function(){
       imagePaths.push(imgPath);
     }
 
-    // ---- 读取当前 poems.json（加时间戳防缓存） ----
+    // ---- 读取当前 poems.json（使用 raw 链接读取，绕过 API 缓存） ----
     setStatus('读取数据…', 'loading');
     var sha = null;
     var poems = [];
-    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
-    if(getRes.ok){
-      var fileData = await getRes.json();
-      sha = fileData.sha;
-      var decoded = decodeURIComponent(escape(atob(fileData.content)));
-      poems = JSON.parse(decoded);
-    } else if(getRes.status === 404){
-      poems = [];
+    // 先尝试用 raw 链接获取最新内容
+    var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
+    var rawRes = await fetch(rawUrl);
+    if(rawRes.ok){
+      poems = await rawRes.json();
+      // 为了后续写入，需要获取当前文件的 SHA（从 API 获取）
+      var apiGet = await ghRequest('data/poems.json', {}, owner, repo, token);
+      if(apiGet.ok){
+        var apiData = await apiGet.json();
+        sha = apiData.sha;
+      } else if(apiGet.status === 404){
+        sha = null;
+      } else {
+        throw new Error('无法获取文件 SHA');
+      }
     } else {
-      var errText = await getRes.text();
-      throw new Error('读取 data/poems.json 失败: ' + errText);
+      // 如果 raw 失败，回退到 API
+      var apiGet2 = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
+      if(apiGet2.ok){
+        var fileData2 = await apiGet2.json();
+        sha = fileData2.sha;
+        var decoded = decodeURIComponent(escape(atob(fileData2.content)));
+        poems = JSON.parse(decoded);
+      } else if(apiGet2.status === 404){
+        poems = [];
+        sha = null;
+      } else {
+        throw new Error('读取 data/poems.json 失败');
+      }
     }
 
     // ---- 添加新诗 ----
@@ -692,7 +709,7 @@ els.btn.addEventListener('click', async function(){
     if(subseries){ newPoem.subseries = subseries; }
     poems.push(newPoem);
 
-    // ---- 写回 poems.json ----
+    // ---- 写回 poems.json（用 API） ----
     setStatus('保存数据…', 'loading');
     var newContentB64 = btoa(unescape(encodeURIComponent(JSON.stringify(poems, null, 2))));
     var putBody = {
@@ -747,18 +764,26 @@ async function loadManageList(){
   }
   manageListEl.innerHTML = '<div class="hint">加载中…</div>';
   try{
-    // ★★★ 关键修复：加上 ?t= 时间戳，强制刷新缓存 ★★★
-    var res = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
-    if(!res.ok){
-      if(res.status === 404){
+    // ★★★ 关键修复：使用 raw 链接直接读取，彻底绕过 API 缓存 ★★★
+    var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
+    var rawRes = await fetch(rawUrl);
+    var poems = [];
+    if(rawRes.ok){
+      poems = await rawRes.json();
+    } else {
+      // 如果 raw 失败，回退到 API（但加上时间戳）
+      var apiRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
+      if(apiRes.ok){
+        var fileData = await apiRes.json();
+        var decoded = decodeURIComponent(escape(atob(fileData.content)));
+        poems = JSON.parse(decoded);
+      } else if(apiRes.status === 404){
         manageListEl.innerHTML = '<div class="hint">还没有诗，去发布一首吧。</div>';
         return;
+      } else {
+        throw new Error('HTTP ' + apiRes.status);
       }
-      throw new Error('HTTP ' + res.status);
     }
-    var fileData = await res.json();
-    var decoded = decodeURIComponent(escape(atob(fileData.content)));
-    var poems = JSON.parse(decoded);
 
     if(!poems || poems.length === 0){
       manageListEl.innerHTML = '<div class="hint">目前没有已发布的诗</div>';
@@ -839,7 +864,7 @@ async function saveFullPoem(id, fields){
 
   setManageStatus('保存中…', 'loading');
   try{
-    // ★★★ 读取时加时间戳 ★★★
+    // 读取当前内容（使用 API 获取 SHA）
     var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
@@ -879,7 +904,7 @@ async function deletePoem(id){
 
   setManageStatus('删除中…', 'loading');
   try{
-    // ★★★ 读取时加时间戳 ★★★
+    // 读取当前内容（使用 API 获取 SHA）
     var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
     if(!getRes.ok){ throw new Error('读取 data/poems.json 失败'); }
     var fileData = await getRes.json();
