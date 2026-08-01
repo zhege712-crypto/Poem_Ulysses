@@ -502,13 +502,16 @@ els.btn.addEventListener('click', async function() {
 
     setStatus(els.status, '保存数据…', 'loading');
     var sha = null, poems = [];
-    var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
-    var rawRes = await fetch(rawUrl);
-    if (rawRes.ok) poems = await rawRes.json();
-    var apiGet = await ghRequest('data/poems.json', {}, owner, repo, token);
-    if (apiGet.ok) { var d = await apiGet.json(); sha = d.sha; }
-    else if (apiGet.status === 404) sha = null;
-    else throw new Error('读取失败');
+    var apiGet = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
+    if (apiGet.ok) {
+      var d = await apiGet.json();
+      sha = d.sha;
+      poems = JSON.parse(decodeURIComponent(escape(atob(d.content))));
+    } else if (apiGet.status === 404) {
+      sha = null;
+    } else {
+      throw new Error('读取失败');
+    }
 
     var newPoem = { id: String(Date.now()), title: title, date: date, content: content, series: series, author: author, images: imagePaths };
     if (subseries) newPoem.subseries = subseries;
@@ -534,17 +537,30 @@ var manageStatus = document.getElementById('manage-status');
 
 function setManageStatus(text, type) { manageStatus.textContent = text; manageStatus.className = 'status show ' + type; }
 
+function fetchWithTimeout(url, ms) {
+  var ctrl = new AbortController();
+  var t = setTimeout(function() { ctrl.abort(); }, ms || 8000);
+  return fetch(url, { signal: ctrl.signal }).then(function(r) { clearTimeout(t); return r; }, function(e) { clearTimeout(t); throw e; });
+}
+
 async function loadList() {
-  var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-  if (!owner || !repo || !token) { listEl.innerHTML = '<div class="hint">请先填写仓库信息</div>'; return; }
+  var owner = els.owner.value.trim(), repo = els.repo.value.trim();
+  if (!owner || !repo) { listEl.innerHTML = '<div class="hint">请先填写用户名和仓库名</div>'; return; }
   listEl.innerHTML = '<div class="hint">加载中…</div>';
+  var poems = [];
   try {
-    var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
-    var res = await fetch(rawUrl);
-    var poems = [];
+    var res = await fetchWithTimeout('data/poems.json?t=' + Date.now());
     if (res.ok) poems = await res.json();
-    else { listEl.innerHTML = '<div class="hint">还没有诗</div>'; return; }
-    if (!poems || !poems.length) { listEl.innerHTML = '<div class="hint">还没有诗</div>'; return; }
+  } catch(e) {}
+  if (!poems || !poems.length) {
+    try {
+      var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
+      var res2 = await fetchWithTimeout(rawUrl);
+      if (res2.ok) poems = await res2.json();
+    } catch(e) {}
+  }
+  if (!poems || !poems.length) { listEl.innerHTML = '<div class="hint">还没有诗</div>'; return; }
+  try {
 
     poems.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
     listEl.innerHTML = '';
@@ -664,7 +680,12 @@ document.getElementById('refresh-btn').addEventListener('click', loadList);
 })();
 
 // ===== 初始加载 =====
-if (els.owner.value && els.repo.value && els.token.value) loadList();
+if (els.owner.value && els.repo.value) loadList();
+['owner', 'repo'].forEach(function(k) {
+  els[k].addEventListener('input', function() {
+    if (els.owner.value.trim() && els.repo.value.trim()) loadList();
+  });
+});
 </script>
 </body>
 </html>
