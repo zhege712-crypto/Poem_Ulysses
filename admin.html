@@ -23,6 +23,7 @@
   --font-mono: 'JetBrains Mono', monospace;
 }
 * { box-sizing: border-box; }
+::selection { background: var(--gold); color: #fff; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -78,6 +79,7 @@ input[type=text], input[type=password], input[type=date], textarea {
   font-size: 0.9rem;
   font-weight: 300;
   color: var(--ink);
+  border-radius: 8px;
   transition: border-color 0.3s;
 }
 input:focus, textarea:focus { outline: none; border-color: var(--gold); }
@@ -100,6 +102,7 @@ input[type=file] { font-family: var(--font-mono); font-size: 0.7rem; }
   cursor: pointer;
   font-family: var(--font-mono);
   color: var(--ink-faded);
+  border-radius: 999px;
   transition: background 0.2s, border-color 0.2s;
 }
 .date-group .btn-sm:hover { background: var(--gold-light); border-color: var(--gold); }
@@ -114,6 +117,7 @@ button {
   letter-spacing: 0.06em;
   background: var(--ink);
   color: var(--paper);
+  border-radius: 8px;
   transition: background 0.25s;
 }
 button:hover { background: var(--clay); }

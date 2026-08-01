@@ -21,10 +21,14 @@
   --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
   --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-kai: 'Kaiti SC', 'STKaiti', 'KaiTi', 'Noto Serif SC', serif;
+  --radius-md: 12px;
+  --radius-pill: 999px;
   --maxw: 820px;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: var(--gold); color: #fff; }
 html { scroll-behavior: smooth; }
 body {
   background: var(--paper);
@@ -167,9 +171,9 @@ header {
   animation: headerIn 0.8s ease 2.2s forwards;
 }
 header.scrolled {
-  background: rgba(247, 245, 240, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(247, 245, 240, 0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-bottom: 1px solid var(--gold-light);
 }
 @keyframes headerIn {
@@ -300,21 +304,31 @@ nav a.active::after { width: 100%; }
   justify-content: center;
 }
 .hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: 0.6rem;
   font-weight: 300;
   letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: var(--ink-faded);
-  margin-bottom: 16px;
+  color: var(--ink-light);
+  margin-bottom: 18px;
+}
+.hero-eyebrow::before {
+  content: '';
+  width: 18px;
+  height: 1px;
+  background: var(--gold);
 }
 .hero h1 {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(2.4rem, 6vw, 4.4rem);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   line-height: 1.15;
   max-width: 680px;
+  text-wrap: balance;
 }
 .hero h1 em {
   font-style: italic;
@@ -333,16 +347,34 @@ nav a.active::after { width: 100%; }
   background: var(--gold);
   margin: 24px 0 10px;
 }
-.hero-stats {
-  display: flex;
-  gap: 48px;
-  margin: 32px 0 40px;
-  flex-wrap: wrap;
+.greek-divider {
+  width: 104px;
+  height: 10px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin: 26px 0 8px;
+  display: block;
 }
+.hero-stats {
+  display: inline-flex;
+  gap: 2px;
+  margin: 30px 0 36px;
+  background: color-mix(in srgb, var(--paper) 60%, transparent);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--gold-light);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.hero-stats > div {
+  padding: 14px 30px;
+  transition: background 0.3s;
+}
+.hero-stats > div:hover { background: var(--paper-dark); }
 .hero-stats .num {
   font-family: var(--font-mono);
-  font-weight: 300;
-  font-size: 2.2rem;
+  font-weight: 400;
+  font-size: 1.7rem;
   color: var(--ink);
   display: block;
   line-height: 1.1;
@@ -350,9 +382,9 @@ nav a.active::after { width: 100%; }
 }
 .hero-stats .label {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 300;
-  color: var(--ink-faded);
+  color: var(--ink-light);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -367,11 +399,11 @@ nav a.active::after { width: 100%; }
   font-size: 0.7rem;
   font-weight: 300;
   letter-spacing: 0.08em;
-  padding: 12px 28px;
+  padding: 12px 26px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border-radius: 0;
+  border-radius: var(--radius-pill);
   transition: all 0.3s ease;
   cursor: pointer;
   border: 1px solid var(--gold-light);
@@ -403,22 +435,24 @@ nav a.active::after { width: 100%; }
 }
 .recent-section h2 {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: 1.2rem;
   letter-spacing: 0.06em;
   color: var(--ink-light);
-  margin-bottom: 24px;
+  margin-bottom: 26px;
 }
 .recent-item {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 16px;
-  padding: 16px 0;
+  padding: 18px 12px;
+  margin: 0 -12px;
   border-bottom: 1px solid var(--gold-light);
   align-items: baseline;
-  transition: padding-left 0.3s;
+  border-radius: var(--radius-md);
+  transition: background 0.3s, padding-left 0.3s;
 }
-.recent-item:hover { padding-left: 10px; }
+.recent-item:hover { background: var(--paper-dark); padding-left: 20px; }
 .recent-item .ri-title {
   font-family: var(--font-serif);
   font-weight: 300;
@@ -446,16 +480,65 @@ nav a.active::after { width: 100%; }
 /* ---- 投稿说明 ---- */
 .submit-note {
   background: var(--paper-dark);
-  padding: 24px 28px;
+  padding: 26px 30px;
   margin: 40px 0 60px;
   font-size: 0.85rem;
   color: var(--ink-light);
   line-height: 1.9;
-  border-left: 1.5px solid var(--gold);
+  border: 1px solid var(--gold-light);
+  border-radius: var(--radius-md);
+}
+.note-tag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-pill);
+  padding: 2px 12px;
+  margin-right: 10px;
 }
 .submit-note b { color: var(--ink); font-weight: 400; }
 .submit-note a { color: var(--gold); border-bottom: 1px solid transparent; transition: border-color 0.3s; }
 .submit-note a:hover { border-color: var(--gold); }
+
+/* ---- 入场渐显 ---- */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- 开幕跳过 ---- */
+.intro-skip {
+  position: absolute;
+  bottom: 40px;
+  right: 32px;
+  z-index: 5;
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  color: var(--ink-faded);
+  cursor: pointer;
+  opacity: 0;
+  animation: subFade 0.8s ease 1.8s forwards;
+  pointer-events: auto;
+  transition: color 0.3s;
+}
+.intro-skip:hover { color: var(--gold); }
 
 footer {
   padding: 30px 0;
@@ -486,6 +569,7 @@ footer a:hover { color: var(--paper); }
   <div class="intro-sub">Poem's Ulysses</div>
   <div class="intro-line"></div>
   <div class="intro-caption">—— 让每一首诗，像漂流瓶一样抵达 ——</div>
+  <div class="intro-skip" id="intro-skip" role="button" tabindex="0">跳过</div>
 </div>
 
 <!-- ===== 导航 ===== -->
@@ -524,7 +608,7 @@ footer a:hover { color: var(--paper); }
     <section class="hero">
       <div class="hero-eyebrow">Poem's Odyssey</div>
       <h1>诗歌<span style="color:var(--gold);">漂</span>流</h1>
-      <div class="hero-divider"></div>
+      <svg class="greek-divider" viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5 H8 V0 H16 V10 H24 V0 H32 V10 H40 V0 H48 V10 H56 V0 H64 V10 H72 V0 H80 V10 H88 V0 H100"/></svg>
       <p class="hero-desc">让每一首诗，像漂流瓶一样，抵达它该去的地方。</p>
       <div class="hero-stats">
         <div><span class="num" id="stat-count">—</span><span class="label">已收录</span></div>
@@ -546,14 +630,15 @@ footer a:hover { color: var(--paper); }
     </section>
 
     <div class="submit-note">
-      <b>📮 投稿说明：</b>点击“投稿”会跳转到 GitHub Discussions，用你的 GitHub 账号登录后发帖即可。
-      请按格式填写：标题、正文，图片可直接拖入。审核通过后会被收录到目录中。
+      <b class="note-tag">投稿</b><span>点击"投稿"会跳转到 GitHub Discussions，用你的 GitHub 账号登录后发帖即可。
+      请按格式填写：标题、正文，图片可直接拖入。审核通过后会被收录到目录中。</span>
     </div>
   </div>
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护
+  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener">伞 umbrella</a>
 </footer>
 
 <script>
@@ -644,6 +729,16 @@ footer a:hover { color: var(--paper); }
     }, 1000);
   }, 2800);
 
+  // 跳过按钮
+  var skip = document.getElementById('intro-skip');
+  if (skip) {
+    skip.addEventListener('click', function() {
+      overlay.classList.add('hidden');
+      sessionStorage.setItem('intro_poem_shown', '1');
+      setTimeout(function() { overlay.style.display = 'none'; }, 1000);
+    });
+  }
+
 })();
 
 // ============================================================
@@ -710,6 +805,23 @@ fetch(dataUrl)
         '<span class="ri-meta">' + formatPoemDate(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + '</span>' +
       '</a>';
     }).join('');
+
+    // 入场渐显
+    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      var recentItems = list.querySelectorAll('.recent-item');
+      recentItems.forEach(function(el, idx) {
+        el.classList.add('reveal-up');
+        var io = new IntersectionObserver(function(entries) {
+          entries.forEach(function(en) {
+            if (en.isIntersecting) {
+              setTimeout(function() { el.classList.add('in-view'); }, idx * 70);
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.1 });
+        io.observe(el);
+      });
+    }
   })
   .catch(function() {
     document.getElementById('recent-list').innerHTML = '<div class="empty-state">加载失败，请检查 data/poems.json 是否存在。</div>';
@@ -814,10 +926,10 @@ document.getElementById('random-btn').addEventListener('click', function(e) {
       border-color: var(--gold-light);
     }
     [data-theme="dark"] header.scrolled {
-      background: rgba(30, 30, 28, 0.85);
+      background: rgba(30, 30, 28, 0.72);
     }
     [data-theme="eye-care"] header.scrolled {
-      background: rgba(236, 243, 229, 0.85);
+      background: rgba(236, 243, 229, 0.72);
     }
   `;
   document.head.appendChild(style);

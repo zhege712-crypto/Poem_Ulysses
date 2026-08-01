@@ -21,9 +21,12 @@
   --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
   --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-kai: 'Kaiti SC', 'STKaiti', 'KaiTi', 'Noto Serif SC', serif;
+  --radius-pill: 999px;
   --maxw: 720px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: var(--gold); color: #fff; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -41,9 +44,9 @@ header {
   top: 0;
   z-index: 100;
   padding: 20px 0;
-  background: rgba(247, 245, 240, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(247, 245, 240, 0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-bottom: 1px solid var(--gold-light);
 }
 header .wrap {
@@ -161,7 +164,7 @@ nav a:hover::after { width: 100%; }
   font-size: 0.6rem;
   font-weight: 300;
   letter-spacing: 0.08em;
-  color: var(--ink-faded);
+  color: var(--ink-light);
   margin-bottom: 10px;
   display: flex;
   flex-wrap: wrap;
@@ -179,14 +182,15 @@ nav a:hover::after { width: 100%; }
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: var(--ink-faded);
+  gap: 6px;
+  color: var(--ink-light);
   font-family: var(--font-mono);
   font-size: 0.55rem;
-  transition: color 0.3s;
-  border: none;
-  background: none;
-  padding: 4px 8px;
+  transition: color 0.3s, background 0.3s, border-color 0.3s;
+  border: 1px solid var(--gold-light);
+  background: transparent;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
 }
 .poem-meta .random-icon svg {
   width: 16px;
@@ -195,33 +199,39 @@ nav a:hover::after { width: 100%; }
   fill: none;
   stroke-width: 1.2;
 }
-.poem-meta .random-icon:hover { color: var(--gold); }
+.poem-meta .random-icon:hover {
+  color: var(--paper);
+  background: var(--ink);
+  border-color: var(--ink);
+}
 
 .poem-title {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(1.8rem, 5vw, 2.6rem);
-  letter-spacing: 0.04em;
-  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+  margin-bottom: 20px;
   line-height: 1.2;
+  text-wrap: balance;
 }
 .poem-content {
   white-space: pre-line;
-  font-size: 1.02rem;
-  color: var(--ink-light);
-  font-family: var(--font-serif);
-  line-height: 2.1;
+  font-size: 1.06rem;
+  color: var(--ink);
+  font-family: var(--font-kai);
+  line-height: 2.15;
   letter-spacing: 0.02em;
-  max-width: 620px;
+  max-width: 640px;
+  text-wrap: pretty;
 }
 .poem-content::before {
   content: '‖';
   display: block;
   font-family: var(--font-serif);
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: var(--gold);
-  margin-bottom: 12px;
-  opacity: 0.5;
+  margin-bottom: 14px;
+  opacity: 0.6;
 }
 .poem-image {
   margin-top: 36px;
@@ -238,11 +248,29 @@ nav a:hover::after { width: 100%; }
   transform: scale(1.005);
 }
 
-.greek-line {
-  width: 60px;
-  height: 1px;
-  background: var(--gold);
-  margin: 22px 0 10px;
+.greek-divider {
+  width: 104px;
+  height: 10px;
+  color: var(--gold);
+  opacity: 0.7;
+  margin: 0 0 28px;
+  display: block;
+}
+.reveal-up {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 .empty-state {
   text-align: center;
@@ -343,7 +371,8 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护
+  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener">伞 umbrella</a>
 </footer>
 
 <div class="lightbox" id="lightbox">
@@ -445,9 +474,28 @@ fetch(dataUrl)
         '</button>' +
       '</div>' +
       '<div class="poem-title">' + escapeHtml(poem.title) + '</div>' +
-      '<div class="greek-line"></div>' +
+      '<svg class="greek-divider" viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5 H8 V0 H16 V10 H24 V0 H32 V10 H40 V0 H48 V10 H56 V0 H64 V10 H72 V0 H80 V10 H88 V0 H100"/></svg>' +
       '<div class="poem-content">' + escapeHtml(poem.content) + '</div>' +
       imgHtml;
+
+    // ===== 入场渐显（尊重系统减弱动效设置） =====
+    var revealEls = detail.querySelectorAll('.poem-content, .poem-image');
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      revealEls.forEach(function(el) { el.classList.add('in-view'); });
+    } else {
+      revealEls.forEach(function(el, idx) {
+        el.classList.add('reveal-up');
+        var io = new IntersectionObserver(function(entries) {
+          entries.forEach(function(en) {
+            if (en.isIntersecting) {
+              setTimeout(function() { el.classList.add('in-view'); }, idx * 90);
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.15 });
+        io.observe(el);
+      });
+    }
 
     // ===== 随机功能（排除当前诗） =====
     document.getElementById('random-btn').addEventListener('click', function() {
@@ -556,10 +604,10 @@ fetch(dataUrl)
       border-color: var(--gold-light);
     }
     [data-theme="dark"] header {
-      background: rgba(30, 30, 28, 0.85);
+      background: rgba(30, 30, 28, 0.72);
     }
     [data-theme="eye-care"] header {
-      background: rgba(236, 243, 229, 0.85);
+      background: rgba(236, 243, 229, 0.72);
     }
   `;
   document.head.appendChild(style);

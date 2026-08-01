@@ -21,9 +21,11 @@
   --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
   --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --radius-pill: 999px;
   --maxw: 720px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: var(--gold); color: #fff; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -40,9 +42,9 @@ header {
   top: 0;
   z-index: 100;
   padding: 20px 0;
-  background: rgba(247, 245, 240, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(247, 245, 240, 0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-bottom: 1px solid var(--gold-light);
 }
 header .wrap {
@@ -151,19 +153,28 @@ nav a.active::after { width: 100%; }
   padding: 40px 0 20px;
 }
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: 0.55rem;
   font-weight: 300;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ink-faded);
-  margin-bottom: 4px;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+}
+.eyebrow::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--gold);
 }
 .page-head h1 {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(1.6rem, 4vw, 2.4rem);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
 }
 .page-head .line {
   width: 60px;
@@ -202,12 +213,15 @@ nav a.active::after { width: 100%; }
   gap: 10px;
   width: fit-content;
   color: var(--ink-light);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.3s, color 0.3s;
+  border: 1px solid var(--gold-light);
+  border-radius: var(--radius-pill);
+  padding: 8px 18px;
+  transition: border-color 0.3s, color 0.3s, background 0.3s;
 }
 .contact-list a:hover {
   border-color: var(--gold);
-  color: var(--gold);
+  color: var(--ink);
+  background: var(--paper-dark);
 }
 .contact-list a svg {
   width: 16px;
@@ -293,6 +307,14 @@ footer a:hover { color: var(--paper); }
       </a>
     </div>
 
+    <h2>友站</h2>
+    <div class="contact-list">
+      <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 2a10 10 0 0 1 0 20"/><path d="M2 12h20"/></svg>
+        伞 umbrella · 母站
+      </a>
+    </div>
+
     <p style="margin-top: 36px; color: var(--ink-faded); font-size: 0.8rem; font-family: var(--font-mono);">
       “愿飞鸟的羽毛落下，橄榄的枝叶。”<br>
       — 致所有漂流中的诗
@@ -301,7 +323,8 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护
+  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener">伞 umbrella</a>
 </footer>
 
 <script>
@@ -369,10 +392,10 @@ footer a:hover { color: var(--paper); }
       border-color: var(--gold-light);
     }
     [data-theme="dark"] header {
-      background: rgba(30, 30, 28, 0.85);
+      background: rgba(30, 30, 28, 0.72);
     }
     [data-theme="eye-care"] header {
-      background: rgba(236, 243, 229, 0.85);
+      background: rgba(236, 243, 229, 0.72);
     }
   `;
   document.head.appendChild(style);

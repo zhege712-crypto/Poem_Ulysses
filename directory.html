@@ -21,9 +21,13 @@
   --font-serif: 'Cormorant Garamond', 'Noto Serif SC', serif;
   --font-sans: 'Inter', 'Noto Sans SC', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --font-kai: 'Kaiti SC', 'STKaiti', 'KaiTi', 'Noto Serif SC', serif;
+  --radius-md: 12px;
+  --radius-pill: 999px;
   --maxw: 860px;
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
+::selection { background: var(--gold); color: #fff; }
 body {
   background: var(--paper);
   color: var(--ink);
@@ -41,9 +45,9 @@ header {
   top: 0;
   z-index: 100;
   padding: 22px 0;
-  background: rgba(247, 245, 240, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(247, 245, 240, 0.72);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
   border-bottom: 1px solid var(--gold-light);
 }
 header .wrap {
@@ -154,20 +158,30 @@ nav a.active::after { width: 100%; }
   padding: 40px 0 20px;
 }
 .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: 0.55rem;
   font-weight: 300;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--ink-faded);
-  margin-bottom: 4px;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+}
+.eyebrow::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--gold);
 }
 .page-head h1 {
   font-family: var(--font-serif);
-  font-weight: 300;
+  font-weight: 400;
   font-size: clamp(1.6rem, 4vw, 2.4rem);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   margin-bottom: 2px;
+  text-wrap: balance;
 }
 .page-head .line {
   width: 60px;
@@ -192,15 +206,19 @@ nav a.active::after { width: 100%; }
 }
 .view-toggle {
   display: inline-flex;
-  gap: 0;
-  padding: 2px;
+  gap: 4px;
+  padding: 4px;
   border: 1px solid var(--gold-light);
-  background: transparent;
+  background: color-mix(in srgb, var(--paper) 60%, transparent);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-radius: var(--radius-pill);
 }
 .view-toggle button {
   border: none;
   background: transparent;
-  padding: 6px 16px;
+  padding: 7px 18px;
+  border-radius: var(--radius-pill);
   font-family: var(--font-mono);
   font-size: 0.55rem;
   font-weight: 300;
@@ -219,7 +237,7 @@ nav a.active::after { width: 100%; }
   font-size: 0.55rem;
   font-weight: 300;
   letter-spacing: 0.08em;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border: 1px solid var(--gold-light);
   background: transparent;
   color: var(--ink);
@@ -227,6 +245,7 @@ nav a.active::after { width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  border-radius: var(--radius-pill);
   transition: all 0.3s;
 }
 .random-btn svg {
@@ -247,16 +266,17 @@ nav a.active::after { width: 100%; }
 }
 .search-box input {
   width: 100%;
-  padding: 10px 14px 10px 36px;
+  padding: 11px 16px 11px 38px;
   border: 1px solid var(--gold-light);
-  background: transparent;
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+  border-radius: var(--radius-md);
   font-family: var(--font-sans);
   font-size: 0.85rem;
   font-weight: 300;
   color: var(--ink);
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
-.search-box input:focus { outline: none; border-color: var(--gold); }
+.search-box input:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 25%, transparent); }
 .search-box .icon {
   position: absolute;
   left: 12px;
@@ -298,9 +318,10 @@ nav a.active::after { width: 100%; }
   letter-spacing: 0.12em;
   color: var(--ink-light);
   margin: 20px 0 2px;
-  padding: 4px 14px;
+  padding: 6px 16px;
   border: 1px solid var(--gold-light);
-  background: transparent;
+  background: color-mix(in srgb, var(--paper) 70%, transparent);
+  border-radius: var(--radius-pill);
 }
 .subseries-head::before {
   content: '';
@@ -315,12 +336,14 @@ nav a.active::after { width: 100%; }
   grid-template-columns: 80px 1fr auto;
   gap: 20px;
   align-items: baseline;
-  padding: 14px 0;
+  padding: 16px 12px;
+  margin: 0 -12px;
   border-bottom: 1px solid var(--gold-light);
-  transition: padding-left 0.3s;
+  border-radius: var(--radius-md);
+  transition: background 0.3s, padding-left 0.3s;
   cursor: pointer;
 }
-.catalog-row:hover { padding-left: 10px; }
+.catalog-row:hover { background: var(--paper-dark); padding-left: 22px; }
 .catalog-row .c-date {
   font-family: var(--font-mono);
   font-size: 0.55rem;
@@ -391,7 +414,8 @@ nav a.active::after { width: 100%; }
   font-weight: 300;
   color: var(--ink-faded);
   border: 1px solid var(--gold-light);
-  padding: 1px 10px;
+  border-radius: var(--radius-pill);
+  padding: 2px 12px;
 }
 .branch-children {
   margin-left: 8px;
@@ -411,9 +435,11 @@ nav a.active::after { width: 100%; }
   justify-content: space-between;
   align-items: baseline;
   gap: 16px;
-  padding: 8px 4px;
+  padding: 9px 10px;
+  margin: 0 -10px;
+  border-radius: var(--radius-md);
   position: relative;
-  transition: color 0.3s, padding-left 0.3s;
+  transition: color 0.3s, padding-left 0.3s, background 0.3s;
 }
 .tree-leaf::before {
   content: '';
@@ -424,7 +450,7 @@ nav a.active::after { width: 100%; }
   height: 1px;
   background: var(--gold-light);
 }
-.tree-leaf:hover { padding-left: 10px; }
+.tree-leaf:hover { background: var(--paper-dark); padding-left: 20px; }
 .tree-leaf:hover .leaf-title { color: var(--clay); }
 .tree-leaf .leaf-title {
   font-family: var(--font-serif);
@@ -447,6 +473,24 @@ nav a.active::after { width: 100%; }
   font-size: 0.75rem;
   font-weight: 300;
   padding: 60px 0;
+}
+
+/* ===== 入场渐显 ===== */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal-up.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }
 
 footer {
@@ -526,7 +570,8 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护
+  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener">伞 umbrella</a>
 </footer>
 
 <script>
@@ -730,6 +775,23 @@ fetch(dataUrl)
       return;
     }
     render(allPoems);
+
+    // 入场渐显
+    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      var rows = listEl.querySelectorAll('.catalog-row, .tree-leaf, .series-block');
+      rows.forEach(function(el, idx) {
+        el.classList.add('reveal-up');
+        var io = new IntersectionObserver(function(entries) {
+          entries.forEach(function(en) {
+            if (en.isIntersecting) {
+              setTimeout(function() { el.classList.add('in-view'); }, (idx % 12) * 60);
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.1 });
+        io.observe(el);
+      });
+    }
   })
   .catch(function() {
     listEl.innerHTML = '<div class="empty-state">目录加载失败，检查 data/poems.json 是否存在。</div>';
@@ -802,10 +864,10 @@ fetch(dataUrl)
       border-color: var(--gold-light);
     }
     [data-theme="dark"] header {
-      background: rgba(30, 30, 28, 0.85);
+      background: rgba(30, 30, 28, 0.72);
     }
     [data-theme="eye-care"] header {
-      background: rgba(236, 243, 229, 0.85);
+      background: rgba(236, 243, 229, 0.72);
     }
   `;
   document.head.appendChild(style);
