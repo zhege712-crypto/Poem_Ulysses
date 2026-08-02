@@ -272,6 +272,40 @@ nav a:hover::after { width: 100%; }
     transition: none;
   }
 }
+
+/* ---- 上一篇 / 下一篇 ---- */
+.poem-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 46px;
+  padding-top: 26px;
+  border-top: 1px solid var(--gold-light);
+}
+.poem-nav a,
+.poem-nav span {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-light);
+  border: 1px solid var(--gold-light);
+  border-radius: var(--radius-pill);
+  padding: 10px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.3s, color 0.3s, background 0.3s;
+}
+.poem-nav a:hover {
+  border-color: var(--gold);
+  color: var(--ink);
+  background: var(--paper-dark);
+}
+.poem-nav .disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.poem-nav .pn-next { margin-left: auto; }
 .empty-state {
   text-align: center;
   color: var(--ink-faded);
@@ -451,6 +485,34 @@ fetch(dataUrl)
     }
     document.title = poem.title + ' · 诗歌漂流';
 
+    // ===== 目录顺序（系列 → 系列内日期降序，与目录页一致） =====
+    function getDateWeight(dateStr) {
+      if (!dateStr || dateStr.trim() === '') return -1;
+      var parts = dateStr.trim().split('-');
+      var w = 0;
+      if (parts[0]) w += 10000;
+      if (parts[1]) w += 100;
+      if (parts[2]) w += 1;
+      return w;
+    }
+    var seriesOrder = [];
+    var seenSeries = {};
+    poems.forEach(function(p) {
+      var s = p.series || '未分类';
+      if (!seenSeries[s]) { seenSeries[s] = 1; seriesOrder.push(s); }
+    });
+    var ordered = poems.slice().sort(function(a, b) {
+      var sa = a.series || '未分类', sb = b.series || '未分类';
+      var ia = seriesOrder.indexOf(sa), ib = seriesOrder.indexOf(sb);
+      if (ia !== ib) return ia - ib;
+      var wa = getDateWeight(a.date), wb = getDateWeight(b.date);
+      if (wa !== wb) return wb - wa;
+      return (a.date || '').localeCompare(b.date || '');
+    });
+    var curIdx = ordered.findIndex(function(p) { return p.id === poem.id; });
+    var prevPoem = curIdx > 0 ? ordered[curIdx - 1] : null;
+    var nextPoem = (curIdx >= 0 && curIdx < ordered.length - 1) ? ordered[curIdx + 1] : null;
+
     var imgList = Array.isArray(poem.images) ? poem.images.slice() : [];
     if (poem.image) imgList.push(poem.image);
     var imgHtml = imgList.map(function(src) {
@@ -476,7 +538,22 @@ fetch(dataUrl)
       '<div class="poem-title">' + escapeHtml(poem.title) + '</div>' +
       '<svg class="greek-divider" viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5 H8 V0 H16 V10 H24 V0 H32 V10 H40 V0 H48 V10 H56 V0 H64 V10 H72 V0 H80 V10 H88 V0 H100"/></svg>' +
       '<div class="poem-content">' + escapeHtml(poem.content) + '</div>' +
-      imgHtml;
+      imgHtml +
+      '<div class="poem-nav">' +
+        (prevPoem ? '<a class="pn-prev" href="read.html?id=' + encodeURIComponent(prevPoem.id) + '" title="键盘 ←">← 上一篇</a>' : '<span class="pn-prev disabled">← 上一篇</span>') +
+        (nextPoem ? '<a class="pn-next" href="read.html?id=' + encodeURIComponent(nextPoem.id) + '" title="键盘 →">下一篇 →</a>' : '<span class="pn-next disabled">下一篇 →</span>') +
+      '</div>';
+
+    // ===== 键盘翻页 =====
+    document.addEventListener('keydown', function(e) {
+      var lb = document.getElementById('lightbox');
+      if (lb && lb.classList.contains('active')) return;
+      if (e.key === 'ArrowLeft' && prevPoem) {
+        window.location.href = 'read.html?id=' + encodeURIComponent(prevPoem.id);
+      } else if (e.key === 'ArrowRight' && nextPoem) {
+        window.location.href = 'read.html?id=' + encodeURIComponent(nextPoem.id);
+      }
+    });
 
     // ===== 入场渐显（尊重系统减弱动效设置） =====
     var revealEls = detail.querySelectorAll('.poem-content, .poem-image');
