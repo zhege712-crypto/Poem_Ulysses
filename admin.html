@@ -400,7 +400,7 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   var submit = document.getElementById('password-submit');
   var error = document.getElementById('password-error');
   var content = document.querySelector('.content-wrapper');
-  var PASSWORD = 'umbrella2026';
+  var PASSWORD = 'password'; // ← 请改成你自己的密码（改完 push 到仓库后生效）
 
   if (sessionStorage.getItem('admin_auth') === 'true') {
     overlay.classList.add('hidden');
