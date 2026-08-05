@@ -381,6 +381,29 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
       <button id="refresh-btn" style="background:var(--ink-faded);">刷新列表</button>
       <div class="status" id="manage-status"></div>
     </div>
+
+    <div class="panel">
+      <h2>④ 作者（同志们）</h2>
+      <label>署名 ID</label>
+      <input type="text" id="a-id" placeholder="英文短横线，如 hanmei" list="author-id-list">
+      <datalist id="author-id-list"></datalist>
+      <label>展示名</label>
+      <input type="text" id="a-name" placeholder="如：寒梅">
+      <label>别名（多个用顿号/逗号分隔）</label>
+      <input type="text" id="a-aliases" placeholder="如：寒梅、hanmei（对应 poems.json 里的 author 字符串）">
+      <label>简介</label>
+      <textarea id="a-bio" placeholder="这位作者的一句话题记"></textarea>
+      <label>诗风标签（多个用顿号/逗号分隔）</label>
+      <input type="text" id="a-tags" placeholder="如：山水、咏怀、洛社篇常客">
+      <label>主页链接</label>
+      <input type="text" id="a-link" placeholder="https://…（可选）">
+      <div class="row">
+        <button id="a-save" type="button">保存作者</button>
+        <button id="a-clear" type="button" style="background:var(--ink-faded);">清空表单</button>
+      </div>
+      <div class="status" id="a-status"></div>
+      <div id="author-manage-list"><div class="hint">加载中…</div></div>
+    </div>
   </div>
 </div>
 
@@ -659,6 +682,144 @@ async function deletePoem(id) {
 }
 
 document.getElementById('refresh-btn').addEventListener('click', loadList);
+
+// ===== 作者（同志们）管理 =====
+(function() {
+  var aId = document.getElementById('a-id');
+  var aName = document.getElementById('a-name');
+  var aAliases = document.getElementById('a-aliases');
+  var aBio = document.getElementById('a-bio');
+  var aTags = document.getElementById('a-tags');
+  var aLink = document.getElementById('a-link');
+  var aSave = document.getElementById('a-save');
+  var aClear = document.getElementById('a-clear');
+  var aStatus = document.getElementById('a-status');
+  var aList = document.getElementById('author-manage-list');
+  var idList = document.getElementById('author-id-list');
+
+  function setAStatus(text, type) { aStatus.textContent = text; aStatus.className = 'status show ' + type; }
+
+  function splitList(v) {
+    return String(v || '').split(/[、，,]/).map(function(s) { return s.trim(); }).filter(Boolean);
+  }
+
+  function escapeA(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+
+  async function loadAuthors() {
+    var owner = els.owner.value.trim(), repo = els.repo.value.trim();
+    if (!owner || !repo) { aList.innerHTML = '<div class="hint">请先填写用户名和仓库名</div>'; return; }
+    aList.innerHTML = '<div class="hint">加载中…</div>';
+    var authors = [];
+    try {
+      var res = await fetchWithTimeout('data/authors.json?t=' + Date.now());
+      if (res.ok) authors = await res.json();
+    } catch(e) {}
+    if (!authors || !authors.length) {
+      try {
+        var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/authors.json?t=' + Date.now();
+        var res2 = await fetchWithTimeout(rawUrl);
+        if (res2.ok) authors = await res2.json();
+      } catch(e) {}
+    }
+    if (!authors || !authors.length) { aList.innerHTML = '<div class="hint">还没有作者，用上方表单创建</div>'; return; }
+    aList.innerHTML = '';
+    authors.forEach(function(au) {
+      var row = document.createElement('div');
+      row.className = 'manage-item';
+      row.innerHTML =
+        '<div class="mi-info">' + escapeA(au.name) +
+          '<span class="mi-date">' + escapeA(au.id) + (au.aliases && au.aliases.length ? ' · ' + escapeA(au.aliases.join(' / ')) : '') + '</span>' +
+        '</div>' +
+        '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
+      row.querySelector('.mi-edit').addEventListener('click', function() {
+        aId.value = au.id;
+        aName.value = au.name || '';
+        aAliases.value = (au.aliases || []).join('、');
+        aBio.value = au.bio || '';
+        aTags.value = (au.tags || []).join('、');
+        aLink.value = au.link || '';
+        setAStatus('已载入「' + au.name + '」，可修改后保存', 'ok');
+        aSave.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+      row.querySelector('.mi-del').addEventListener('click', function() { deleteAuthor(au.id); });
+      aList.appendChild(row);
+    });
+    idList.innerHTML = authors.map(function(au) { return '<option value="' + escapeA(au.id) + '">'; }).join('');
+  }
+
+  function readAuthorFields() {
+    return {
+      id: aId.value.trim(),
+      name: aName.value.trim(),
+      aliases: splitList(aAliases.value),
+      bio: aBio.value.trim(),
+      tags: splitList(aTags.value),
+      link: aLink.value.trim()
+    };
+  }
+
+  async function saveAuthor() {
+    var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
+    var f = readAuthorFields();
+    if (!owner || !repo || !token) { setAStatus('请填写仓库信息', 'err'); return; }
+    if (!f.id || !f.name) { setAStatus('署名 ID 和展示名不能为空', 'err'); return; }
+    setAStatus('保存中…', 'loading');
+    try {
+      var getRes = await ghRequest('data/authors.json?t=' + Date.now(), {}, owner, repo, token);
+      var sha = null, authors = [];
+      if (getRes.ok) {
+        var d = await getRes.json();
+        sha = d.sha;
+        authors = JSON.parse(decodeURIComponent(escape(atob(d.content))));
+      } else if (getRes.status === 404) {
+        sha = null;
+      } else {
+        throw new Error('读取失败');
+      }
+      var existing = authors.find(function(au) { return au.id === f.id; });
+      var entry = { id: f.id, name: f.name, aliases: f.aliases, bio: f.bio, tags: f.tags, link: f.link };
+      if (existing) {
+        authors[authors.indexOf(existing)] = entry;
+      } else {
+        authors.push(entry);
+      }
+      var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(authors, null, 2))));
+      var putBody = { message: '保存作者: ' + f.name, content: b64 };
+      if (sha) putBody.sha = sha;
+      var putRes = await ghRequest('data/authors.json', { method: 'PUT', body: JSON.stringify(putBody) }, owner, repo, token);
+      if (!putRes.ok) throw new Error('保存失败');
+      setAStatus('✓ 已保存「' + f.name + '」', 'ok');
+      loadAuthors();
+    } catch(e) { setAStatus('✗ ' + e.message, 'err'); }
+  }
+
+  async function deleteAuthor(id) {
+    if (!confirm('确定删除作者「' + id + '」吗？')) return;
+    var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
+    setAStatus('删除中…', 'loading');
+    try {
+      var getRes = await ghRequest('data/authors.json?t=' + Date.now(), {}, owner, repo, token);
+      if (!getRes.ok) throw new Error('读取失败');
+      var d = await getRes.json();
+      var sha = d.sha, authors = JSON.parse(decodeURIComponent(escape(atob(d.content))));
+      var remaining = authors.filter(function(au) { return au.id !== id; });
+      var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(remaining, null, 2))));
+      var put = await ghRequest('data/authors.json', { method: 'PUT', body: JSON.stringify({ message: '删除作者', content: b64, sha: sha }) }, owner, repo, token);
+      if (!put.ok) throw new Error('删除失败');
+      setAStatus('✓ 已删除', 'ok');
+      if (aId.value === id) { aId.value = ''; aName.value = ''; aAliases.value = ''; aBio.value = ''; aTags.value = ''; aLink.value = ''; }
+      loadAuthors();
+    } catch(e) { setAStatus('✗ ' + e.message, 'err'); }
+  }
+
+  aSave.addEventListener('click', saveAuthor);
+  aClear.addEventListener('click', function() {
+    aId.value = ''; aName.value = ''; aAliases.value = ''; aBio.value = ''; aTags.value = ''; aLink.value = '';
+    aStatus.className = 'status';
+  });
+  document.getElementById('refresh-btn').addEventListener('click', loadAuthors);
+  loadAuthors();
+})();
 
 // ===== 主题 =====
 (function() {
