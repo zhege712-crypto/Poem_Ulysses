@@ -543,10 +543,11 @@ footer a:hover { color: var(--paper); }
     var pendingSection = document.getElementById('pending-section');
     var pendingList = document.getElementById('pending-list');
 
-    // 归一化：别名 → 作者 id
+    // 归一化：别名 → 作者 id（name 也参与匹配，保证无别名作者也能聚合作品）
     var aliasMap = {};
     authors.forEach(function(a) {
-      a.aliases.forEach(function(al) { aliasMap[al] = a.id; });
+      (a.aliases || []).forEach(function(al) { aliasMap[al] = a.id; });
+      if (a.name) aliasMap[a.name] = a.id;
     });
 
     // 统计每个作者的作品

@@ -563,10 +563,11 @@ Promise.all([
     }
     document.title = poem.title + ' · 诗歌漂流';
 
-    // ===== 署名 → 作者 id 映射（用于作者名链接） =====
+    // ===== 署名 → 作者 id 映射（用于作者名链接；name 也参与匹配） =====
     var aliasMap = {};
     authors.forEach(function(a) {
       (a.aliases || []).forEach(function(al) { aliasMap[al] = a.id; });
+      if (a.name) aliasMap[a.name] = a.id;
     });
     var authorId = poem.author ? aliasMap[poem.author] : null;
     var authorHref = authorId ? 'author.html?id=' + encodeURIComponent(authorId) : null;

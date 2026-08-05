@@ -196,6 +196,119 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 .mi-edit-form .mi-f-save { margin-top: 12px; padding: 8px 18px; font-size: 0.6rem; }
 .mi-edit-form .mi-f-cancel { margin-top: 12px; padding: 8px 18px; font-size: 0.6rem; background: var(--ink-faded); }
 
+/* ===== 折叠与作者作品管理 ===== */
+.acc-row { cursor: pointer; }
+.acc-row .mi-toggle {
+  margin: 0;
+  padding: 0;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--gold-light);
+  background: transparent;
+  color: var(--ink-light);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.7rem;
+  line-height: 1;
+  transition: background 0.25s, color 0.25s, transform 0.25s;
+  flex-shrink: 0;
+}
+.acc-row .mi-toggle:hover { background: var(--gold-light); color: var(--ink); }
+.acc-row .mi-toggle.open { transform: rotate(90deg); }
+.acc-panel {
+  display: none;
+  background: var(--paper);
+  border: 1px solid var(--gold-light);
+  border-radius: 8px;
+  margin: 6px 0 12px;
+  padding: 12px 14px;
+}
+.acc-panel.open { display: block; }
+.acc-panel .ap-title {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--ink-light);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+.acc-sub-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--gold-light);
+  font-size: 0.82rem;
+}
+.acc-sub-item:last-child { border-bottom: none; }
+.acc-sub-item .asi-title { color: var(--ink); }
+.acc-sub-item .asi-meta {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--ink-faded);
+  margin-top: 2px;
+}
+.acc-sub-item .asi-actions { display: flex; gap: 6px; }
+.acc-sub-item .asi-actions button {
+  margin: 0;
+  padding: 3px 10px;
+  font-size: 0.55rem;
+  background: transparent;
+  color: var(--ink-faded);
+  border: 1px solid var(--gold-light);
+  border-radius: 999px;
+}
+.acc-sub-item .asi-actions button:hover { background: var(--gold-light); color: var(--ink); }
+.acc-add-btn {
+  margin: 10px 0 0;
+  padding: 7px 16px;
+  font-size: 0.6rem;
+  background: transparent;
+  color: var(--ink-light);
+  border: 1px dashed var(--gold);
+  border-radius: 999px;
+  width: 100%;
+}
+.acc-add-btn:hover { background: var(--gold-light); color: var(--ink); border-style: solid; }
+.acc-empty {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-faded);
+  padding: 8px 0;
+}
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--gold-light);
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.group-head .tri {
+  font-size: 0.55rem;
+  color: var(--ink-faded);
+  transition: transform 0.25s;
+  font-family: var(--font-mono);
+}
+.group-head .g-count {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--ink-faded);
+  border: 1px solid var(--gold-light);
+  border-radius: 999px;
+  padding: 1px 10px;
+}
+.group-head.collapsed .tri { transform: rotate(-90deg); }
+.group-body { padding-left: 2px; }
+
 .side-theme {
   position: fixed;
   right: 28px;
@@ -590,43 +703,67 @@ async function loadList() {
   try {
 
     poems.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
-    listEl.innerHTML = '';
-    poems.forEach(function(p) {
-      var row = document.createElement('div');
-      row.className = 'manage-item';
-      row.innerHTML =
-        '<div class="mi-info">' + escapeHtml(p.title) +
-          '<span class="mi-date">' + escapeHtml(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + '</span>' +
-        '</div>' +
-        '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
-      var form = document.createElement('div');
-      form.className = 'mi-edit-form';
-      form.style.display = 'none';
-      form.innerHTML =
-        '<label>标题</label><input type="text" class="mi-f-title" value="' + escapeHtml(p.title) + '">' +
-        '<div class="row"><div><label>日期</label><input type="text" class="mi-f-date" value="' + escapeHtml(p.date) + '"></div><div><label>作者</label><input type="text" class="mi-f-author" value="' + escapeHtml(p.author || '') + '"></div></div>' +
-        '<label>序列</label><input type="text" class="mi-f-series" value="' + escapeHtml(p.series || '未分类') + '">' +
-        '<label>子分类</label><input type="text" class="mi-f-subseries" value="' + escapeHtml(p.subseries || '') + '">' +
-        '<label>正文</label><textarea class="mi-f-content">' + escapeHtml(p.content) + '</textarea>' +
-        '<button class="mi-f-save" type="button">保存</button> <button class="mi-f-cancel" type="button" style="background:var(--ink-faded);">取消</button>';
 
-      row.querySelector('.mi-edit').addEventListener('click', function() {
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-      });
-      form.querySelector('.mi-f-cancel').addEventListener('click', function() { form.style.display = 'none'; });
-      form.querySelector('.mi-f-save').addEventListener('click', function() {
-        savePoem(p.id, {
-          title: form.querySelector('.mi-f-title').value.trim(),
-          date: form.querySelector('.mi-f-date').value.trim(),
-          author: form.querySelector('.mi-f-author').value.trim() || '匿名',
-          series: form.querySelector('.mi-f-series').value.trim() || '未分类',
-          subseries: form.querySelector('.mi-f-subseries').value.trim(),
-          content: form.querySelector('.mi-f-content').value.trim()
+    // 按系列分组，默认收起（可展开）
+    var groups = {};
+    var order = [];
+    poems.forEach(function(p) {
+      var s = p.series || '未分类';
+      if (!groups[s]) { groups[s] = []; order.push(s); }
+      groups[s].push(p);
+    });
+    listEl.innerHTML = '';
+    order.forEach(function(series) {
+      var list = groups[series];
+      var head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML = '<span class="tri">▾</span>' + escapeHtml(series) + '<span class="g-count">' + list.length + '</span>';
+      var body = document.createElement('div');
+      body.className = 'group-body';
+      list.forEach(function(p) {
+        var row = document.createElement('div');
+        row.className = 'manage-item';
+        row.setAttribute('data-id', p.id);
+        row.innerHTML =
+          '<div class="mi-info">' + escapeHtml(p.title) +
+            '<span class="mi-date">' + escapeHtml(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + '</span>' +
+          '</div>' +
+          '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
+        var form = document.createElement('div');
+        form.className = 'mi-edit-form';
+        form.style.display = 'none';
+        form.innerHTML =
+          '<label>标题</label><input type="text" class="mi-f-title" value="' + escapeHtml(p.title) + '">' +
+          '<div class="row"><div><label>日期</label><input type="text" class="mi-f-date" value="' + escapeHtml(p.date) + '"></div><div><label>作者</label><input type="text" class="mi-f-author" value="' + escapeHtml(p.author || '') + '"></div></div>' +
+          '<label>序列</label><input type="text" class="mi-f-series" value="' + escapeHtml(p.series || '未分类') + '">' +
+          '<label>子分类</label><input type="text" class="mi-f-subseries" value="' + escapeHtml(p.subseries || '') + '">' +
+          '<label>正文</label><textarea class="mi-f-content">' + escapeHtml(p.content) + '</textarea>' +
+          '<button class="mi-f-save" type="button">保存</button> <button class="mi-f-cancel" type="button" style="background:var(--ink-faded);">取消</button>';
+
+        row.querySelector('.mi-edit').addEventListener('click', function() {
+          form.style.display = form.style.display === 'none' ? 'block' : 'none';
         });
+        form.querySelector('.mi-f-cancel').addEventListener('click', function() { form.style.display = 'none'; });
+        form.querySelector('.mi-f-save').addEventListener('click', function() {
+          savePoem(p.id, {
+            title: form.querySelector('.mi-f-title').value.trim(),
+            date: form.querySelector('.mi-f-date').value.trim(),
+            author: form.querySelector('.mi-f-author').value.trim() || '匿名',
+            series: form.querySelector('.mi-f-series').value.trim() || '未分类',
+            subseries: form.querySelector('.mi-f-subseries').value.trim(),
+            content: form.querySelector('.mi-f-content').value.trim()
+          });
+        });
+        row.querySelector('.mi-del').addEventListener('click', function() { deletePoem(p.id); });
+        body.appendChild(row);
+        body.appendChild(form);
       });
-      row.querySelector('.mi-del').addEventListener('click', function() { deletePoem(p.id); });
-      listEl.appendChild(row);
-      listEl.appendChild(form);
+      head.addEventListener('click', function() {
+        var collapsed = head.classList.toggle('collapsed');
+        body.style.display = collapsed ? 'none' : 'block';
+      });
+      listEl.appendChild(head);
+      listEl.appendChild(body);
     });
 
     var seriesSet = Array.from(new Set(poems.map(function(p) { return p.series || '未分类'; })));
@@ -635,6 +772,23 @@ async function loadList() {
     document.getElementById('subseries-list').innerHTML = subSet.map(function(s) { return '<option value="' + escapeHtml(s) + '">'; }).join('');
 
   } catch(e) { listEl.innerHTML = '<div class="hint">加载失败：' + e.message + '</div>'; }
+}
+
+// 打开 ③ 面板中某首诗的编辑表单并滚动到它
+function openPoemEditForm(p) {
+  if (!listEl || !listEl.children.length) {
+    setManageStatus('请先加载诗歌列表', 'err');
+    return;
+  }
+  var row = listEl.querySelector('.manage-item[data-id="' + p.id + '"]');
+  if (!row) {
+    setManageStatus('未找到该诗，可能已在别处修改', 'err');
+    loadList();
+    return;
+  }
+  var btn = row.querySelector('.mi-edit');
+  if (btn) btn.click();
+  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function savePoem(id, fields) {
@@ -721,17 +875,92 @@ document.getElementById('refresh-btn').addEventListener('click', loadList);
         if (res2.ok) authors = await res2.json();
       } catch(e) {}
     }
+    // 同步加载诗歌，用于作者作品统计与展开管理
+    var poems = [];
+    try {
+      var pres = await fetchWithTimeout('data/poems.json?t=' + Date.now());
+      if (pres.ok) poems = await pres.json();
+    } catch(e) {}
+    if (!poems || !poems.length) {
+      try {
+        var praw = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
+        var pres2 = await fetchWithTimeout(praw);
+        if (pres2.ok) poems = await pres2.json();
+      } catch(e) {}
+    }
+    poems = poems || [];
+
     if (!authors || !authors.length) { aList.innerHTML = '<div class="hint">还没有作者，用上方表单创建</div>'; return; }
+
+    // 署名 → 作者 id（name 也参与匹配）
+    var aliasMap = {};
+    authors.forEach(function(au) {
+      (au.aliases || []).forEach(function(al) { aliasMap[al] = au.id; });
+      if (au.name) aliasMap[au.name] = au.id;
+    });
+
     aList.innerHTML = '';
     authors.forEach(function(au) {
-      var row = document.createElement('div');
-      row.className = 'manage-item';
-      row.innerHTML =
+      var authorWorks = poems.filter(function(p) { return aliasMap[p.author] === au.id; });
+      var container = document.createElement('div');
+      container.className = 'manage-item acc-row';
+      container.innerHTML =
+        '<button class="mi-toggle" type="button" title="展开/收起">▶</button>' +
         '<div class="mi-info">' + escapeA(au.name) +
-          '<span class="mi-date">' + escapeA(au.id) + (au.aliases && au.aliases.length ? ' · ' + escapeA(au.aliases.join(' / ')) : '') + '</span>' +
+          '<span class="mi-date">' + escapeA(au.id) + (au.aliases && au.aliases.length ? ' · ' + escapeA(au.aliases.join(' / ')) : '') +
+          ' · 作品 ' + authorWorks.length + '</span>' +
         '</div>' +
         '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
-      row.querySelector('.mi-edit').addEventListener('click', function() {
+
+      var panel = document.createElement('div');
+      panel.className = 'acc-panel';
+
+      if (authorWorks.length) {
+        var listHtml = '<div class="ap-title">作品</div>';
+        authorWorks.forEach(function(p) {
+          listHtml +=
+            '<div class="acc-sub-item">' +
+              '<div><div class="asi-title">' + escapeA(p.title) + '</div>' +
+              '<div class="asi-meta">' + escapeA(p.date || '') + (p.series ? ' · ' + escapeA(p.series) : '') + (p.subseries ? ' / ' + escapeA(p.subseries) : '') + '</div></div>' +
+              '<div class="asi-actions">' +
+                '<button class="asi-edit" type="button">编辑</button>' +
+                '<button class="asi-del" type="button">删除</button>' +
+              '</div>' +
+            '</div>';
+        });
+        panel.innerHTML = listHtml;
+        // 绑定子项编辑/删除
+        panel.querySelectorAll('.acc-sub-item').forEach(function(item, idx) {
+          var p = authorWorks[idx];
+          item.querySelector('.asi-edit').addEventListener('click', function() {
+            openPoemEditForm(p);
+          });
+          item.querySelector('.asi-del').addEventListener('click', function() {
+            if (confirm('确定删除「' + p.title + '」吗？')) { deletePoem(p.id); }
+          });
+        });
+      } else {
+        panel.innerHTML = '<div class="acc-empty">这位同志还没有作品。</div>';
+      }
+
+      panel.innerHTML += '<button class="acc-add-btn" type="button">+ 为这位同志添加新诗</button>';
+
+      panel.querySelector('.acc-add-btn').addEventListener('click', function() {
+        els.author.value = au.name;
+        els.author.focus();
+        els.btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setStatus(els.status, '已填入作者「' + au.name + '」，在下方 ② 填写并发布', 'ok');
+      });
+
+      // 展开/收起
+      var toggle = container.querySelector('.mi-toggle');
+      toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggle.classList.toggle('open');
+        panel.classList.toggle('open');
+      });
+
+      container.querySelector('.mi-edit').addEventListener('click', function() {
         aId.value = au.id;
         aName.value = au.name || '';
         aAliases.value = (au.aliases || []).join('、');
@@ -741,8 +970,10 @@ document.getElementById('refresh-btn').addEventListener('click', loadList);
         setAStatus('已载入「' + au.name + '」，可修改后保存', 'ok');
         aSave.scrollIntoView({ behavior: 'smooth', block: 'center' });
       });
-      row.querySelector('.mi-del').addEventListener('click', function() { deleteAuthor(au.id); });
-      aList.appendChild(row);
+      container.querySelector('.mi-del').addEventListener('click', function() { deleteAuthor(au.id); });
+
+      aList.appendChild(container);
+      aList.appendChild(panel);
     });
     idList.innerHTML = authors.map(function(au) { return '<option value="' + escapeA(au.id) + '">'; }).join('');
   }

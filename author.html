@@ -556,9 +556,10 @@ Promise.all([
   }
   document.title = author.name + ' · 同志们 · 诗歌漂流';
 
-  // 归一化别名
+  // 归一化别名（name 也参与匹配，保证无别名作者也能聚合）
   var aliasMap = {};
-  author.aliases.forEach(function(al) { aliasMap[al] = author.id; });
+  (author.aliases || []).forEach(function(al) { aliasMap[al] = author.id; });
+  aliasMap[author.name] = author.id;
 
   // 该作者的作品
   var works = poems.filter(function(p) {
