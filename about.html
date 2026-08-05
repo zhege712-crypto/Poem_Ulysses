@@ -152,6 +152,32 @@ nav a.active::after { width: 100%; }
 .page-head {
   padding: 40px 0 20px;
 }
+.back-link {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--ink);
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 30px;
+  padding: 9px 20px;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-pill);
+  background: var(--paper);
+}
+.back-link svg {
+  width: 15px;
+  height: 15px;
+  stroke: var(--gold);
+}
+.back-link:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.back-link:hover svg { stroke: var(--gold); }
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -244,6 +270,17 @@ footer {
 }
 footer a { color: var(--gold); transition: color 0.3s; }
 footer a:hover { color: var(--paper); }
+.footer-stats {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faded);
+  opacity: 0.8;
+}
+.footer-stats .bsz-num { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -278,6 +315,10 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <div class="wrap">
+  <a class="back-link" href="index.html" id="back-link">
+    <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.2"><path d="M15 18l-6-6 6-6"/></svg>
+    <span id="back-label">返回</span>
+  </a>
   <div class="page-head">
     <div class="eyebrow">About</div>
     <h1>关于 · 诗歌漂流</h1>
@@ -327,11 +368,32 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
-  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener noreferrer">伞 umbrella</a>
+  <p>© 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener noreferrer">伞 umbrella</a></p>
+  <p class="footer-stats">
+    <span>浏览人次 <span class="bsz-num" id="busuanzi_value_site_pv">—</span></span>
+    <span>访客数 <span class="bsz-num" id="busuanzi_value_site_uv">—</span></span>
+  </p>
 </footer>
 
 <script>
+// ===== 返回按钮（浏览器后退式，无历史回首页） =====
+(function() {
+  var back = document.getElementById('back-link');
+  if (!back) return;
+  back.addEventListener('click', function(e) {
+    if (history.length > 1) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+  var ref = document.referrer || '';
+  var label = document.getElementById('back-label');
+  if (ref.indexOf('index.html') !== -1) {
+    label.textContent = '返回首页';
+  }
+})();
+
 (function() {
   var btns = document.querySelectorAll('#theme-side .theme-btn');
   if (!btns.length) return;
@@ -405,5 +467,6 @@ footer a:hover { color: var(--paper); }
   document.head.appendChild(style);
 })();
 </script>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 </html>

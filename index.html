@@ -555,6 +555,17 @@ footer {
 }
 footer a { color: var(--gold); transition: color 0.3s; }
 footer a:hover { color: var(--paper); }
+.footer-stats {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faded);
+  opacity: 0.8;
+}
+.footer-stats .bsz-num { color: var(--gold); }
 </style>
 </head>
 <body>
@@ -655,8 +666,12 @@ footer a:hover { color: var(--paper); }
 </div>
 
 <footer>
-  © 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
-  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener noreferrer">伞 umbrella</a>
+  <p>© 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
+  母站 <a href="https://zhege712-crypto.github.io/" target="_blank" rel="noopener noreferrer">伞 umbrella</a></p>
+  <p class="footer-stats">
+    <span>浏览人次 <span class="bsz-num" id="busuanzi_value_site_pv">—</span></span>
+    <span>访客数 <span class="bsz-num" id="busuanzi_value_site_uv">—</span></span>
+  </p>
 </footer>
 
 <script>
@@ -955,6 +970,7 @@ document.getElementById('random-btn').addEventListener('click', function(e) {
   document.head.appendChild(style);
 })();
 </script>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 </html>
 
