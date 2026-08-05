@@ -176,7 +176,22 @@ nav a:hover::after { width: 100%; }
   font-size: 0.85rem;
   font-weight: 300;
   color: var(--ink-light);
+  position: relative;
+  padding-bottom: 2px;
+  transition: color 0.3s;
 }
+.poem-meta .p-author::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.4s ease;
+}
+.poem-meta .p-author:hover { color: var(--clay); }
+.poem-meta .p-author:hover::after { width: 100%; }
 .poem-meta .random-icon {
   margin-left: auto;
   cursor: pointer;
@@ -471,13 +486,17 @@ function escapeHtml(s) {
   });
 })();
 
-// ===== 加载诗歌 =====
+// ===== 加载诗歌与作者 =====
 var id = new URLSearchParams(window.location.search).get('id');
 var dataUrl = 'data/poems.json?t=' + Date.now();
+var authorsUrl = 'data/authors.json?t=' + Date.now();
 
-fetch(dataUrl)
-  .then(function(r) { return r.json(); })
-  .then(function(poems) {
+Promise.all([
+  fetch(dataUrl).then(function(r) { return r.json(); }),
+  fetch(authorsUrl).then(function(r) { return r.ok ? r.json() : []; })
+]).then(function(res) {
+  var poems = res[0];
+  var authors = res[1];
     var poem = poems.find(function(p) { return p.id === id; });
     var detail = document.getElementById('poem-detail');
     if (!poem) {
@@ -485,6 +504,14 @@ fetch(dataUrl)
       return;
     }
     document.title = poem.title + ' · 诗歌漂流';
+
+    // ===== 署名 → 作者 id 映射（用于作者名链接） =====
+    var aliasMap = {};
+    authors.forEach(function(a) {
+      (a.aliases || []).forEach(function(al) { aliasMap[al] = a.id; });
+    });
+    var authorId = poem.author ? aliasMap[poem.author] : null;
+    var authorHref = authorId ? 'author.html?id=' + encodeURIComponent(authorId) : null;
 
     // ===== 目录顺序（系列 → 系列内日期降序，与目录页一致） =====
     function getDateWeight(dateStr) {
@@ -526,7 +553,7 @@ fetch(dataUrl)
     // ===== 构建详情 =====
     detail.innerHTML =
       '<div class="poem-meta">' +
-        (poem.author ? '<span class="p-author">' + escapeHtml(poem.author) + '</span>' : '') +
+        (poem.author ? (authorHref ? '<a class="p-author" href="' + authorHref + '">' + escapeHtml(poem.author) + '</a>' : '<span class="p-author">' + escapeHtml(poem.author) + '</span>') : '') +
         (poem.author ? ' · ' : '') +
         metaDate +
         (poem.series ? ' · ' + escapeHtml(poem.series) : '') +
