@@ -8,7 +8,7 @@
     "text": "紫薯布丁",
     "poemId": "1784094799003",
     "authorId": "Eno",
-    "link": true
+    "link": false
   },
   {
     "id": "log-002",
@@ -62,6 +62,7 @@
     "date": "2026-03-08",
     "text": "紫薯布丁",
     "poemId": "1785163176447",
-    "authorId": "xiao-zhiyao"
+    "authorId": "xiao-zhiyao",
+    "link": true
   }
 ]
