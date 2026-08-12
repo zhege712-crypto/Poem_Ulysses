@@ -782,12 +782,14 @@ async function readLocal(name) {
   }
   return arr || [];
 }
-// 从 GitHub API 读取并返回 {sha, data}
+// 从 GitHub API 读取并返回 {sha, data}（容错 BOM）
 async function readFromGitHub(name) {
   var res = await ghRequest(name + cacheBust(), {});
   if (res.ok) {
     var d = await res.json();
-    return { sha: d.sha, data: JSON.parse(decodeURIComponent(escape(atob(d.content)))) };
+    var raw = decodeURIComponent(escape(atob(d.content)));
+    if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+    return { sha: d.sha, data: JSON.parse(raw) };
   }
   if (res.status === 404) return { sha: null, data: null };
   throw new Error('读取失败 ' + name);
