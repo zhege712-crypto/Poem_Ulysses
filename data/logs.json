@@ -57,12 +57,11 @@
   {
     "id": "log-006",
     "place": "屏幕上的海",
-    "lat": 31.2304,
-    "lng": 121.4737,
+    "lat": 31.57701,
+    "lng": 120.29083,
     "date": "2026-03-08",
     "text": "紫薯布丁",
     "poemId": "1785163176447",
-    "authorId": "xiao-zhiyao",
-    "link": true
+    "authorId": "xiao-zhiyao"
   }
 ]
