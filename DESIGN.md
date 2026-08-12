@@ -22,7 +22,16 @@ colors:
   eye-ink: "#3A4632"
   eye-gold: "#BDA26C"
   eye-clay: "#B2674F"
+  holo-cyan-a: "rgba(140, 190, 230, 0.08)"
+  holo-cyan-b: "rgba(140, 190, 230, 0.22)"
+  globe-ocean: "#16212E"
+  globe-land: "#EDE9E0"
+  globe-coast: "#D4B896"
 typography:
+  display-font:
+    fontFamily: "Oswald, Noto Sans SC, sans-serif"
+    fontWeight: 400
+    letterSpacing: "0.12em"
   scale:
     micro: "0.5rem"
     micro-mid: "0.52rem"
@@ -260,6 +269,33 @@ components:
 
 ### Status（admin）
 - 成功（浅绿底 `#E6F2E8` / 深绿字 `#2B6B3A`）、错误（浅粉底 `#F7E6E6` / 陶土字）、加载（浅鎏金底 / 淡墨字）。错误可加陶土左边框警示。这些反馈色仅用于后台操作结果提示。
+
+## Animus Extension（漂流地图页专属，`voyage.html`）
+
+**命名：** 全息重建（Holographic Reconstruction）——以「科技读取历史记忆」为意象，服务全球诗歌航迹地图。仅在 `voyage.html` 使用，不推广到其余页面。
+
+**双级视觉（随缩放切换）：**
+- **A 模式 · 全息球体（默认全球视图）**：d3-geo 正交投影真实球体地球。深蓝海洋（`--globe-ocean`）、米色陆地（`--globe-land`）、金色大陆线（`--globe-coast`）、金色经纬网格（`--globe-grid`）。叠加青色扫描网格（`rgba(140,190,230,0.08)` + 56px 平铺 + 纵向滚动）、青色下扫光带（`rgba(140,190,230,0.22)`）、暗角、四角金色框。这是「Animus 读取世界」的观感，**无粉色**。
+- **C 模式 · 鎏金终端（放大 zoom≥6）**：展平为 Leaflet 平面地图，`filter: sepia(0.25) saturate(1.05) brightness(1.03)`，只留金色下扫光带。放大即「进入记忆片段」，回到鎏金暖调。
+
+**无极缩放：** 球体支持滚轮连续缩放（`globeLevel` 1..10 线性驱动 orthographic scale），放大到极限自动切入平面地图；平面地图缩出最小级别回到球体。缩放控件（右下 +/−）与滚轮行为一致。
+
+**行迹（Trail）：** 由后台 `logs.json` 数组顺序决定，`link:false` 为断点。球体上用金色大圆弧（d3 geoInterpolate），平面地图上用金色虚线 polyline。后台可 ↑↓ 调整顺序、+ 插入新点、切换连线/断点。
+
+**漂点（`.voyage-pin`）：** 16px 金色 radial 圆点 + 2px 纸色描边 + `rgba(212,184,150,0.7)` 金色辉光（全页唯一允许的彩色辉光，仅用于地图数据节点）。选中态 `.active-pin` 换陶土色。
+
+**漂流日志（`.log-drawer` + `.poem-panel`）：** 日志是**用户自补的内容**，不是诗歌——抽屉按后台顺序列示（日期/地点/文字/关联诗名），点击跳转到对应漂点并旋转球体；面板主体显示日志文字（`.pp-log-main`），**关联诗歌为可选区块**（`.pp-related-title`「关联诗歌」+ 楷体诗行 + 配图灯箱），无关联则不显示、隐藏「去阅读」按钮。
+
+**启动动画（`voyage-stage.boot`）：** 进入页面播放一次——球体放大旋转入场（scale 0.6→1 + 18°→0°）、行迹描线动画（stroke-dashoffset 400→0）、漂点按行迹顺序逐个弹入（0.3s 起每 0.12s 一个）、徽章/图例/按钮依次淡入上移。`sessionStorage('voyage_boot_played')` 每会话只播一次，`prefers-reduced-motion` 跳过。
+
+**侧边主题栏（`.side-theme`）：** 与其余五页一致的竖直三钮（日/夜/护眼），位于右缘固定；切换时 CSS 变量即换（含 `--globe-*`），并调用 `redrawForTheme()` 重绘球体。
+
+**构成主义（Constructivism）元素：**
+- **Oswald 字体**（`--font-display`，仅本页）用于徽章 `VOYAGE`、面板标题带、日志标题——粗衬线 + 宽字距的纪念碑式排印，与苏维埃页共用该字体。
+- 斜纹装饰：统计徽章 `::before` 斜纹色块、底部 `.diag-band` 斜纹金带（构成主义的几何动势）。
+- 玻璃拟态：所有悬浮面板（徽章/面板/抽屉/缩放控件/主题栏）均为 `backdrop-blur` + 半透明纸底 + 1px 浅金描边，构成「玻璃 + 几何排印」的融合。
+
+**规则：** 青色全息层只覆盖地图本体；导航、徽章、面板、抽屉仍走纸墨鎏金系统。`prefers-reduced-motion` 下关闭扫描光带与动画。
 
 ## Do's and Don'ts
 

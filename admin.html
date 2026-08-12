@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <style>
 :root {
   --paper: #F7F5F0;
@@ -33,7 +35,7 @@ body {
   padding: 40px 20px 100px;
   transition: background 0.3s, color 0.3s;
 }
-.wrap { max-width: 640px; margin: 0 auto; }
+.wrap { max-width: 760px; margin: 0 auto; }
 h1 {
   font-family: var(--font-serif);
   font-weight: 300;
@@ -45,20 +47,91 @@ h1 {
   font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--ink-faded);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
+.warn-box {
+  background: rgba(184, 92, 58, 0.06);
+  border-left: 2px solid var(--clay);
+  padding: 14px 18px;
+  font-size: 0.8rem;
+  color: var(--ink-light);
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+
+/* ===== Tab 导航 ===== */
+.tab-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--gold-light);
+  padding-bottom: 0;
+  flex-wrap: wrap;
+}
+.tab-bar button {
+  margin: 0;
+  padding: 10px 22px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-faded);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.25s, border-color 0.25s;
+}
+.tab-bar button:hover { color: var(--ink); }
+.tab-bar button.active {
+  color: var(--ink);
+  border-bottom-color: var(--gold);
+}
+.tab-bar button .tb-count {
+  font-size: 0.5rem;
+  color: var(--clay);
+  margin-left: 4px;
+}
+
+/* ===== 视图切换 ===== */
+.view { display: none; }
+.view.active { display: block; }
+.view-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.view-head h2 {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--gold-light);
+  border-radius: 999px;
+  padding: 6px 14px;
+  margin: 0;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.back-btn:hover { background: var(--gold-light); color: var(--ink); border-color: var(--gold); }
+.back-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.4; }
+
 .panel {
   background: var(--paper-dark);
   padding: 24px 28px;
   margin-bottom: 24px;
   border: 1px solid var(--gold-light);
-}
-.panel h2 {
-  font-family: var(--font-serif);
-  font-weight: 300;
-  font-size: 1.05rem;
-  letter-spacing: 0.04em;
-  margin-bottom: 14px;
 }
 label {
   display: block;
@@ -70,7 +143,7 @@ label {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-input[type=text], input[type=password], input[type=date], textarea {
+input[type=text], input[type=password], input[type=date], input[type=number], textarea, select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--gold-light);
@@ -82,19 +155,15 @@ input[type=text], input[type=password], input[type=date], textarea {
   border-radius: 8px;
   transition: border-color 0.3s;
 }
-input:focus, textarea:focus { outline: none; border-color: var(--gold); }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--gold); }
 textarea { min-height: 140px; resize: vertical; line-height: 1.7; }
 input[type=file] { font-family: var(--font-mono); font-size: 0.7rem; }
+input[type=checkbox] { width: auto; }
 .row { display: flex; gap: 14px; flex-wrap: wrap; }
 .row > div { flex: 1; min-width: 120px; }
-.date-group {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  flex-wrap: wrap;
-}
+.date-group { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .date-group input[type=text] { flex: 1; min-width: 120px; }
-.date-group .btn-sm {
+.btn-sm {
   padding: 4px 12px;
   font-size: 0.55rem;
   border: 1px solid var(--gold-light);
@@ -105,7 +174,7 @@ input[type=file] { font-family: var(--font-mono); font-size: 0.7rem; }
   border-radius: 999px;
   transition: background 0.2s, border-color 0.2s;
 }
-.date-group .btn-sm:hover { background: var(--gold-light); border-color: var(--gold); }
+.btn-sm:hover { background: var(--gold-light); border-color: var(--gold); }
 button {
   margin-top: 18px;
   padding: 11px 24px;
@@ -122,6 +191,30 @@ button {
 }
 button:hover { background: var(--clay); }
 button:disabled { background: var(--ink-faded); cursor: not-allowed; }
+button.ghost {
+  background: transparent;
+  color: var(--ink-light);
+  border: 1px solid var(--gold-light);
+  margin-left: 10px;
+}
+button.ghost:hover { background: var(--gold-light); color: var(--ink); }
+button.danger {
+  background: transparent;
+  color: var(--clay);
+  border: 1px solid var(--clay);
+}
+button.danger:hover { background: var(--clay); color: var(--paper); }
+.btn-add {
+  background: transparent;
+  color: var(--ink-light);
+  border: 1px dashed var(--gold);
+  border-radius: 999px;
+  width: 100%;
+  padding: 9px;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+.btn-add:hover { background: var(--gold-light); color: var(--ink); border-style: solid; }
 .hint {
   font-family: var(--font-mono);
   font-size: 0.6rem;
@@ -140,15 +233,31 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 .status.ok { background: #e6f2e8; color: #2b6b3a; }
 .status.err { background: #f7e6e6; color: var(--clay); }
 .status.loading { background: var(--gold-light); color: var(--ink-light); }
-.warn-box {
-  background: rgba(184, 92, 58, 0.06);
-  border-left: 2px solid var(--clay);
-  padding: 14px 18px;
-  font-size: 0.8rem;
-  color: var(--ink-light);
-  margin-bottom: 24px;
-  line-height: 1.7;
+
+/* ===== 列表 ===== */
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--gold-light);
+  cursor: pointer;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--ink);
 }
+.group-head .tri { font-size: 0.55rem; color: var(--ink-faded); transition: transform 0.25s; font-family: var(--font-mono); }
+.group-head.collapsed .tri { transform: rotate(-90deg); }
+.group-head .g-count {
+  font-family: var(--font-mono);
+  font-size: 0.52rem;
+  color: var(--ink-faded);
+  border: 1px solid var(--gold-light);
+  border-radius: 999px;
+  padding: 1px 10px;
+}
+.group-body { padding-left: 2px; }
 .manage-item {
   display: flex;
   justify-content: space-between;
@@ -160,43 +269,38 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 .manage-item .mi-info { font-size: 0.88rem; }
 .manage-item .mi-date {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   color: var(--ink-faded);
   display: block;
   margin-top: 2px;
 }
-.manage-item .mi-del {
+.manage-item .mi-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.manage-item .mi-actions button {
   margin: 0;
   padding: 6px 14px;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   background: transparent;
-  color: var(--clay);
-  border: 1px solid var(--clay);
-}
-.manage-item .mi-del:hover { background: var(--clay); color: var(--paper); }
-.manage-item .mi-edit {
-  margin: 0;
-  padding: 6px 14px;
-  font-size: 0.6rem;
-  background: transparent;
+  border: 1px solid var(--gold-light);
   color: var(--ink-faded);
-  border: 1px solid var(--gold-light);
 }
-.manage-item .mi-edit:hover { background: var(--gold-light); }
-.mi-edit-form {
-  background: var(--paper);
-  padding: 14px 18px;
-  margin: 6px 0 10px;
-  border: 1px solid var(--gold-light);
+.manage-item .mi-actions button:hover { background: var(--gold-light); color: var(--ink); }
+.manage-item .mi-actions button.danger { color: var(--clay); border-color: var(--clay); }
+.manage-item .mi-actions button.danger:hover { background: var(--clay); color: var(--paper); }
+.mi-coord {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--gold);
+  margin-top: 2px;
 }
-.mi-edit-form label { margin: 10px 0 4px; font-size: 0.5rem; }
-.mi-edit-form textarea { min-height: 80px; }
-.mi-edit-form .row { display: flex; gap: 12px; }
-.mi-edit-form .row > div { flex: 1; }
-.mi-edit-form .mi-f-save { margin-top: 12px; padding: 8px 18px; font-size: 0.6rem; }
-.mi-edit-form .mi-f-cancel { margin-top: 12px; padding: 8px 18px; font-size: 0.6rem; background: var(--ink-faded); }
-
-/* ===== 折叠与作者作品管理 ===== */
+.mi-tag {
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  color: var(--clay);
+  border: 1px solid var(--gold-light);
+  border-radius: 999px;
+  padding: 0 8px;
+  margin-left: 6px;
+}
 .acc-row { cursor: pointer; }
 .acc-row .mi-toggle {
   margin: 0;
@@ -212,7 +316,6 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   border-radius: 50%;
   cursor: pointer;
   font-size: 0.7rem;
-  line-height: 1;
   transition: background 0.25s, color 0.25s, transform 0.25s;
   flex-shrink: 0;
 }
@@ -248,7 +351,7 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 .acc-sub-item .asi-title { color: var(--ink); }
 .acc-sub-item .asi-meta {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
+  font-size: 0.5rem;
   color: var(--ink-faded);
   margin-top: 2px;
 }
@@ -256,59 +359,64 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 .acc-sub-item .asi-actions button {
   margin: 0;
   padding: 3px 10px;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   background: transparent;
   color: var(--ink-faded);
   border: 1px solid var(--gold-light);
   border-radius: 999px;
 }
 .acc-sub-item .asi-actions button:hover { background: var(--gold-light); color: var(--ink); }
-.acc-add-btn {
-  margin: 10px 0 0;
-  padding: 7px 16px;
-  font-size: 0.6rem;
-  background: transparent;
-  color: var(--ink-light);
-  border: 1px dashed var(--gold);
-  border-radius: 999px;
-  width: 100%;
+.acc-empty { font-family: var(--font-mono); font-size: 0.6rem; color: var(--ink-faded); padding: 8px 0; }
+
+/* ===== 编辑视图 ===== */
+.edit-form .panel { padding: 20px 24px; }
+.edit-form .form-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
 }
-.acc-add-btn:hover { background: var(--gold-light); color: var(--ink); border-style: solid; }
-.acc-empty {
+.edit-form .form-sub {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   color: var(--ink-faded);
-  padding: 8px 0;
+  margin-bottom: 6px;
 }
-.group-head {
+.img-manage { display: flex; flex-direction: column; gap: 8px; }
+.img-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 2px;
+  gap: 10px;
+  padding: 6px 0;
   border-bottom: 1px solid var(--gold-light);
-  cursor: pointer;
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 1rem;
-  color: var(--ink);
 }
-.group-head .tri {
+.img-row img {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--gold-light);
+}
+.img-row .img-name { flex: 1; font-family: var(--font-mono); font-size: 0.55rem; color: var(--ink-light); word-break: break-all; }
+.img-row button { margin: 0; padding: 4px 12px; font-size: 0.55rem; }
+.mini-map {
+  height: 220px;
+  border: 1px solid var(--gold-light);
+  border-radius: 10px;
+  margin-top: 10px;
+  z-index: 1;
+}
+.mini-map-hint {
+  font-family: var(--font-mono);
   font-size: 0.55rem;
   color: var(--ink-faded);
-  transition: transform 0.25s;
-  font-family: var(--font-mono);
+  margin-top: 6px;
 }
-.group-head .g-count {
-  font-family: var(--font-mono);
-  font-size: 0.52rem;
-  color: var(--ink-faded);
-  border: 1px solid var(--gold-light);
-  border-radius: 999px;
-  padding: 1px 10px;
-}
-.group-head.collapsed .tri { transform: rotate(-90deg); }
-.group-body { padding-left: 2px; }
+.pick-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.pick-actions button { margin: 0; padding: 6px 14px; font-size: 0.58rem; }
 
+/* ===== 主题栏 ===== */
 .side-theme {
   position: fixed;
   right: 28px;
@@ -324,7 +432,6 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   padding: 10px 8px;
   border-radius: 24px;
   border: 1px solid var(--gold-light);
-  transition: border-color 0.3s;
 }
 .side-theme .theme-btn {
   width: 30px;
@@ -339,28 +446,14 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   justify-content: center;
   padding: 0;
 }
-.side-theme .theme-btn svg {
-  width: 18px;
-  height: 18px;
-  stroke: var(--ink-faded);
-  stroke-width: 1.2;
-  fill: none;
-  transition: stroke 0.25s;
-}
+.side-theme .theme-btn svg { width: 18px; height: 18px; stroke: var(--ink-faded); stroke-width: 1.2; fill: none; transition: stroke 0.25s; }
 .side-theme .theme-btn:hover { background: var(--gold-light); transform: scale(1.05); }
-.side-theme .theme-btn.active {
-  background: var(--gold);
-  box-shadow: 0 0 0 1.5px var(--gold);
-}
+.side-theme .theme-btn.active { background: var(--gold); box-shadow: 0 0 0 1.5px var(--gold); }
 .side-theme .theme-btn.active svg { stroke: var(--paper); }
-.side-theme .line {
-  width: 1.5px;
-  height: 10px;
-  background: var(--gold-light);
-  border-radius: 1px;
-}
+.side-theme .line { width: 1.5px; height: 10px; background: var(--gold-light); border-radius: 1px; }
 @media (max-width: 820px) { .side-theme { right: 16px; bottom: 80px; } }
 
+/* ===== 密码遮罩 ===== */
 #password-overlay {
   position: fixed;
   inset: 0;
@@ -383,18 +476,8 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   text-align: center;
   border: 1px solid var(--gold-light);
 }
-#password-overlay .box h2 {
-  font-family: var(--font-serif);
-  font-weight: 300;
-  font-size: 1.3rem;
-  letter-spacing: 0.06em;
-  margin-bottom: 6px;
-}
-#password-overlay .box p {
-  color: var(--ink-faded);
-  font-size: 0.8rem;
-  margin-bottom: 20px;
-}
+#password-overlay .box h2 { font-family: var(--font-serif); font-weight: 300; font-size: 1.3rem; letter-spacing: 0.06em; margin-bottom: 6px; }
+#password-overlay .box p { color: var(--ink-faded); font-size: 0.8rem; margin-bottom: 20px; }
 #password-overlay .box input[type="password"] {
   width: 100%;
   padding: 12px 16px;
@@ -405,24 +488,13 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   color: var(--ink);
   margin-bottom: 14px;
 }
-#password-overlay .box button {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: background 0.25s;
-}
+#password-overlay .box button { width: 100%; padding: 12px; border: none; background: var(--ink); color: var(--paper); font-family: var(--font-mono); font-size: 0.75rem; cursor: pointer; transition: background 0.25s; }
 #password-overlay .box button:hover { background: var(--clay); }
-#password-overlay .error-msg {
-  color: var(--clay);
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  margin-top: 10px;
-  min-height: 1.2em;
+#password-overlay .error-msg { color: var(--clay); font-family: var(--font-mono); font-size: 0.65rem; margin-top: 10px; min-height: 1.2em; }
+
+@media (max-width: 640px) {
+  .tab-bar button { padding: 10px 14px; font-size: 0.6rem; }
+  .view-head { flex-wrap: wrap; }
 }
 </style>
 </head>
@@ -430,7 +502,7 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
 
 <div id="password-overlay">
   <div class="box">
-    <h2>🔐 验证</h2>
+    <h2>验证</h2>
     <p>请输入后台密码</p>
     <input type="password" id="password-input" placeholder="密码" autofocus>
     <button id="password-submit">确认</button>
@@ -442,81 +514,182 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   <div class="wrap">
     <h1>诗歌漂流 · 管理后台</h1>
     <div class="sub">私人使用，请勿分享链接</div>
-
     <div class="warn-box">⚠️ Token 具有修改仓库内容的权限，请妥善保管。</div>
 
-    <div class="panel">
-      <h2>① 仓库设置</h2>
-      <label>用户名</label>
-      <input type="text" id="gh-owner" value="zhege712-crypto">
-      <label>仓库名</label>
-      <input type="text" id="gh-repo" value="Poem_Ulysses">
-      <label>Token</label>
-      <input type="password" id="gh-token" placeholder="ghp_ 或 github_pat_ 开头">
-      <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:0.75rem; color:var(--ink-light);">
-        <input type="checkbox" id="remember" style="width:auto;"> 记住
-      </label>
+    <div class="tab-bar" id="tab-bar">
+      <button data-tab="settings" class="active">设置</button>
+      <button data-tab="poems">诗歌</button>
+      <button data-tab="authors">作者</button>
+      <button data-tab="logs">漂流日志</button>
     </div>
 
-    <div class="panel">
-      <h2>② 发布新诗</h2>
-      <div class="row">
-        <div><label>标题</label><input type="text" id="p-title"></div>
-        <div>
-          <label>日期</label>
-          <div class="date-group">
-            <input type="text" id="p-date">
-            <button type="button" class="btn-sm" data-target="p-date" data-precision="year">年</button>
-            <button type="button" class="btn-sm" data-target="p-date" data-precision="month">月</button>
-            <button type="button" class="btn-sm" data-target="p-date" data-precision="day">日</button>
+    <!-- ===== 设置 ===== -->
+    <div class="view active" id="view-settings">
+      <div class="panel">
+        <h2 style="font-family:var(--font-serif);font-weight:300;font-size:1.05rem;letter-spacing:0.04em;margin-bottom:14px;">仓库设置</h2>
+        <label>用户名</label>
+        <input type="text" id="gh-owner" value="zhege712-crypto">
+        <label>仓库名</label>
+        <input type="text" id="gh-repo" value="Poem_Ulysses">
+        <label>Token</label>
+        <input type="password" id="gh-token" placeholder="ghp_ 或 github_pat_ 开头">
+        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:0.75rem; color:var(--ink-light);">
+          <input type="checkbox" id="remember" style="width:auto;"> 记住
+        </label>
+        <div class="status" id="settings-status"></div>
+      </div>
+    </div>
+
+    <!-- ===== 诗歌 ===== -->
+    <div class="view" id="view-poems">
+      <div class="view-head" id="poems-list-head">
+        <h2>诗歌列表</h2>
+      </div>
+      <div id="poem-list"><div class="hint">加载中…</div></div>
+      <button class="btn-add" id="poem-new-btn" type="button">+ 发布新诗</button>
+      <div class="status" id="poem-status"></div>
+
+      <div id="poem-edit" class="edit-form" style="display:none;">
+        <div class="view-head">
+          <button class="back-btn" id="poem-edit-back" type="button">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 返回
+          </button>
+          <h2 id="poem-edit-title">编辑诗</h2>
+        </div>
+        <div class="panel">
+          <div class="form-title" id="pe-title-display">—</div>
+          <div class="form-sub" id="pe-id-display"></div>
+          <input type="hidden" id="pe-id">
+          <label>标题</label>
+          <input type="text" id="pe-title">
+          <div class="row">
+            <div>
+              <label>日期</label>
+              <div class="date-group">
+                <input type="text" id="pe-date">
+                <button type="button" class="btn-sm" data-target="pe-date" data-precision="year">年</button>
+                <button type="button" class="btn-sm" data-target="pe-date" data-precision="month">月</button>
+                <button type="button" class="btn-sm" data-target="pe-date" data-precision="day">日</button>
+              </div>
+            </div>
+            <div><label>作者</label><input type="text" id="pe-author" list="author-id-list"></div>
           </div>
+          <label>序列</label>
+          <input type="text" id="pe-series" placeholder="例如：天一篇" list="series-list">
+          <datalist id="series-list"></datalist>
+          <label>子分类</label>
+          <input type="text" id="pe-subseries" placeholder="例如：现代诗" list="subseries-list">
+          <datalist id="subseries-list"></datalist>
+          <label>正文</label>
+          <textarea id="pe-content"></textarea>
+          <label>配图</label>
+          <div class="img-manage" id="pe-images"></div>
+          <input type="file" id="pe-image" accept="image/*" multiple>
+          <div class="row">
+            <button id="pe-save" type="button">保存诗</button>
+            <button id="pe-cancel" class="ghost" type="button">取消</button>
+          </div>
+          <div class="status" id="pe-status"></div>
         </div>
       </div>
-      <label>正文</label>
-      <textarea id="p-content"></textarea>
-      <label>序列</label>
-      <input type="text" id="p-series" placeholder="例如：天一篇" list="series-list">
-      <datalist id="series-list"></datalist>
-      <label>子分类</label>
-      <input type="text" id="p-subseries" placeholder="例如：现代诗" list="subseries-list">
-      <datalist id="subseries-list"></datalist>
-      <label>作者</label>
-      <input type="text" id="p-author" placeholder="署名">
-      <label>配图</label>
-      <input type="file" id="p-image" accept="image/*" multiple>
-      <button id="publish-btn">发布</button>
-      <div class="status" id="status"></div>
     </div>
 
-    <div class="panel">
-      <h2>③ 管理诗歌</h2>
-      <div id="poem-manage-list"><div class="hint">加载中…</div></div>
-      <button id="refresh-btn" style="background:var(--ink-faded);">刷新列表</button>
-      <div class="status" id="manage-status"></div>
-    </div>
-
-    <div class="panel">
-      <h2>④ 作者（同志们）</h2>
-      <label>署名 ID</label>
-      <input type="text" id="a-id" placeholder="英文短横线，如 hanmei" list="author-id-list">
-      <datalist id="author-id-list"></datalist>
-      <label>展示名</label>
-      <input type="text" id="a-name" placeholder="如：寒梅">
-      <label>别名（多个用顿号/逗号分隔）</label>
-      <input type="text" id="a-aliases" placeholder="如：寒梅、hanmei（对应 poems.json 里的 author 字符串）">
-      <label>简介</label>
-      <textarea id="a-bio" placeholder="这位作者的一句话题记"></textarea>
-      <label>诗风标签（多个用顿号/逗号分隔）</label>
-      <input type="text" id="a-tags" placeholder="如：山水、咏怀、洛社篇常客">
-      <label>主页链接</label>
-      <input type="text" id="a-link" placeholder="https://…（可选）">
-      <div class="row">
-        <button id="a-save" type="button">保存作者</button>
-        <button id="a-clear" type="button" style="background:var(--ink-faded);">清空表单</button>
+    <!-- ===== 作者 ===== -->
+    <div class="view" id="view-authors">
+      <div class="view-head">
+        <h2>作者（同志们）</h2>
       </div>
-      <div class="status" id="a-status"></div>
-      <div id="author-manage-list"><div class="hint">加载中…</div></div>
+      <div id="author-list"><div class="hint">加载中…</div></div>
+      <button class="btn-add" id="author-new-btn" type="button">+ 新建作者</button>
+      <div class="status" id="author-status"></div>
+
+      <div id="author-edit" class="edit-form" style="display:none;">
+        <div class="view-head">
+          <button class="back-btn" id="author-edit-back" type="button">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 返回
+          </button>
+          <h2 id="author-edit-title">编辑作者</h2>
+        </div>
+        <div class="panel">
+          <label>署名 ID</label>
+          <input type="text" id="ae-id" placeholder="英文短横线，如 hanmei">
+          <label>展示名</label>
+          <input type="text" id="ae-name" placeholder="如：寒梅">
+          <label>别名（多个用顿号/逗号分隔）</label>
+          <input type="text" id="ae-aliases" placeholder="如：寒梅、hanmei">
+          <label>简介</label>
+          <textarea id="ae-bio" placeholder="这位作者的一句话题记"></textarea>
+          <label>诗风标签（多个用顿号/逗号分隔）</label>
+          <input type="text" id="ae-tags" placeholder="如：山水、咏怀">
+          <label>主页链接</label>
+          <input type="text" id="ae-link" placeholder="https://…（可选）">
+          <div class="row">
+            <button id="ae-save" type="button">保存作者</button>
+            <button id="ae-cancel" class="ghost" type="button">取消</button>
+          </div>
+          <div class="status" id="ae-status"></div>
+        </div>
+      </div>
     </div>
+
+    <!-- ===== 漂流日志 ===== -->
+    <div class="view" id="view-logs">
+      <div class="view-head">
+        <h2>漂流日志</h2>
+      </div>
+      <div id="log-list"><div class="hint">加载中…</div></div>
+      <button class="btn-add" id="log-new-btn" type="button">+ 新增漂流日志</button>
+      <div class="status" id="log-status"></div>
+
+      <div id="log-edit" class="edit-form" style="display:none;">
+        <div class="view-head">
+          <button class="back-btn" id="log-edit-back" type="button">
+            <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg> 返回
+          </button>
+          <h2 id="log-edit-title">编辑漂流日志</h2>
+        </div>
+        <div class="panel">
+          <label>地点名</label>
+          <input type="text" id="le-place" placeholder="如：天一湖畔">          <div class="row">
+            <div><label>纬度 lat</label><input type="text" id="le-lat"></div>
+            <div><label>经度 lng</label><input type="text" id="le-lng"></div>
+          </div>
+          <label>到达日期</label>
+          <div class="date-group">
+            <input type="text" id="le-date">
+            <button type="button" class="btn-sm" data-target="le-date" data-precision="year">年</button>
+            <button type="button" class="btn-sm" data-target="le-date" data-precision="month">月</button>
+            <button type="button" class="btn-sm" data-target="le-date" data-precision="day">日</button>
+          </div>
+          <label>日志文字（地图面板引用）</label>
+          <textarea id="le-text" placeholder="一句话，如：纸舟从这一池秋水启程。"></textarea>
+          <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:0.75rem; color:var(--ink-light);">
+            <input type="checkbox" id="le-link" style="width:auto;"> 连线到下一个地点（行迹）
+          </label>
+          <div class="hint">勾选后，此地点与下一个地点之间会在地图上绘制行迹线。</div>
+          <label>关联诗（poemId，可从诗歌列表选）</label>
+          <div class="row">
+            <div><input type="text" id="le-poemid" list="poem-id-list" placeholder="点击右侧查找"><datalist id="poem-id-list"></datalist></div>
+            <div style="flex:0 0 auto;"><button class="btn-sm" id="le-poem-pick" type="button" style="margin-top:6px;">选诗</button></div>
+          </div>
+          <div class="hint" id="le-poem-info"></div>
+          <label>关联作者（authorId）</label>
+          <input type="text" id="le-authorid" list="author-id-list">
+          <label>在地图上点选坐标</label>
+          <div class="mini-map" id="le-map"></div>
+          <div class="mini-map-hint">点击地图放置漂点，自动填入经纬度。</div>
+          <div class="pick-actions">
+            <button class="btn-sm" id="le-map-jump" type="button">跳到地图</button>
+          </div>
+          <div class="row">
+            <button id="le-save" type="button">保存地点</button>
+            <button id="le-cancel" class="ghost" type="button">取消</button>
+          </div>
+          <div class="status" id="le-status"></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -536,7 +709,7 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   var submit = document.getElementById('password-submit');
   var error = document.getElementById('password-error');
   var content = document.querySelector('.content-wrapper');
-  var PASSWORD = 'password'; // ← 请改成你自己的密码（改完 push 到仓库后生效）
+  var PASSWORD = 'umbrella2026';
 
   if (sessionStorage.getItem('admin_auth') === 'true') {
     overlay.classList.add('hidden');
@@ -550,7 +723,7 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
       sessionStorage.setItem('admin_auth', 'true');
       overlay.classList.add('hidden');
       content.style.display = 'block';
-      document.getElementById('gh-owner').focus();
+      init();
     } else {
       error.textContent = '密码错误';
       input.value = '';
@@ -560,29 +733,80 @@ button:disabled { background: var(--ink-faded); cursor: not-allowed; }
   submit.addEventListener('click', verify);
   input.addEventListener('keydown', function(e) { if (e.key === 'Enter') verify(); });
   input.focus();
+  if (sessionStorage.getItem('admin_auth') !== 'true') {
+    window.__adminReady = function() {};
+  }
 })();
 
-// ===== 主功能 =====
+// ===== 通用 =====
 var els = {
   owner: document.getElementById('gh-owner'),
   repo: document.getElementById('gh-repo'),
   token: document.getElementById('gh-token'),
-  remember: document.getElementById('remember'),
-  title: document.getElementById('p-title'),
-  date: document.getElementById('p-date'),
-  content: document.getElementById('p-content'),
-  series: document.getElementById('p-series'),
-  subseries: document.getElementById('p-subseries'),
-  author: document.getElementById('p-author'),
-  image: document.getElementById('p-image'),
-  btn: document.getElementById('publish-btn'),
-  status: document.getElementById('status')
+  remember: document.getElementById('remember')
 };
 
+function setStatus(el, text, type) {
+  el.textContent = text;
+  el.className = 'status show ' + (type || '');
+}
+function clearStatus(el) { el.className = 'status'; el.textContent = ''; }
+function escapeHtml(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+function fileToBase64(f) { return new Promise(function(r, rej) { var reader = new FileReader(); reader.onload = function() { r(reader.result.split(',')[1]); }; reader.onerror = rej; reader.readAsDataURL(f); }); }
+function ghRequest(path, options) {
+  return fetch('https://api.github.com/repos/' + els.owner.value.trim() + '/' + els.repo.value.trim() + '/contents/' + path, Object.assign({
+    headers: { 'Authorization': 'Bearer ' + els.token.value.trim(), 'Accept': 'application/vnd.github+json' }
+  }, options));
+}
+function fetchWithTimeout(url, ms) {
+  var ctrl = new AbortController();
+  var t = setTimeout(function() { ctrl.abort(); }, ms || 8000);
+  return fetch(url, { signal: ctrl.signal }).then(function(r) { clearTimeout(t); return r; }, function(e) { clearTimeout(t); throw e; });
+}
+function cacheBust() { return '?t=' + Date.now(); }
+function haveCreds() { return els.owner.value.trim() && els.repo.value.trim() && els.token.value.trim(); }
+
+// 读本地（回退 raw.githubusercontent）
+async function readLocal(name) {
+  var arr = [];
+  try {
+    var res = await fetchWithTimeout(name + cacheBust());
+    if (res.ok) { arr = await res.json(); }
+  } catch(e) {}
+  if (!arr || !arr.length) {
+    try {
+      var raw = 'https://raw.githubusercontent.com/' + els.owner.value.trim() + '/' + els.repo.value.trim() + '/main/' + name + cacheBust();
+      var res2 = await fetchWithTimeout(raw);
+      if (res2.ok) { arr = await res2.json(); }
+    } catch(e) {}
+  }
+  return arr || [];
+}
+// 从 GitHub API 读取并返回 {sha, data}
+async function readFromGitHub(name) {
+  var res = await ghRequest(name + cacheBust(), {});
+  if (res.ok) {
+    var d = await res.json();
+    return { sha: d.sha, data: JSON.parse(decodeURIComponent(escape(atob(d.content)))) };
+  }
+  if (res.status === 404) return { sha: null, data: null };
+  throw new Error('读取失败 ' + name);
+}
+// 写回 GitHub API
+async function writeToGitHub(name, data, sha, message) {
+  var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+  var body = { message: message, content: b64 };
+  if (sha) body.sha = sha;
+  var res = await ghRequest(name, { method: 'PUT', body: JSON.stringify(body) });
+  if (!res.ok) throw new Error('保存失败 ' + name);
+  return res;
+}
+
+// 日期填充
 function fillDate(id, p) {
   var now = new Date();
-  var y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-  document.getElementById(id).value = p === 'year' ? y : p === 'month' ? y+'-'+m : y+'-'+m+'-'+d;
+  var y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
+  document.getElementById(id).value = p === 'year' ? y : p === 'month' ? y + '-' + m : y + '-' + m + '-' + d;
 }
 document.querySelectorAll('.btn-sm').forEach(function(b) {
   b.addEventListener('click', function(e) {
@@ -591,471 +815,54 @@ document.querySelectorAll('.btn-sm').forEach(function(b) {
   });
 });
 
-(function() {
-  var saved = localStorage.getItem('gh_creds');
-  if (saved) { try { var c = JSON.parse(saved); els.owner.value = c.owner || ''; els.repo.value = c.repo || ''; els.token.value = c.token || ''; els.remember.checked = true; } catch(e) {} }
-  var now = new Date(), y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-  if (!els.date.value) els.date.value = y+'-'+m+'-'+d;
-  els.author.value = '匿名';
-})();
+// ===== Tab 导航与返回链 =====
+var navStack = [];          // 存储进入编辑视图前的来源 {tab, scrollId}
+var currentTab = 'settings';
 
-function setStatus(el, text, type) {
-  el.textContent = text;
-  el.className = 'status show ' + type;
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('#tab-bar button').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById('view-' + tab).classList.add('active');
+  // 隐藏各编辑子视图，回到列表
+  document.querySelectorAll('.edit-form').forEach(function(f) { f.style.display = 'none'; });
+  document.querySelectorAll('.view .view-head').forEach(function(h) { h.style.display = 'flex'; });
+  document.getElementById('poems-list-head').style.display = 'flex';
+  if (tab === 'poems') loadPoemList();
+  if (tab === 'authors') loadAuthorList();
+  if (tab === 'logs') loadLogList();
 }
-function escapeHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-function fileToBase64(f) { return new Promise(function(r, rej) { var reader = new FileReader(); reader.onload = function() { r(reader.result.split(',')[1]); }; reader.onerror = rej; reader.readAsDataURL(f); }); }
-function ghRequest(path, options, owner, repo, token) {
-  return fetch('https://api.github.com/repos/' + owner + '/' + repo + '/contents/' + path, Object.assign({
-    headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' }
-  }, options));
-}
-
-// ===== 发布 =====
-els.btn.addEventListener('click', async function() {
-  var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-  var title = els.title.value.trim(), date = els.date.value.trim(), content = els.content.value.trim();
-  var series = els.series.value.trim() || '未分类', subseries = els.subseries.value.trim(), author = els.author.value.trim() || '匿名';
-  var files = Array.from(els.image.files || []);
-  if (!owner || !repo || !token) { setStatus(els.status, '请填写仓库信息', 'err'); return; }
-  if (!title || !content) { setStatus(els.status, '标题和正文不能为空', 'err'); return; }
-  if (!date) { setStatus(els.status, '请填写日期', 'err'); return; }
-
-  els.btn.disabled = true;
-  setStatus(els.status, '发布中…', 'loading');
-
-  try {
-    if (els.remember.checked) localStorage.setItem('gh_creds', JSON.stringify({owner:owner, repo:repo, token:token}));
-    else localStorage.removeItem('gh_creds');
-
-    var imagePaths = [];
-    for (var i = 0; i < files.length; i++) {
-      var f = files[i];
-      setStatus(els.status, '上传图片 ' + (i+1)+'/'+files.length, 'loading');
-      var b64 = await fileToBase64(f);
-      var name = Date.now() + '-' + i + '-' + f.name.replace(/[^a-zA-Z0-9.\-_]/g, '');
-      var path = 'images/' + name;
-      var r = await ghRequest(path, { method: 'PUT', body: JSON.stringify({ message: '配图', content: b64 }) }, owner, repo, token);
-      if (!r.ok) throw new Error('图片上传失败');
-      imagePaths.push(path);
-    }
-
-    setStatus(els.status, '保存数据…', 'loading');
-    var sha = null, poems = [];
-    var apiGet = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
-    if (apiGet.ok) {
-      var d = await apiGet.json();
-      sha = d.sha;
-      poems = JSON.parse(decodeURIComponent(escape(atob(d.content))));
-    } else if (apiGet.status === 404) {
-      sha = null;
-    } else {
-      throw new Error('读取失败');
-    }
-
-    var newPoem = { id: String(Date.now()), title: title, date: date, content: content, series: series, author: author, images: imagePaths };
-    if (subseries) newPoem.subseries = subseries;
-    poems.push(newPoem);
-
-    var b64Content = btoa(unescape(encodeURIComponent(JSON.stringify(poems, null, 2))));
-    var putBody = { message: '发布: ' + title, content: b64Content };
-    if (sha) putBody.sha = sha;
-    var putRes = await ghRequest('data/poems.json', { method: 'PUT', body: JSON.stringify(putBody) }, owner, repo, token);
-    if (!putRes.ok) throw new Error('保存失败');
-
-    setStatus(els.status, '✓ 发布成功！', 'ok');
-    els.title.value = ''; els.content.value = ''; els.series.value = ''; els.subseries.value = ''; els.image.value = '';
-    loadList();
-
-  } catch(e) { setStatus(els.status, '✗ ' + e.message, 'err'); }
-  finally { els.btn.disabled = false; }
+document.getElementById('tab-bar').addEventListener('click', function(e) {
+  var btn = e.target.closest('button');
+  if (!btn) return;
+  var tab = btn.dataset.tab;
+  navStack = [];
+  showTab(tab);
 });
 
-// ===== 管理列表 =====
-var listEl = document.getElementById('poem-manage-list');
-var manageStatus = document.getElementById('manage-status');
-
-function setManageStatus(text, type) { manageStatus.textContent = text; manageStatus.className = 'status show ' + type; }
-
-function fetchWithTimeout(url, ms) {
-  var ctrl = new AbortController();
-  var t = setTimeout(function() { ctrl.abort(); }, ms || 8000);
-  return fetch(url, { signal: ctrl.signal }).then(function(r) { clearTimeout(t); return r; }, function(e) { clearTimeout(t); throw e; });
+function pushNav(returnTab, scrollId) {
+  navStack.push({ tab: returnTab, scrollId: scrollId || null });
 }
-
-async function loadList() {
-  var owner = els.owner.value.trim(), repo = els.repo.value.trim();
-  if (!owner || !repo) { listEl.innerHTML = '<div class="hint">请先填写用户名和仓库名</div>'; return; }
-  listEl.innerHTML = '<div class="hint">加载中…</div>';
-  var poems = [];
-  try {
-    var res = await fetchWithTimeout('data/poems.json?t=' + Date.now());
-    if (res.ok) poems = await res.json();
-  } catch(e) {}
-  if (!poems || !poems.length) {
-    try {
-      var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
-      var res2 = await fetchWithTimeout(rawUrl);
-      if (res2.ok) poems = await res2.json();
-    } catch(e) {}
+function goBack(elm) {
+  if (elm && elm.closest) {
+    var ev = elm.closest('.view');
   }
-  if (!poems || !poems.length) { listEl.innerHTML = '<div class="hint">还没有诗</div>'; return; }
-  try {
-
-    poems.sort(function(a,b) { return new Date(b.date) - new Date(a.date); });
-
-    // 按系列分组，默认收起（可展开）
-    var groups = {};
-    var order = [];
-    poems.forEach(function(p) {
-      var s = p.series || '未分类';
-      if (!groups[s]) { groups[s] = []; order.push(s); }
-      groups[s].push(p);
-    });
-    listEl.innerHTML = '';
-    order.forEach(function(series) {
-      var list = groups[series];
-      var head = document.createElement('div');
-      head.className = 'group-head';
-      head.innerHTML = '<span class="tri">▾</span>' + escapeHtml(series) + '<span class="g-count">' + list.length + '</span>';
-      var body = document.createElement('div');
-      body.className = 'group-body';
-      list.forEach(function(p) {
-        var row = document.createElement('div');
-        row.className = 'manage-item';
-        row.setAttribute('data-id', p.id);
-        row.innerHTML =
-          '<div class="mi-info">' + escapeHtml(p.title) +
-            '<span class="mi-date">' + escapeHtml(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + '</span>' +
-          '</div>' +
-          '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
-        var form = document.createElement('div');
-        form.className = 'mi-edit-form';
-        form.style.display = 'none';
-        form.innerHTML =
-          '<label>标题</label><input type="text" class="mi-f-title" value="' + escapeHtml(p.title) + '">' +
-          '<div class="row"><div><label>日期</label><input type="text" class="mi-f-date" value="' + escapeHtml(p.date) + '"></div><div><label>作者</label><input type="text" class="mi-f-author" value="' + escapeHtml(p.author || '') + '"></div></div>' +
-          '<label>序列</label><input type="text" class="mi-f-series" value="' + escapeHtml(p.series || '未分类') + '">' +
-          '<label>子分类</label><input type="text" class="mi-f-subseries" value="' + escapeHtml(p.subseries || '') + '">' +
-          '<label>正文</label><textarea class="mi-f-content">' + escapeHtml(p.content) + '</textarea>' +
-          '<button class="mi-f-save" type="button">保存</button> <button class="mi-f-cancel" type="button" style="background:var(--ink-faded);">取消</button>';
-
-        row.querySelector('.mi-edit').addEventListener('click', function() {
-          form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        });
-        form.querySelector('.mi-f-cancel').addEventListener('click', function() { form.style.display = 'none'; });
-        form.querySelector('.mi-f-save').addEventListener('click', function() {
-          savePoem(p.id, {
-            title: form.querySelector('.mi-f-title').value.trim(),
-            date: form.querySelector('.mi-f-date').value.trim(),
-            author: form.querySelector('.mi-f-author').value.trim() || '匿名',
-            series: form.querySelector('.mi-f-series').value.trim() || '未分类',
-            subseries: form.querySelector('.mi-f-subseries').value.trim(),
-            content: form.querySelector('.mi-f-content').value.trim()
-          });
-        });
-        row.querySelector('.mi-del').addEventListener('click', function() { deletePoem(p.id); });
-        body.appendChild(row);
-        body.appendChild(form);
-      });
-      head.addEventListener('click', function() {
-        var collapsed = head.classList.toggle('collapsed');
-        body.style.display = collapsed ? 'none' : 'block';
-      });
-      listEl.appendChild(head);
-      listEl.appendChild(body);
-    });
-
-    var seriesSet = Array.from(new Set(poems.map(function(p) { return p.series || '未分类'; })));
-    document.getElementById('series-list').innerHTML = seriesSet.map(function(s) { return '<option value="' + escapeHtml(s) + '">'; }).join('');
-    var subSet = Array.from(new Set(poems.map(function(p) { return p.subseries || ''; }).filter(function(s) { return s; })));
-    document.getElementById('subseries-list').innerHTML = subSet.map(function(s) { return '<option value="' + escapeHtml(s) + '">'; }).join('');
-
-  } catch(e) { listEl.innerHTML = '<div class="hint">加载失败：' + e.message + '</div>'; }
+  var from = navStack.pop();
+  if (from) showTab(from.tab);
+  else showTab(currentTab);
+  if (from && from.scrollId) {
+    setTimeout(function() {
+      var node = document.getElementById(from.scrollId);
+      if (node) node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  }
 }
-
-// 打开 ③ 面板中某首诗的编辑表单并滚动到它
-function openPoemEditForm(p) {
-  if (!listEl || !listEl.children.length) {
-    setManageStatus('请先加载诗歌列表', 'err');
-    return;
-  }
-  var row = listEl.querySelector('.manage-item[data-id="' + p.id + '"]');
-  if (!row) {
-    setManageStatus('未找到该诗，可能已在别处修改', 'err');
-    loadList();
-    return;
-  }
-  var btn = row.querySelector('.mi-edit');
-  if (btn) btn.click();
-  row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-async function savePoem(id, fields) {
-  var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-  if (!fields.title || !fields.content) { setManageStatus('标题和正文不能为空', 'err'); return; }
-  if (!fields.date) { setManageStatus('请填写日期', 'err'); return; }
-  setManageStatus('保存中…', 'loading');
-  try {
-    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
-    if (!getRes.ok) throw new Error('读取失败');
-    var d = await getRes.json();
-    var sha = d.sha, poems = JSON.parse(decodeURIComponent(escape(atob(d.content))));
-    var target = poems.find(function(p) { return p.id === id; });
-    if (target) { target.title = fields.title; target.date = fields.date; target.author = fields.author; target.series = fields.series; if (fields.subseries) target.subseries = fields.subseries; else delete target.subseries; target.content = fields.content; }
-    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(poems, null, 2))));
-    var put = await ghRequest('data/poems.json', { method: 'PUT', body: JSON.stringify({ message: '修改', content: b64, sha: sha }) }, owner, repo, token);
-    if (!put.ok) throw new Error('保存失败');
-    setManageStatus('✓ 已保存', 'ok');
-    loadList();
-  } catch(e) { setManageStatus('✗ ' + e.message, 'err'); }
-}
-
-async function deletePoem(id) {
-  if (!confirm('确定删除吗？')) return;
-  var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-  setManageStatus('删除中…', 'loading');
-  try {
-    var getRes = await ghRequest('data/poems.json?t=' + Date.now(), {}, owner, repo, token);
-    if (!getRes.ok) throw new Error('读取失败');
-    var d = await getRes.json();
-    var sha = d.sha, poems = JSON.parse(decodeURIComponent(escape(atob(d.content))));
-    var target = poems.find(function(p) { return p.id === id; });
-    var remaining = poems.filter(function(p) { return p.id !== id; });
-    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(remaining, null, 2))));
-    var put = await ghRequest('data/poems.json', { method: 'PUT', body: JSON.stringify({ message: '删除', content: b64, sha: sha }) }, owner, repo, token);
-    if (!put.ok) throw new Error('删除失败');
-    if (target && target.images) {
-      for (var i = 0; i < target.images.length; i++) {
-        try { var imgGet = await ghRequest(target.images[i], {}, owner, repo, token); if (imgGet.ok) { var imgD = await imgGet.json(); await ghRequest(target.images[i], { method: 'DELETE', body: JSON.stringify({ message: '删图', sha: imgD.sha }) }, owner, repo, token); } } catch(e) {}
-      }
-    }
-    setManageStatus('✓ 已删除', 'ok');
-    loadList();
-  } catch(e) { setManageStatus('✗ ' + e.message, 'err'); }
-}
-
-document.getElementById('refresh-btn').addEventListener('click', loadList);
-
-// ===== 作者（同志们）管理 =====
-(function() {
-  var aId = document.getElementById('a-id');
-  var aName = document.getElementById('a-name');
-  var aAliases = document.getElementById('a-aliases');
-  var aBio = document.getElementById('a-bio');
-  var aTags = document.getElementById('a-tags');
-  var aLink = document.getElementById('a-link');
-  var aSave = document.getElementById('a-save');
-  var aClear = document.getElementById('a-clear');
-  var aStatus = document.getElementById('a-status');
-  var aList = document.getElementById('author-manage-list');
-  var idList = document.getElementById('author-id-list');
-
-  function setAStatus(text, type) { aStatus.textContent = text; aStatus.className = 'status show ' + type; }
-
-  function splitList(v) {
-    return String(v || '').split(/[、，,]/).map(function(s) { return s.trim(); }).filter(Boolean);
-  }
-
-  function escapeA(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
-
-  async function loadAuthors() {
-    var owner = els.owner.value.trim(), repo = els.repo.value.trim();
-    if (!owner || !repo) { aList.innerHTML = '<div class="hint">请先填写用户名和仓库名</div>'; return; }
-    aList.innerHTML = '<div class="hint">加载中…</div>';
-    var authors = [];
-    try {
-      var res = await fetchWithTimeout('data/authors.json?t=' + Date.now());
-      if (res.ok) authors = await res.json();
-    } catch(e) {}
-    if (!authors || !authors.length) {
-      try {
-        var rawUrl = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/authors.json?t=' + Date.now();
-        var res2 = await fetchWithTimeout(rawUrl);
-        if (res2.ok) authors = await res2.json();
-      } catch(e) {}
-    }
-    // 同步加载诗歌，用于作者作品统计与展开管理
-    var poems = [];
-    try {
-      var pres = await fetchWithTimeout('data/poems.json?t=' + Date.now());
-      if (pres.ok) poems = await pres.json();
-    } catch(e) {}
-    if (!poems || !poems.length) {
-      try {
-        var praw = 'https://raw.githubusercontent.com/' + owner + '/' + repo + '/main/data/poems.json?t=' + Date.now();
-        var pres2 = await fetchWithTimeout(praw);
-        if (pres2.ok) poems = await pres2.json();
-      } catch(e) {}
-    }
-    poems = poems || [];
-
-    if (!authors || !authors.length) { aList.innerHTML = '<div class="hint">还没有作者，用上方表单创建</div>'; return; }
-
-    // 署名 → 作者 id（name 也参与匹配）
-    var aliasMap = {};
-    authors.forEach(function(au) {
-      (au.aliases || []).forEach(function(al) { aliasMap[al] = au.id; });
-      if (au.name) aliasMap[au.name] = au.id;
-    });
-
-    aList.innerHTML = '';
-    authors.forEach(function(au) {
-      var authorWorks = poems.filter(function(p) { return aliasMap[p.author] === au.id; });
-      var container = document.createElement('div');
-      container.className = 'manage-item acc-row';
-      container.innerHTML =
-        '<button class="mi-toggle" type="button" title="展开/收起">▶</button>' +
-        '<div class="mi-info">' + escapeA(au.name) +
-          '<span class="mi-date">' + escapeA(au.id) + (au.aliases && au.aliases.length ? ' · ' + escapeA(au.aliases.join(' / ')) : '') +
-          ' · 作品 ' + authorWorks.length + '</span>' +
-        '</div>' +
-        '<div><button class="mi-edit" type="button">编辑</button> <button class="mi-del" type="button">删除</button></div>';
-
-      var panel = document.createElement('div');
-      panel.className = 'acc-panel';
-
-      if (authorWorks.length) {
-        var listHtml = '<div class="ap-title">作品</div>';
-        authorWorks.forEach(function(p) {
-          listHtml +=
-            '<div class="acc-sub-item">' +
-              '<div><div class="asi-title">' + escapeA(p.title) + '</div>' +
-              '<div class="asi-meta">' + escapeA(p.date || '') + (p.series ? ' · ' + escapeA(p.series) : '') + (p.subseries ? ' / ' + escapeA(p.subseries) : '') + '</div></div>' +
-              '<div class="asi-actions">' +
-                '<button class="asi-edit" type="button">编辑</button>' +
-                '<button class="asi-del" type="button">删除</button>' +
-              '</div>' +
-            '</div>';
-        });
-        panel.innerHTML = listHtml;
-        // 绑定子项编辑/删除
-        panel.querySelectorAll('.acc-sub-item').forEach(function(item, idx) {
-          var p = authorWorks[idx];
-          item.querySelector('.asi-edit').addEventListener('click', function() {
-            openPoemEditForm(p);
-          });
-          item.querySelector('.asi-del').addEventListener('click', function() {
-            if (confirm('确定删除「' + p.title + '」吗？')) { deletePoem(p.id); }
-          });
-        });
-      } else {
-        panel.innerHTML = '<div class="acc-empty">这位同志还没有作品。</div>';
-      }
-
-      panel.innerHTML += '<button class="acc-add-btn" type="button">+ 为这位同志添加新诗</button>';
-
-      panel.querySelector('.acc-add-btn').addEventListener('click', function() {
-        els.author.value = au.name;
-        els.author.focus();
-        els.btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setStatus(els.status, '已填入作者「' + au.name + '」，在下方 ② 填写并发布', 'ok');
-      });
-
-      // 展开/收起
-      var toggle = container.querySelector('.mi-toggle');
-      toggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggle.classList.toggle('open');
-        panel.classList.toggle('open');
-      });
-
-      container.querySelector('.mi-edit').addEventListener('click', function() {
-        aId.value = au.id;
-        aName.value = au.name || '';
-        aAliases.value = (au.aliases || []).join('、');
-        aBio.value = au.bio || '';
-        aTags.value = (au.tags || []).join('、');
-        aLink.value = au.link || '';
-        setAStatus('已载入「' + au.name + '」，可修改后保存', 'ok');
-        aSave.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      });
-      container.querySelector('.mi-del').addEventListener('click', function() { deleteAuthor(au.id); });
-
-      aList.appendChild(container);
-      aList.appendChild(panel);
-    });
-    idList.innerHTML = authors.map(function(au) { return '<option value="' + escapeA(au.id) + '">'; }).join('');
-  }
-
-  function readAuthorFields() {
-    return {
-      id: aId.value.trim(),
-      name: aName.value.trim(),
-      aliases: splitList(aAliases.value),
-      bio: aBio.value.trim(),
-      tags: splitList(aTags.value),
-      link: aLink.value.trim()
-    };
-  }
-
-  async function saveAuthor() {
-    var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-    var f = readAuthorFields();
-    if (!owner || !repo || !token) { setAStatus('请填写仓库信息', 'err'); return; }
-    if (!f.id || !f.name) { setAStatus('署名 ID 和展示名不能为空', 'err'); return; }
-    setAStatus('保存中…', 'loading');
-    try {
-      var getRes = await ghRequest('data/authors.json?t=' + Date.now(), {}, owner, repo, token);
-      var sha = null, authors = [];
-      if (getRes.ok) {
-        var d = await getRes.json();
-        sha = d.sha;
-        authors = JSON.parse(decodeURIComponent(escape(atob(d.content))));
-      } else if (getRes.status === 404) {
-        sha = null;
-      } else {
-        throw new Error('读取失败');
-      }
-      var existing = authors.find(function(au) { return au.id === f.id; });
-      var entry = { id: f.id, name: f.name, aliases: f.aliases, bio: f.bio, tags: f.tags, link: f.link };
-      if (existing) {
-        authors[authors.indexOf(existing)] = entry;
-      } else {
-        authors.push(entry);
-      }
-      var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(authors, null, 2))));
-      var putBody = { message: '保存作者: ' + f.name, content: b64 };
-      if (sha) putBody.sha = sha;
-      var putRes = await ghRequest('data/authors.json', { method: 'PUT', body: JSON.stringify(putBody) }, owner, repo, token);
-      if (!putRes.ok) throw new Error('保存失败');
-      setAStatus('✓ 已保存「' + f.name + '」', 'ok');
-      loadAuthors();
-    } catch(e) { setAStatus('✗ ' + e.message, 'err'); }
-  }
-
-  async function deleteAuthor(id) {
-    if (!confirm('确定删除作者「' + id + '」吗？')) return;
-    var owner = els.owner.value.trim(), repo = els.repo.value.trim(), token = els.token.value.trim();
-    setAStatus('删除中…', 'loading');
-    try {
-      var getRes = await ghRequest('data/authors.json?t=' + Date.now(), {}, owner, repo, token);
-      if (!getRes.ok) throw new Error('读取失败');
-      var d = await getRes.json();
-      var sha = d.sha, authors = JSON.parse(decodeURIComponent(escape(atob(d.content))));
-      var remaining = authors.filter(function(au) { return au.id !== id; });
-      var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(remaining, null, 2))));
-      var put = await ghRequest('data/authors.json', { method: 'PUT', body: JSON.stringify({ message: '删除作者', content: b64, sha: sha }) }, owner, repo, token);
-      if (!put.ok) throw new Error('删除失败');
-      setAStatus('✓ 已删除', 'ok');
-      if (aId.value === id) { aId.value = ''; aName.value = ''; aAliases.value = ''; aBio.value = ''; aTags.value = ''; aLink.value = ''; }
-      loadAuthors();
-    } catch(e) { setAStatus('✗ ' + e.message, 'err'); }
-  }
-
-  aSave.addEventListener('click', saveAuthor);
-  aClear.addEventListener('click', function() {
-    aId.value = ''; aName.value = ''; aAliases.value = ''; aBio.value = ''; aTags.value = ''; aLink.value = '';
-    aStatus.className = 'status';
-  });
-  document.getElementById('refresh-btn').addEventListener('click', loadAuthors);
-  loadAuthors();
-})();
 
 // ===== 主题 =====
 (function() {
   var btns = document.querySelectorAll('#theme-side .theme-btn');
-  if (!btns.length) return;
   function isNight() { var h = new Date().getHours(); return h >= 19 || h < 6; }
   function applyTheme(theme) {
     if (theme === 'light') document.documentElement.removeAttribute('data-theme');
@@ -1064,7 +871,7 @@ document.getElementById('refresh-btn').addEventListener('click', loadList);
     btns.forEach(function(b) { b.classList.toggle('active', b.dataset.theme === theme); });
   }
   var saved = localStorage.getItem('theme');
-  var initial = (saved && ['light','dark','eye-care'].includes(saved)) ? saved : (isNight() ? 'dark' : 'light');
+  var initial = (saved && ['light','dark','eye-care'].indexOf(saved) !== -1) ? saved : (isNight() ? 'dark' : 'light');
   applyTheme(initial);
   btns.forEach(function(b) { b.addEventListener('click', function() { applyTheme(this.dataset.theme); }); });
   var style = document.createElement('style');
@@ -1075,13 +882,630 @@ document.getElementById('refresh-btn').addEventListener('click', loadList);
   document.head.appendChild(style);
 })();
 
-// ===== 初始加载 =====
-if (els.owner.value && els.repo.value) loadList();
-['owner', 'repo'].forEach(function(k) {
-  els[k].addEventListener('input', function() {
-    if (els.owner.value.trim() && els.repo.value.trim()) loadList();
+// ===== 诗歌列表 =====
+var poemsCache = [];
+function setPoemStatus(text, type) { setStatus(document.getElementById('poem-status'), text, type); }
+function setAuthorStatus(text, type) { setStatus(document.getElementById('author-status'), text, type); }
+function setLogStatus(text, type) { setStatus(document.getElementById('log-status'), text, type); }
+
+async function loadPoemList() {
+  var listEl = document.getElementById('poem-list');
+  var poems = await readLocal('data/poems.json');
+  poemsCache = poems;
+  if (!poems.length) { listEl.innerHTML = '<div class="hint">还没有诗，点下方「发布新诗」。</div>'; return; }
+  // 目录顺序（系列首次出现顺序 → 系列内日期降序，与目录/阅读页一致）
+  var seriesOrder = [], seen = {};
+  poems.forEach(function(p) {
+    var s = p.series || '未分类';
+    if (!seen[s]) { seen[s] = 1; seriesOrder.push(s); }
   });
+  function getDateWeight(d) {
+    if (!d || d.trim() === '') return -1;
+    var parts = d.trim().split('-');
+    var w = 0;
+    if (parts[0]) w += 10000;
+    if (parts[1]) w += 100;
+    if (parts[2]) w += 1;
+    return w;
+  }
+  poems.sort(function(a, b) {
+    var sa = a.series || '未分类', sb = b.series || '未分类';
+    var ia = seriesOrder.indexOf(sa), ib = seriesOrder.indexOf(sb);
+    if (ia !== ib) return ia - ib;
+    var wa = getDateWeight(a.date), wb = getDateWeight(b.date);
+    if (wa !== wb) return wb - wa;
+    return (a.date || '').localeCompare(b.date || '');
+  });
+  var groups = {}, order = [];
+  poems.forEach(function(p) {
+    var s = p.series || '未分类';
+    if (!groups[s]) { groups[s] = []; order.push(s); }
+    groups[s].push(p);
+  });
+  var html = '';
+  order.forEach(function(series) {
+    var list = groups[series];
+    html += '<div class="group-head" data-series="' + escapeHtml(series) + '"><span class="tri">▾</span>' + escapeHtml(series) + '<span class="g-count">' + list.length + '</span></div>';
+    html += '<div class="group-body">';
+    list.forEach(function(p) {
+      html +=
+        '<div class="manage-item" id="poem-' + p.id + '">' +
+          '<div class="mi-info">' + escapeHtml(p.title) +
+            '<span class="mi-date">' + escapeHtml(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + (p.subseries ? ' <span class="mi-tag">' + escapeHtml(p.subseries) + '</span>' : '') + '</span>' +
+          '</div>' +
+          '<div class="mi-actions">' +
+            '<button class="mi-edit-poem" data-id="' + p.id + '">编辑</button>' +
+            '<button class="mi-del-poem danger" data-id="' + p.id + '">删除</button>' +
+          '</div>' +
+        '</div>';
+    });
+    html += '</div>';
+  });
+  listEl.innerHTML = html;
+
+  // 系列折叠
+  listEl.querySelectorAll('.group-head').forEach(function(head) {
+    head.addEventListener('click', function() {
+      head.classList.toggle('collapsed');
+      var body = head.nextElementSibling;
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    });
+  });
+  // 编辑 / 删除
+  listEl.querySelectorAll('.mi-edit-poem').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var p = poems.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      openPoemEdit(p, 'poems');
+    });
+  });
+  listEl.querySelectorAll('.mi-del-poem').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var p = poems.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      deletePoem(p);
+    });
+  });
+
+  // datalist
+  document.getElementById('series-list').innerHTML = order.map(function(s) { return '<option value="' + escapeHtml(s) + '">'; }).join('');
+  var subSet = Array.from(new Set(poems.map(function(p) { return p.subseries || ''; }).filter(Boolean)));
+  document.getElementById('subseries-list').innerHTML = subSet.map(function(s) { return '<option value="' + escapeHtml(s) + '">'; }).join('');
+  document.getElementById('poem-id-list').innerHTML = poems.map(function(p) { return '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.title) + '</option>'; }).join('');
+}
+
+// 打开诗歌编辑视图（fromTab = 返回目的地）
+function openPoemEdit(p, fromTab, scrollId) {
+  var isNew = !p;
+  pushNav(fromTab, isNew ? null : scrollId);
+  showPoemEditView(isNew ? null : p);
+}
+
+function showPoemEditView(p) {
+  document.querySelectorAll('.edit-form').forEach(function(f) { f.style.display = 'none'; });
+  document.querySelectorAll('.view .view-head').forEach(function(h) { h.style.display = 'none'; });
+  var edit = document.getElementById('poem-edit');
+  edit.style.display = 'block';
+  document.getElementById('poem-edit-title').textContent = p ? '编辑诗' : '发布新诗';
+  document.getElementById('pe-title-display').textContent = p ? p.title : '新诗';
+  document.getElementById('pe-id-display').textContent = p ? ('ID ' + p.id) : '将生成新 ID';
+  document.getElementById('pe-id').value = p ? p.id : '';
+  document.getElementById('pe-title').value = p ? (p.title || '') : '';
+  document.getElementById('pe-date').value = p ? (p.date || '') : '';
+  document.getElementById('pe-author').value = p ? (p.author || '') : '';
+  document.getElementById('pe-series').value = p ? (p.series || '') : '';
+  document.getElementById('pe-subseries').value = p ? (p.subseries || '') : '';
+  document.getElementById('pe-content').value = p ? (p.content || '') : '';
+  // 图片管理
+  var imgBox = document.getElementById('pe-images');
+  imgBox.innerHTML = '';
+  var imgs = (p && p.images) || [];
+  if (imgs.length) {
+    imgs.forEach(function(src) {
+      var row = document.createElement('div');
+      row.className = 'img-row';
+      row.innerHTML = '<img src="' + escapeHtml(src) + '" alt=""><span class="img-name">' + escapeHtml(src) + '</span><button class="danger img-rm" type="button">移除</button>';
+      row.querySelector('.img-rm').addEventListener('click', function() { row.remove(); });
+      imgBox.appendChild(row);
+    });
+  } else {
+    imgBox.innerHTML = '<div class="hint">无配图。</div>';
+  }
+  document.getElementById('pe-image').value = '';
+  clearStatus(document.getElementById('pe-status'));
+}
+
+document.getElementById('poem-edit-back').addEventListener('click', function() { goBack(); });
+document.getElementById('pe-cancel').addEventListener('click', function() { goBack(); });
+document.getElementById('poem-new-btn').addEventListener('click', function() { openPoemEdit(null, 'poems'); });
+
+document.getElementById('pe-save').addEventListener('click', async function() {
+  var st = document.getElementById('pe-status');
+  if (!haveCreds()) { setStatus(st, '请先在「设置」填写仓库信息', 'err'); return; }
+  var title = document.getElementById('pe-title').value.trim();
+  var date = document.getElementById('pe-date').value.trim();
+  var content = document.getElementById('pe-content').value.trim();
+  if (!title || !content) { setStatus(st, '标题和正文不能为空', 'err'); return; }
+  if (!date) { setStatus(st, '请填写日期', 'err'); return; }
+  setStatus(st, '保存中…', 'loading');
+  try {
+    var id = document.getElementById('pe-id').value;
+    var { sha, data } = await readFromGitHub('data/poems.json');
+    data = data || [];
+    var poem;
+    if (id) {
+      poem = data.find(function(x) { return x.id === id; });
+      if (!poem) throw new Error('未找到原诗');
+    } else {
+      id = String(Date.now());
+      poem = { id: id, images: [] };
+      data.push(poem);
+    }
+    poem.title = title;
+    poem.date = date;
+    poem.author = document.getElementById('pe-author').value.trim() || '匿名';
+    poem.series = document.getElementById('pe-series').value.trim() || '未分类';
+    var sub = document.getElementById('pe-subseries').value.trim();
+    if (sub) poem.subseries = sub; else delete poem.subseries;
+    poem.content = content;
+
+    // 上传新增图片
+    var files = Array.from(document.getElementById('pe-image').files || []);
+    for (var i = 0; i < files.length; i++) {
+      setStatus(st, '上传图片 ' + (i + 1) + '/' + files.length, 'loading');
+      var b64 = await fileToBase64(files[i]);
+      var name = Date.now() + '-' + i + '-' + files[i].name.replace(/[^a-zA-Z0-9.\-_]/g, '');
+      var path = 'images/' + name;
+      var r = await ghRequest(path, { method: 'PUT', body: JSON.stringify({ message: '配图', content: b64 }) });
+      if (!r.ok) throw new Error('图片上传失败');
+      poem.images.push(path);
+    }
+    // 保留面板中未移除的旧图
+    var kept = Array.from(document.querySelectorAll('#pe-images .img-row .img-name')).map(function(n) { return n.textContent; });
+    poem.images = kept;
+
+    await writeToGitHub('data/poems.json', data, sha, (id ? '修改: ' : '发布: ') + title);
+    setStatus(st, '✓ 已保存', 'ok');
+    goBack();
+  } catch(e) { setStatus(st, '✗ ' + e.message, 'err'); }
 });
+
+async function deletePoem(p) {
+  if (!confirm('确定删除「' + p.title + '」吗？')) return;
+  if (!haveCreds()) { setPoemStatus('请先在「设置」填写仓库信息', 'err'); return; }
+  setPoemStatus('删除中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/poems.json');
+    var target = data.find(function(x) { return x.id === p.id; });
+    data = data.filter(function(x) { return x.id !== p.id; });
+    await writeToGitHub('data/poems.json', data, sha, '删除: ' + p.title);
+    if (target && target.images) {
+      for (var i = 0; i < target.images.length; i++) {
+        try {
+          var imgGet = await ghRequest(target.images[i], {});
+          if (imgGet.ok) {
+            var imgD = await imgGet.json();
+            await ghRequest(target.images[i], { method: 'DELETE', body: JSON.stringify({ message: '删图', sha: imgD.sha }) });
+          }
+        } catch(e) {}
+      }
+    }
+    setPoemStatus('✓ 已删除', 'ok');
+    loadPoemList();
+  } catch(e) { setPoemStatus('✗ ' + e.message, 'err'); }
+}
+
+// ===== 作者 =====
+var authorsCache = [];
+var poemToAuthorMap = {};
+function buildPoemAuthorMap(authors) {
+  poemToAuthorMap = {};
+  authors.forEach(function(au) {
+    (au.aliases || []).forEach(function(al) { poemToAuthorMap[al] = au.id; });
+    if (au.name) poemToAuthorMap[au.name] = au.id;
+  });
+}
+
+async function loadAuthorList() {
+  var listEl = document.getElementById('author-list');
+  var authors = await readLocal('data/authors.json');
+  var poems = await readLocal('data/poems.json');
+  authorsCache = authors;
+  buildPoemAuthorMap(authors);
+  if (!authors.length) { listEl.innerHTML = '<div class="hint">还没有作者，点下方「新建作者」。</div>'; return; }
+  var aliasMap = poemToAuthorMap;
+  var html = '';
+  authors.forEach(function(au) {
+    var works = poems.filter(function(p) { return aliasMap[p.author] === au.id; });
+    html += '<div class="manage-item acc-row" id="author-' + au.id + '">' +
+      '<button class="mi-toggle" type="button" title="展开/收起">▶</button>' +
+      '<div class="mi-info">' + escapeHtml(au.name) +
+        '<span class="mi-date">' + escapeHtml(au.id) + (au.aliases && au.aliases.length ? ' · ' + escapeHtml(au.aliases.join(' / ')) : '') + ' · 作品 ' + works.length + '</span>' +
+      '</div>' +
+      '<div class="mi-actions">' +
+        '<button class="mi-edit-author" data-id="' + au.id + '">编辑</button>' +
+        '<button class="mi-del-author danger" data-id="' + au.id + '">删除</button>' +
+      '</div>' +
+    '</div>';
+    html += '<div class="acc-panel" id="ap-' + au.id + '">';
+    if (works.length) {
+      html += '<div class="ap-title">作品</div>';
+      works.forEach(function(p) {
+        html += '<div class="acc-sub-item">' +
+          '<div><div class="asi-title">' + escapeHtml(p.title) + '</div>' +
+          '<div class="asi-meta">' + escapeHtml(p.date || '') + (p.series ? ' · ' + escapeHtml(p.series) : '') + (p.subseries ? ' / ' + escapeHtml(p.subseries) : '') + '</div></div>' +
+          '<div class="asi-actions">' +
+            '<button class="asi-edit" data-id="' + p.id + '" data-author="' + au.id + '">编辑</button>' +
+            '<button class="asi-del danger" data-id="' + p.id + '">删除</button>' +
+          '</div></div>';
+      });
+    } else {
+      html += '<div class="acc-empty">这位同志还没有作品。</div>';
+    }
+    html += '<button class="acc-add-btn" style="margin:10px 0 0;padding:7px 16px;font-size:0.6rem;background:transparent;color:var(--ink-light);border:1px dashed var(--gold);border-radius:999px;width:100%;cursor:pointer;" data-author="' + au.id + '">+ 为这位同志添加新诗</button>';
+    html += '</div>';
+  });
+  listEl.innerHTML = html;
+
+  listEl.querySelectorAll('.mi-toggle').forEach(function(t) {
+    t.addEventListener('click', function(e) {
+      e.stopPropagation();
+      t.classList.toggle('open');
+      var id = t.closest('.manage-item').id.replace('author-', '');
+      document.getElementById('ap-' + id).classList.toggle('open');
+    });
+  });
+  listEl.querySelectorAll('.acc-row').forEach(function(row) {
+    row.addEventListener('click', function(e) {
+      if (e.target.closest('button')) return;
+      row.querySelector('.mi-toggle').click();
+    });
+  });
+  listEl.querySelectorAll('.mi-edit-author').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var au = authors.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      openAuthorEdit(au);
+    });
+  });
+  listEl.querySelectorAll('.mi-del-author').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var au = authors.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      deleteAuthor(au);
+    });
+  });
+  listEl.querySelectorAll('.asi-edit').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var p = poems.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      // 从作者视图跳诗歌编辑，返回链回作者视图
+      var authorId = this.dataset.author;
+      openPoemEdit(p, 'authors', 'author-' + authorId);
+    });
+  });
+  listEl.querySelectorAll('.asi-del').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var p = poems.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      deletePoem(p);
+    });
+  });
+  listEl.querySelectorAll('.acc-add-btn').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var au = authors.find(function(x) { return x.id === this.dataset.author; }.bind(this));
+      openPoemEdit(null, 'authors');
+      document.getElementById('pe-author').value = au.name;
+      document.getElementById('pe-title-display').textContent = '新诗 · ' + au.name;
+    });
+  });
+}
+
+function openAuthorEdit(au) {
+  var isNew = !au;
+  pushNav('authors');
+  document.querySelectorAll('.edit-form').forEach(function(f) { f.style.display = 'none'; });
+  document.querySelectorAll('.view .view-head').forEach(function(h) { h.style.display = 'none'; });
+  var edit = document.getElementById('author-edit');
+  edit.style.display = 'block';
+  document.getElementById('author-edit-title').textContent = au ? '编辑作者' : '新建作者';
+  document.getElementById('ae-id').value = au ? (au.id || '') : '';
+  document.getElementById('ae-name').value = au ? (au.name || '') : '';
+  document.getElementById('ae-aliases').value = au ? ((au.aliases || []).join('、')) : '';
+  document.getElementById('ae-bio').value = au ? (au.bio || '') : '';
+  document.getElementById('ae-tags').value = au ? ((au.tags || []).join('、')) : '';
+  document.getElementById('ae-link').value = au ? (au.link || '') : '';
+  clearStatus(document.getElementById('ae-status'));
+}
+document.getElementById('author-edit-back').addEventListener('click', function() { goBack(); });
+document.getElementById('ae-cancel').addEventListener('click', function() { goBack(); });
+document.getElementById('author-new-btn').addEventListener('click', function() { openAuthorEdit(null); });
+
+document.getElementById('ae-save').addEventListener('click', async function() {
+  var st = document.getElementById('ae-status');
+  if (!haveCreds()) { setStatus(st, '请先在「设置」填写仓库信息', 'err'); return; }
+  var id = document.getElementById('ae-id').value.trim();
+  var name = document.getElementById('ae-name').value.trim();
+  if (!id || !name) { setStatus(st, '署名 ID 和展示名不能为空', 'err'); return; }
+  setStatus(st, '保存中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/authors.json');
+    data = data || [];
+    var entry = {
+      id: id,
+      name: name,
+      aliases: document.getElementById('ae-aliases').value.split(/[、，,]/).map(function(s) { return s.trim(); }).filter(Boolean),
+      bio: document.getElementById('ae-bio').value.trim(),
+      tags: document.getElementById('ae-tags').value.split(/[、，,]/).map(function(s) { return s.trim(); }).filter(Boolean),
+      link: document.getElementById('ae-link').value.trim()
+    };
+    var existing = data.find(function(x) { return x.id === id; });
+    if (existing) data[data.indexOf(existing)] = entry;
+    else data.push(entry);
+    await writeToGitHub('data/authors.json', data, sha, '保存作者: ' + name);
+    setStatus(st, '✓ 已保存', 'ok');
+    goBack();
+  } catch(e) { setStatus(st, '✗ ' + e.message, 'err'); }
+});
+
+async function deleteAuthor(au) {
+  if (!confirm('确定删除作者「' + au.name + '」吗？')) return;
+  if (!haveCreds()) { setAuthorStatus('请先在「设置」填写仓库信息', 'err'); return; }
+  setAuthorStatus('删除中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/authors.json');
+    data = data.filter(function(x) { return x.id !== au.id; });
+    await writeToGitHub('data/authors.json', data, sha, '删除作者: ' + au.name);
+    setAuthorStatus('✓ 已删除', 'ok');
+    loadAuthorList();
+  } catch(e) { setAuthorStatus('✗ ' + e.message, 'err'); }
+}
+
+// ===== 漂流地点 =====
+var logsCache = [];
+var logMap = null;
+var logMarker = null;
+
+async function loadLogList() {
+  var listEl = document.getElementById('log-list');
+  var logs = await readLocal('data/logs.json');
+  logsCache = logs;
+  if (!logs.length) { listEl.innerHTML = '<div class="hint">还没有漂流地点，点下方「新增漂流地点」。</div>'; return; }
+  var poems = await readLocal('data/poems.json');
+  var poemById = {};
+  poems.forEach(function(p) { poemById[p.id] = p; });
+  // 列表顺序 = 数组顺序（即行迹顺序），保留用户调整
+  var html = '<div class="hint" style="margin-bottom:10px;">列表顺序即地图行迹顺序，可用 ↑ ↓ 调整。</div>';
+  logs.forEach(function(lg, idx) {
+    var p = lg.poemId ? poemById[lg.poemId] : null;
+    html += '<div class="manage-item" id="log-' + lg.id + '" data-idx="' + idx + '">' +
+      '<div class="mi-info">' + escapeHtml(lg.place) +
+        '<span class="mi-date">' + escapeHtml(lg.date || '') + (p ? ' · 关联《' + escapeHtml(p.title) + '》' : ' · 未关联诗') +
+        (lg.link === false ? ' · <span style="color:var(--clay);">断点</span>' : '') + '</span>' +
+        (lg.lat ? '<div class="mi-coord">' + Number(lg.lat).toFixed(4) + ', ' + Number(lg.lng).toFixed(4) + '</div>' : '') +
+      '</div>' +
+      '<div class="mi-actions">' +
+        '<button class="mi-up" data-id="' + lg.id + '" title="上移" ' + (idx === 0 ? 'disabled' : '') + '>↑</button>' +
+        '<button class="mi-down" data-id="' + lg.id + '" title="下移" ' + (idx === logs.length - 1 ? 'disabled' : '') + '>↓</button>' +
+        '<button class="mi-insert" data-id="' + lg.id + '" title="在此处后插入">+</button>' +
+        '<button class="mi-toggle-link" data-id="' + lg.id + '" title="行迹连线开关">' + (lg.link === false ? '断点' : '连线') + '</button>' +
+        '<button class="mi-edit-log" data-id="' + lg.id + '">编辑</button>' +
+        '<button class="mi-del-log danger" data-id="' + lg.id + '">删除</button>' +
+      '</div>' +
+    '</div>';
+  });
+  listEl.innerHTML = html;
+  listEl.querySelectorAll('.mi-edit-log').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var lg = logs.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      openLogEdit(lg);
+    });
+  });
+  listEl.querySelectorAll('.mi-del-log').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var lg = logs.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      deleteLog(lg);
+    });
+  });
+  listEl.querySelectorAll('.mi-up').forEach(function(b) {
+    b.addEventListener('click', function() { moveLog(this.dataset.id, -1); });
+  });
+  listEl.querySelectorAll('.mi-down').forEach(function(b) {
+    b.addEventListener('click', function() { moveLog(this.dataset.id, 1); });
+  });
+  listEl.querySelectorAll('.mi-toggle-link').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var lg = logs.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      if (lg) { lg.link = (lg.link === false) ? true : false; saveLogOrder('行迹连线调整'); }
+    });
+  });
+  listEl.querySelectorAll('.mi-insert').forEach(function(b) {
+    b.addEventListener('click', function() {
+      // 在此日志之后插入一个新日志
+      insertLogAfter(this.dataset.id);
+    });
+  });
+}
+
+// 在此日志之后插入新日志
+async function insertLogAfter(id) {
+  var idx = logsCache.findIndex(function(x) { return x.id === id; });
+  if (idx < 0) return;
+  if (!haveCreds()) { setLogStatus('请先在「设置」填写仓库信息', 'err'); return; }
+  // 新建空日志，插入 logsCache
+  var lg = { id: 'log-' + String(Date.now()), place: '新地点', link: true };
+  logsCache.splice(idx + 1, 0, lg);
+  await saveLogOrder('插入行迹点');
+  // 编辑刚插入的
+  openLogEdit(lg);
+}
+
+// 调整行迹顺序：上移/下移后保存 logs.json
+async function moveLog(id, dir) {
+  var idx = logsCache.findIndex(function(x) { return x.id === id; });
+  var j = idx + dir;
+  if (idx < 0 || j < 0 || j >= logsCache.length) return;
+  var tmp = logsCache[idx];
+  logsCache[idx] = logsCache[j];
+  logsCache[j] = tmp;
+  await saveLogOrder('调整行迹顺序');
+}
+
+async function saveLogOrder(message) {
+  if (!haveCreds()) { setLogStatus('请先在「设置」填写仓库信息', 'err'); return; }
+  setLogStatus('保存中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/logs.json');
+    // 以当前 logsCache 顺序为准重排
+    var byId = {};
+    data.forEach(function(x) { byId[x.id] = x; });
+    var reordered = logsCache.map(function(x) { return byId[x.id] || x; });
+    // 写入 link 状态
+    logsCache.forEach(function(x) { if (byId[x.id]) byId[x.id].link = x.link; });
+    await writeToGitHub('data/logs.json', reordered, sha, message || '保存');
+    setLogStatus('✓ 已保存', 'ok');
+    loadLogList();
+  } catch(e) { setLogStatus('✗ ' + e.message, 'err'); }
+}
+
+function openLogEdit(lg) {
+  var isNew = !lg;
+  currentEditingLogId = lg ? lg.id : null;
+  pushNav('logs');
+  document.querySelectorAll('.edit-form').forEach(function(f) { f.style.display = 'none'; });
+  document.querySelectorAll('.view .view-head').forEach(function(h) { h.style.display = 'none'; });
+  var edit = document.getElementById('log-edit');
+  edit.style.display = 'block';
+  document.getElementById('log-edit-title').textContent = lg ? '编辑漂流日志' : '新增漂流日志';
+  document.getElementById('le-place').value = lg ? (lg.place || '') : '';
+  document.getElementById('le-lat').value = lg && lg.lat != null ? lg.lat : '';
+  document.getElementById('le-lng').value = lg && lg.lng != null ? lg.lng : '';
+  document.getElementById('le-date').value = lg ? (lg.date || '') : '';
+  document.getElementById('le-text').value = lg ? (lg.text || '') : '';
+  document.getElementById('le-poemid').value = lg ? (lg.poemId || '') : '';
+  document.getElementById('le-authorid').value = lg ? (lg.authorId || '') : '';
+  document.getElementById('le-link').checked = lg ? (lg.link !== false) : true;
+  document.getElementById('le-poem-info').textContent = '';
+  clearStatus(document.getElementById('le-status'));
+  // 初始化迷你地图
+  initMiniMap(lg);
+  setTimeout(function() { scrollMapIntoView(); }, 80);
+}
+function scrollMapIntoView() {
+  var mapEl = document.getElementById('le-map');
+  mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+document.getElementById('log-edit-back').addEventListener('click', function() { goBack(); });
+document.getElementById('le-cancel').addEventListener('click', function() { goBack(); });
+document.getElementById('log-new-btn').addEventListener('click', function() { openLogEdit(null); });
+
+function initMiniMap(lg) {
+  var mapEl = document.getElementById('le-map');
+  if (logMap) { logMap.remove(); logMap = null; logMarker = null; }
+  var hasCoord = lg && lg.lat != null && lg.lng != null;
+  var center = hasCoord ? [lg.lat, lg.lng] : [35.5, 104.5];
+  logMap = L.map(mapEl, { zoomControl: true, attributionControl: false }).setView(center, hasCoord ? 8 : 4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18,
+    attribution: '&copy; OpenStreetMap'
+  }).addTo(logMap);
+  if (hasCoord) {
+    logMarker = L.marker(center).addTo(logMap);
+  }
+  logMap.on('click', function(e) {
+    if (logMarker) logMap.removeLayer(logMarker);
+    logMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(logMap);
+    document.getElementById('le-lat').value = e.latlng.lat.toFixed(5);
+    document.getElementById('le-lng').value = e.latlng.lng.toFixed(5);
+  });
+  document.getElementById('le-map-jump').addEventListener('click', function() {
+    var lat = parseFloat(document.getElementById('le-lat').value);
+    var lng = parseFloat(document.getElementById('le-lng').value);
+    if (!isNaN(lat) && !isNaN(lng)) logMap.flyTo([lat, lng], 10, { duration: 0.6 });
+    else logMap.flyTo([35.5, 104.5], 4, { duration: 0.6 });
+  });
+}
+// 「选诗」：跳到诗歌 tab 查找（返回链回漂流地点）
+document.getElementById('le-poem-pick').addEventListener('click', function() {
+  navStack.push({ tab: 'logs' });
+  showTab('poems');
+});
+
+document.getElementById('le-save').addEventListener('click', async function() {
+  var st = document.getElementById('le-status');
+  if (!haveCreds()) { setStatus(st, '请先在「设置」填写仓库信息', 'err'); return; }
+  var place = document.getElementById('le-place').value.trim();
+  var lat = parseFloat(document.getElementById('le-lat').value);
+  var lng = parseFloat(document.getElementById('le-lng').value);
+  var date = document.getElementById('le-date').value.trim();
+  if (!place) { setStatus(st, '地点名不能为空', 'err'); return; }
+  if (isNaN(lat) || isNaN(lng)) { setStatus(st, '请填写经纬度或在地图上点选', 'err'); return; }
+  setStatus(st, '保存中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/logs.json');
+    data = data || [];
+    var entry;
+    if (currentEditingLogId) {
+      entry = data.find(function(x) { return x.id === currentEditingLogId; });
+      if (!entry) throw new Error('未找到原地点');
+    } else {
+      entry = { id: 'log-' + String(Date.now()), };
+      data.push(entry);
+    }
+    entry.place = place;
+    entry.lat = lat;
+    entry.lng = lng;
+    entry.date = date || undefined;
+    entry.text = document.getElementById('le-text').value.trim() || undefined;
+    entry.poemId = document.getElementById('le-poemid').value.trim() || undefined;
+    entry.authorId = document.getElementById('le-authorid').value.trim() || undefined;
+    entry.link = document.getElementById('le-link').checked;
+    // 清理空字段
+    ['date','text','poemId','authorId'].forEach(function(k) { if (!entry[k]) delete entry[k]; });
+    if (entry.link === true) delete entry.link;
+    await writeToGitHub('data/logs.json', data, sha, '保存漂流地点: ' + place);
+    setStatus(st, '✓ 已保存', 'ok');
+    currentEditingLogId = null;
+    goBack();
+  } catch(e) { setStatus(st, '✗ ' + e.message, 'err'); }
+});
+
+async function deleteLog(lg) {
+  if (!confirm('确定删除漂流日志「' + lg.place + '」吗？')) return;
+  if (!haveCreds()) { setLogStatus('请先在「设置」填写仓库信息', 'err'); return; }
+  setLogStatus('删除中…', 'loading');
+  try {
+    var { sha, data } = await readFromGitHub('data/logs.json');
+    data = data.filter(function(x) { return x.id !== lg.id; });
+    await writeToGitHub('data/logs.json', data, sha, '删除漂流地点: ' + lg.place);
+    setLogStatus('✓ 已删除', 'ok');
+    loadLogList();
+  } catch(e) { setLogStatus('✗ ' + e.message, 'err'); }
+}
+
+// ===== 初始化 =====
+var currentEditingLogId = null;
+function init() {
+  var saved = localStorage.getItem('gh_creds');
+  if (saved) {
+    try {
+      var c = JSON.parse(saved);
+      els.owner.value = c.owner || '';
+      els.repo.value = c.repo || '';
+      els.token.value = c.token || '';
+      els.remember.checked = true;
+    } catch(e) {}
+  }
+  var now = new Date();
+  var y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
+  document.getElementById('pe-date').value = y + '-' + m + '-' + d;
+  // 记住 credentials
+  els.token.addEventListener('change', function() {
+    if (els.remember.checked) localStorage.setItem('gh_creds', JSON.stringify({ owner: els.owner.value.trim(), repo: els.repo.value.trim(), token: els.token.value.trim() }));
+    else localStorage.removeItem('gh_creds');
+  });
+  loadPoemList();
+  loadAuthorList();
+  loadLogList();
+}
+// 若已登录则直接初始化
+if (sessionStorage.getItem('admin_auth') === 'true') {
+  init();
+}
 </script>
 </body>
 </html>

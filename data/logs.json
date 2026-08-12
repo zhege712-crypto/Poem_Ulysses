@@ -1,0 +1,68 @@
+﻿[
+  {
+    "id": "log-001",
+    "place": "天一",
+    "lat": 31.5784,
+    "lng": 120.3591,
+    "date": "2024-11-21",
+    "text": "紫薯布丁",
+    "poemId": "1784094799003",
+    "authorId": "Eno",
+    "link": true
+  },
+  {
+    "id": "log-002",
+    "place": "省锡中",
+    "lat": 31.6829,
+    "lng": 120.2992,
+    "date": "2025-02-28",
+    "text": "紫薯布丁",
+    "poemId": "1784180820775",
+    "authorId": "yiribuxia",
+    "link": true
+  },
+  {
+    "id": "log-003",
+    "place": "洛社",
+    "lat": 31.6322,
+    "lng": 120.1694,
+    "date": "2025-07-08",
+    "text": "紫薯布丁",
+    "poemId": "1784214504049",
+    "authorId": "hanmei",
+    "link": true
+  },
+  {
+    "id": "log-004",
+    "place": "一中",
+    "lat": 31.5457,
+    "lng": 120.2594,
+    "date": "2026-08-05",
+    "text": "紫薯布丁",
+    "poemId": "1785930563487",
+    "authorId": "落岛绫",
+    "link": true
+  },
+  {
+    "id": "log-005",
+    "place": "秦淮",
+    "lat": 32.0233,
+    "lng": 118.7977,
+    "date": "2026-05-01",
+    "text": "紫薯布丁",
+    "poemId": "1784214750649",
+    "authorId": "hanmei",
+    "link": true
+  },
+  {
+    "id": "log-006",
+    "place": "屏幕上的海",
+    "lat": 31.2304,
+    "lng": 121.4737,
+    "date": "2026-03-08",
+    "text": "紫薯布丁",
+    "poemId": "1785163176447",
+    "authorId": "xiao-zhiyao",
+    "link": true
+  }
+]
