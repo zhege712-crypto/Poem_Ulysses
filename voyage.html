@@ -8,10 +8,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&family=Kaiti+SC:wght@400&family=Oswald:wght@300;400&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+<script>
+// 高德地图 JS API 安全密钥（2021-12 后申请的 key 需配合使用）
+window._AMapSecurityConfig = { securityJsCode: '04c025910305edb4acc29abc295c4707' };
+</script>
+<script src="https://webapi.amap.com/maps?v=2.0&key=0fd1637fe9e1febffcc26b2bd8ccfdcc&plugin=AMap.Scale"></script>
 <style>
 :root {
   --paper: #F7F5F0;
@@ -521,6 +524,8 @@ nav a.active::after { width: 100%; }
   transition: transform 0.25s;
   position: relative;
 }
+.amap-marker-content { position: relative; }
+.amap-marker-content .voyage-pin { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); }
 .voyage-pin:hover { transform: scale(1.25); }
 .voyage-pin.active-pin { background: radial-gradient(circle at 35% 30%, var(--clay), #8E4A32); border-color: #fff; box-shadow: 0 0 0 2px var(--clay), 0 0 22px 4px rgba(184, 92, 58, 0.75); }
 .globe-pin {
@@ -556,11 +561,9 @@ nav a.active::after { width: 100%; }
 .voyage-stage.boot .log-menu { opacity: 0; animation: boot-fade 0.8s ease 0.7s forwards; }
 @keyframes boot-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* ===== Leaflet 覆写 ===== */
-.leaflet-control-attribution { font-size: 8px !important; opacity: 0.6; }
-.leaflet-bar a { color: var(--ink) !important; }
-.leaflet-container { background: var(--paper) !important; font-family: var(--font-sans); }
-.leaflet-control-zoom { display: none; }
+/* ===== 高德地图覆写 ===== */
+.amap-copyright, .amap-logo { opacity: 0.5 !important; }
+.amap-container { background: var(--paper) !important; font-family: var(--font-sans); }
 
 /* ===== 侧边主题栏 ===== */
 .side-theme {
@@ -739,7 +742,7 @@ nav a.active::after { width: 100%; }
   <div class="map-disclaimer" id="map-disclaimer">
     <button class="md-toggle" id="md-toggle" type="button">地图声明</button>
     <div class="md-body" id="md-body">
-      <b>声明：</b>本地图由第三方地图服务提供（OpenStreetMap / 世界地图数据），与网站及制作者无关，仅作展示调用，不构成任何立场表达。作者坚决拥护中国领土主权完整，坚持一个中国原则，地图中涉及主权与边界的内容一律以中国政府官方发布为准。
+      <b>声明：</b>本地图数据来自高德地图，与网站及制作者无关，仅作展示调用，不构成任何立场表达。作者坚决拥护中国领土主权完整，坚持一个中国原则，地图中涉及主权与边界的内容一律以中国政府官方发布为准。
     </div>
   </div>
 </div>
@@ -832,23 +835,30 @@ nav a.active::after { width: 100%; }
   var globeLevel = 1;        // 连续缩放级 1..10
   var GLOBE_MAX = 10;
 
-  // ===== Leaflet 平面地图 =====
-  var map = L.map('map', {
-    center: [35.5, 104.5],
-    zoom: 7,
-    minZoom: 5,
-    maxZoom: 14,
-    zoomControl: false,
-    attributionControl: true
-  });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(map);
-  map.on('zoomend', function() {
+  // ===== 高德平面地图（国界符合一个中国原则） =====
+  var map = null;
+  var trailPolylines = [];
+  try {
+    map = new AMap.Map('map', {
+      zoom: 7,
+      center: [104.5, 35.5],
+      viewMode: '2D',
+      zoomEnable: true,
+      dragEnable: true,
+      keyboardEnable: false,
+      doubleClickZoom: false,
+      scrollWheel: false,
+      resizeEnable: true
+    });
+  } catch (e) {
+    map = null;
+  }
+  function onMapZoomChange() {
+    if (!map) return;
     var z = map.getZoom();
-    if (z < 6) switchToGlobe(map.getCenter());
-  });
+    if (z < 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
+  }
+  if (map) map.on('zoomend', onMapZoomChange);
 
   // ===== d3 球体地球 =====
   var svg, projection, path, graticule, globeLayer, bgLayer, landLayer, trailLayer, pinLayer;
@@ -1003,8 +1013,16 @@ nav a.active::after { width: 100%; }
     return segs;
   }
 
-  // ===== 模式切换 =====
+  // ===== 模式切换（带冷却锁，防临界点来回跳） =====
+  var lastSwitchAt = 0;
+  var SWITCH_COOLDOWN = 400;
+  function canSwitch() {
+    return Date.now() - lastSwitchAt >= SWITCH_COOLDOWN;
+  }
   function switchToMap(c) {
+    if (mode === MODE_MAP) return;
+    if (!canSwitch()) return;
+    lastSwitchAt = Date.now();
     mode = MODE_MAP;
     globeEl.style.display = 'none';
     mapEl.style.display = 'block';
@@ -1012,14 +1030,19 @@ nav a.active::after { width: 100%; }
     holoGrid.classList.remove('show');
     holoScan.classList.remove('show');
     goldScan.classList.add('show');
-    map.setView([c.lat || c[1], c.lng || c[0]], Math.max(map.getZoom(), 6));
-    setTimeout(function() { map.invalidateSize(); }, 30);
+    if (map) {
+      var lng = c.lng || c[0], lat = c.lat || c[1];
+      map.setZoomAndCenter(Math.max(map.getZoom(), 6), [lng, lat]);
+    }
     zoomLevel.textContent = 'MAP';
     if (zoomSlider) { zoomSlider.value = 10; zoomSlider.style.setProperty('--fill', '100%'); }
   }
   function switchToGlobe(c) {
+    if (mode === MODE_GLOBE) return;
+    if (!canSwitch()) return;
+    lastSwitchAt = Date.now();
     mode = MODE_GLOBE;
-    globeLevel = Math.max(1, GLOBE_MAX - 1.4);
+    globeLevel = 5;   // 远离切换阈值，避免临界点来回跳
     mapEl.style.display = 'none';
     globeEl.style.display = 'block';
     holoGrid.classList.add('show');
@@ -1064,14 +1087,14 @@ nav a.active::after { width: 100%; }
   }
   zoomInBtn.addEventListener('click', function() {
     if (mode === MODE_GLOBE) zoomGlobeBy(1);
-    else map.zoomIn();
+    else if (map) map.zoomIn();
   });
   zoomOutBtn.addEventListener('click', function() {
     if (mode === MODE_GLOBE) {
       zoomGlobeBy(-1);
-    } else {
+    } else if (map) {
       var z = map.getZoom();
-      if (z <= 6) switchToGlobe(map.getCenter());
+      if (z <= 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
       else map.zoomOut();
     }
   });
@@ -1080,7 +1103,7 @@ nav a.active::after { width: 100%; }
     var v = parseFloat(this.value);
     if (mode === MODE_GLOBE) {
       zoomGlobeTo(v);
-    } else {
+    } else if (map) {
       // 平面地图：滑杆 1..10 映射到 zoom 5..14
       var z = 5 + ((v - 1) / 9) * 9;
       map.setZoom(Math.round(z));
@@ -1093,6 +1116,18 @@ nav a.active::after { width: 100%; }
     if (mode !== MODE_GLOBE) return;
     var delta = e.deltaY < 0 ? 0.6 : -0.6;
     zoomGlobeBy(delta);
+  }, { passive: false });
+  // 地图模式的滚轮缩放（高德原生已关，这里统一接管）
+  mapEl.addEventListener('wheel', function(e) {
+    if (mode !== MODE_MAP || !map) return;
+    e.preventDefault();
+    var z = map.getZoom();
+    if (e.deltaY < 0) {
+      map.setZoom(Math.min(z + 1, 14));
+    } else {
+      if (z <= 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
+      else map.setZoom(z - 1);
+    }
   }, { passive: false });
 
   // 拖动旋转球体（自由查看地图）
@@ -1190,10 +1225,13 @@ nav a.active::after { width: 100%; }
       renderGlobe();
     } else {
       Object.keys(markers).forEach(function(mid) {
-        var el = markers[mid].getElement && markers[mid].getElement().querySelector('.voyage-pin');
+        var el = markers[mid].getContent && markers[mid].getContent().querySelector ? markers[mid].getContent().querySelector('.voyage-pin') : null;
         if (el) el.classList.toggle('active-pin', mid === id);
       });
-      map.flyTo([currentLog.lat, currentLog.lng], Math.max(map.getZoom(), 9), { duration: 0.8 });
+      if (map) {
+        var g = wgs84ToGcj02(currentLog.lng, currentLog.lat);
+        map.setZoomAndCenter(Math.max(map.getZoom(), 9), g);
+      }
     }
     // 日志抽屉高亮（地点/时间视图通用）
     logList.querySelectorAll('[data-logid]').forEach(function(node) {
@@ -1257,13 +1295,43 @@ nav a.active::after { width: 100%; }
   ppClose.addEventListener('click', function() {
     poemPanel.classList.add('hidden');
     Object.keys(markers).forEach(function(mid) {
-      var el = markers[mid].getElement && markers[mid].getElement().querySelector('.voyage-pin');
+      var el = markers[mid].getContent ? markers[mid].getContent().querySelector('.voyage-pin') : null;
       if (el) el.classList.remove('active-pin');
     });
     logList.querySelectorAll('[data-logid]').forEach(function(node) { node.classList.remove('sel'); });
     currentLog = null;
   });
   lightbox.addEventListener('click', function() { lightbox.classList.remove('show'); });
+
+  // WGS84 → GCJ02（高德火星坐标，前端漂点对齐用）
+  function wgs84ToGcj02(lng, lat) {
+    var a = 6378245.0, ee = 0.00669342162296594323;
+    function outOfChina(l, t) { return l < 72.004 || l > 137.8347 || t < 0.8293 || t > 55.8271; }
+    function tlat(x, y) {
+      var r = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+      r += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      r += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
+      r += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
+      return r;
+    }
+    function tlng(x, y) {
+      var r = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+      r += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
+      r += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
+      r += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
+      return r;
+    }
+    if (outOfChina(lng, lat)) return [lng, lat];
+    var dLat = tlat(lng - 105.0, lat - 35.0);
+    var dLng = tlng(lng - 105.0, lat - 35.0);
+    var radLat = lat / 180.0 * Math.PI;
+    var magic = Math.sin(radLat);
+    magic = 1 - ee * magic * magic;
+    var sqrtMagic = Math.sqrt(magic);
+    dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
+    dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
+    return [lng + dLng, lat + dLat];
+  }
 
   function fmtDate(iso) {
     if (!iso) return '—';
@@ -1330,27 +1398,38 @@ nav a.active::after { width: 100%; }
     drawGlobe();
     switchToGlobe();
     renderLogMenu();
-    // Leaflet 漂点（平面地图）
+    // 高德漂点（平面地图）
     logs.forEach(function(lg) {
-      var icon = L.divIcon({
-        className: '',
-        html: '<div class="voyage-pin' + (lg.poemId ? '' : ' dim') + '" data-log="' + lg.id + '"></div>',
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
+      var g = wgs84ToGcj02(lg.lng, lg.lat);
+      var marker = new AMap.Marker({
+        position: g,
+        content: '<div class="voyage-pin' + (lg.poemId ? '' : ' dim') + '" data-log="' + lg.id + '"></div>',
+        offset: new AMap.Pixel(0, 0),
+        zIndex: 100
       });
-      var m = L.marker([lg.lat, lg.lng], { icon: icon });
-      m.on('click', function() { selectLog(lg.id, false); });
-      m.addTo(map);
-      markers[lg.id] = m;
+      marker.on('click', function() { selectLog(lg.id, false); });
+      if (map) map.add(marker);
+      markers[lg.id] = marker;
     });
     // 平面行迹（分段，link:false 断开）
-    var trailLayerL = L.layerGroup();
+    trailPolylines.forEach(function(p) { if (map) map.remove(p); });
+    trailPolylines = [];
     trailSegments().forEach(function(seg) {
       if (seg.length < 2) return;
-      var pts = seg.map(function(lg) { return [lg.lat, lg.lng]; });
-      L.polyline(pts, { color: '#D4B896', weight: 2, dashArray: '6 6', opacity: 0.85, lineCap: 'round' }).addTo(trailLayerL);
+      var path = seg.map(function(lg) { return wgs84ToGcj02(lg.lng, lg.lat); });
+      var poly = new AMap.Polyline({
+        path: path,
+        strokeColor: '#D4B896',
+        strokeWeight: 2,
+        strokeStyle: 'dashed',
+        strokeOpacity: 0.85,
+        lineJoin: 'round',
+        lineCap: 'round',
+        zIndex: 50
+      });
+      if (map) map.add(poly);
+      trailPolylines.push(poly);
     });
-    trailLayerL.addTo(map);
 
     statsBar.innerHTML =
       '<span class="stat-chip">漂点 <b>' + logs.length + '</b></span>' +
@@ -1375,6 +1454,8 @@ nav a.active::after { width: 100%; }
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </body>
 </html>
+
+
 
 
 
