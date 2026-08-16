@@ -852,7 +852,9 @@ async function readFromGitHub(name) {
     return { sha: d.sha, data: JSON.parse(raw) };
   }
   if (res.status === 404) return { sha: null, data: null };
-  throw new Error('读取失败 ' + name);
+  var msg = '读取失败 ' + name + ' (HTTP ' + res.status + ')';
+  try { var e = await res.json(); if (e && e.message) msg += ': ' + e.message; } catch(_) {}
+  throw new Error(msg);
 }
 // 写回 GitHub API
 async function writeToGitHub(name, data, sha, message) {
@@ -860,7 +862,11 @@ async function writeToGitHub(name, data, sha, message) {
   var body = { message: message, content: b64 };
   if (sha) body.sha = sha;
   var res = await ghRequest(name, { method: 'PUT', body: JSON.stringify(body) });
-  if (!res.ok) throw new Error('保存失败 ' + name);
+  if (!res.ok) {
+    var msg = '保存失败 ' + name + ' (HTTP ' + res.status + ')';
+    try { var e = await res.json(); if (e && e.message) msg += ': ' + e.message; } catch(_) {}
+    throw new Error(msg);
+  }
   return res;
 }
 
@@ -1412,12 +1418,14 @@ async function saveLogOrder(message) {
   setLogStatus('保存中…', 'loading');
   try {
     var { sha, data } = await readFromGitHub('data/logs.json');
+    data = data || [];
     // 以当前 logsCache 顺序为准重排
     var byId = {};
     data.forEach(function(x) { byId[x.id] = x; });
     var reordered = logsCache.map(function(x) { return byId[x.id] || x; });
     // 写入 link 状态
     logsCache.forEach(function(x) { if (byId[x.id]) byId[x.id].link = x.link; });
+    reordered.forEach(function(x) { x.link = (x.link !== false); });
     await writeToGitHub('data/logs.json', reordered, sha, message || '保存');
     setLogStatus('✓ 已保存', 'ok');
     loadLogList();
@@ -1549,7 +1557,7 @@ async function deleteLog(lg) {
   setLogStatus('删除中…', 'loading');
   try {
     var { sha, data } = await readFromGitHub('data/logs.json');
-    data = data.filter(function(x) { return x.id !== lg.id; });
+    data = (data || []).filter(function(x) { return x.id !== lg.id; });
     await writeToGitHub('data/logs.json', data, sha, '删除漂流地点: ' + lg.place);
     setLogStatus('✓ 已删除', 'ok');
     loadLogList();
