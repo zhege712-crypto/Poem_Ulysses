@@ -3,15 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); } catch (_) {}</script>
 <title>诗歌漂流 · 管理后台</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-<script>
-window._AMapSecurityConfig = { securityJsCode: '04c025910305edb4acc29abc295c4707' };
-</script>
-<script src="https://webapi.amap.com/maps?v=2.0&key=0fd1637fe9e1febffcc26b2bd8ccfdcc&plugin=AMap.Scale"></script>
 <style>
 :root {
   --paper: #F7F5F0;
@@ -402,21 +399,6 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 }
 .img-row .img-name { flex: 1; font-family: var(--font-mono); font-size: 0.55rem; color: var(--ink-light); word-break: break-all; }
 .img-row button { margin: 0; padding: 4px 12px; font-size: 0.55rem; }
-.mini-map {
-  height: 220px;
-  border: 1px solid var(--gold-light);
-  border-radius: 10px;
-  margin-top: 10px;
-  z-index: 1;
-}
-.mini-map-hint {
-  font-family: var(--font-mono);
-  font-size: 0.55rem;
-  color: var(--ink-faded);
-  margin-top: 6px;
-}
-.pick-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
-.pick-actions button { margin: 0; padding: 6px 14px; font-size: 0.58rem; }
 
 /* ===== 主题栏 ===== */
 .side-theme {
@@ -455,45 +437,6 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 .side-theme .line { width: 1.5px; height: 10px; background: var(--gold-light); border-radius: 1px; }
 @media (max-width: 820px) { .side-theme { right: 16px; bottom: 80px; } }
 
-/* ===== 密码遮罩 ===== */
-#password-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: rgba(44, 42, 40, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  transition: opacity 0.5s;
-}
-#password-overlay.hidden { opacity: 0; pointer-events: none; }
-#password-overlay .box {
-  background: var(--paper);
-  padding: 40px 44px;
-  max-width: 400px;
-  width: 90%;
-  text-align: center;
-  border: 1px solid var(--gold-light);
-}
-#password-overlay .box h2 { font-family: var(--font-serif); font-weight: 300; font-size: 1.3rem; letter-spacing: 0.06em; margin-bottom: 6px; }
-#password-overlay .box p { color: var(--ink-faded); font-size: 0.8rem; margin-bottom: 20px; }
-#password-overlay .box input[type="password"] {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--gold-light);
-  background: var(--paper);
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  color: var(--ink);
-  margin-bottom: 14px;
-}
-#password-overlay .box button { width: 100%; padding: 12px; border: none; background: var(--ink); color: var(--paper); font-family: var(--font-mono); font-size: 0.75rem; cursor: pointer; transition: background 0.25s; }
-#password-overlay .box button:hover { background: var(--clay); }
-#password-overlay .error-msg { color: var(--clay); font-family: var(--font-mono); font-size: 0.65rem; margin-top: 10px; min-height: 1.2em; }
-
 @media (max-width: 640px) {
   .tab-bar button { padding: 10px 14px; font-size: 0.6rem; }
   .view-head { flex-wrap: wrap; }
@@ -502,21 +445,11 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 </head>
 <body>
 
-<div id="password-overlay">
-  <div class="box">
-    <h2>验证</h2>
-    <p>请输入后台密码</p>
-    <input type="password" id="password-input" placeholder="密码" autofocus>
-    <button id="password-submit">确认</button>
-    <div class="error-msg" id="password-error"></div>
-  </div>
-</div>
-
-<div class="content-wrapper" style="display:none;">
+<div class="content-wrapper">
   <div class="wrap">
     <h1>诗歌漂流 · 管理后台</h1>
     <div class="sub">私人使用，请勿分享链接</div>
-    <div class="warn-box">⚠️ Token 具有修改仓库内容的权限，请妥善保管。</div>
+    <div class="warn-box">此页为旧版维护工具。仓库 Token 只在当前打开的页面中使用，不再保存到浏览器；关闭页面后需重新输入。投稿审核请使用受保护的审核入口。</div>
 
     <div class="tab-bar" id="tab-bar">
       <button data-tab="settings" class="active">设置</button>
@@ -534,10 +467,7 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
         <label>仓库名</label>
         <input type="text" id="gh-repo" value="Poem_Ulysses">
         <label>Token</label>
-        <input type="password" id="gh-token" placeholder="ghp_ 或 github_pat_ 开头">
-        <label style="display:flex; align-items:center; gap:8px; text-transform:none; font-size:0.75rem; color:var(--ink-light);">
-          <input type="checkbox" id="remember" style="width:auto;"> 记住
-        </label>
+        <input type="password" id="gh-token" placeholder="仅限当前页面使用" autocomplete="off">
         <div class="status" id="settings-status"></div>
       </div>
     </div>
@@ -677,12 +607,7 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
           <div class="hint" id="le-poem-info"></div>
           <label>关联作者（authorId）</label>
           <input type="text" id="le-authorid" list="author-id-list">
-          <label>在地图上点选坐标</label>
-          <div class="mini-map" id="le-map"></div>
-          <div class="mini-map-hint">点击地图放置漂点，自动填入经纬度。</div>
-          <div class="pick-actions">
-            <button class="btn-sm" id="le-map-jump" type="button">跳到地图</button>
-          </div>
+          <div class="hint">地点坐标请填写上方的纬度和经度（WGS84）。</div>
           <div class="row">
             <button id="le-save" type="button">保存地点</button>
             <button id="le-cancel" class="ghost" type="button">取消</button>
@@ -704,48 +629,11 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 </div>
 
 <script>
-// ===== 密码门 =====
-(function() {
-  var overlay = document.getElementById('password-overlay');
-  var input = document.getElementById('password-input');
-  var submit = document.getElementById('password-submit');
-  var error = document.getElementById('password-error');
-  var content = document.querySelector('.content-wrapper');
-  var PASSWORD = 'umbrella2026';
-
-  if (sessionStorage.getItem('admin_auth') === 'true') {
-    overlay.classList.add('hidden');
-    content.style.display = 'block';
-    return;
-  }
-  function verify() {
-    var val = input.value.trim();
-    if (!val) { error.textContent = '请输入密码'; return; }
-    if (val === PASSWORD) {
-      sessionStorage.setItem('admin_auth', 'true');
-      overlay.classList.add('hidden');
-      content.style.display = 'block';
-      init();
-    } else {
-      error.textContent = '密码错误';
-      input.value = '';
-      input.focus();
-    }
-  }
-  submit.addEventListener('click', verify);
-  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') verify(); });
-  input.focus();
-  if (sessionStorage.getItem('admin_auth') !== 'true') {
-    window.__adminReady = function() {};
-  }
-})();
-
 // ===== 通用 =====
 var els = {
   owner: document.getElementById('gh-owner'),
   repo: document.getElementById('gh-repo'),
-  token: document.getElementById('gh-token'),
-  remember: document.getElementById('remember')
+  token: document.getElementById('gh-token')
 };
 
 function setStatus(el, text, type) {
@@ -984,7 +872,7 @@ async function loadPoemList() {
     if (wa !== wb) return wb - wa;
     return (a.date || '').localeCompare(b.date || '');
   });
-  var groups = {}, order = [];
+  var groups = Object.create(null), order = [];
   poems.forEach(function(p) {
     var s = p.series || '未分类';
     if (!groups[s]) { groups[s] = []; order.push(s); }
@@ -1117,6 +1005,7 @@ document.getElementById('pe-save').addEventListener('click', async function() {
 
     // 上传新增图片
     var files = Array.from(document.getElementById('pe-image').files || []);
+    var uploaded = [];
     for (var i = 0; i < files.length; i++) {
       setStatus(st, '上传图片 ' + (i + 1) + '/' + files.length, 'loading');
       var b64 = await fileToBase64(files[i]);
@@ -1124,11 +1013,11 @@ document.getElementById('pe-save').addEventListener('click', async function() {
       var path = 'images/' + name;
       var r = await ghRequest(path, { method: 'PUT', body: JSON.stringify({ message: '配图', content: b64 }) });
       if (!r.ok) throw new Error('图片上传失败');
-      poem.images.push(path);
+      uploaded.push(path);
     }
     // 保留面板中未移除的旧图
     var kept = Array.from(document.querySelectorAll('#pe-images .img-row .img-name')).map(function(n) { return n.textContent; });
-    poem.images = kept;
+    poem.images = kept.concat(uploaded);
 
     await writeToGitHub('data/poems.json', data, sha, (id ? '修改: ' : '发布: ') + title);
     setStatus(st, '✓ 已保存', 'ok');
@@ -1163,9 +1052,9 @@ async function deletePoem(p) {
 
 // ===== 作者 =====
 var authorsCache = [];
-var poemToAuthorMap = {};
+var poemToAuthorMap = Object.create(null);
 function buildPoemAuthorMap(authors) {
-  poemToAuthorMap = {};
+  poemToAuthorMap = Object.create(null);
   authors.forEach(function(au) {
     (au.aliases || []).forEach(function(al) { poemToAuthorMap[al] = au.id; });
     if (au.name) poemToAuthorMap[au.name] = au.id;
@@ -1325,8 +1214,6 @@ async function deleteAuthor(au) {
 
 // ===== 漂流地点 =====
 var logsCache = [];
-var logMap = null;
-var logMarker = null;
 
 async function loadLogList() {
   var listEl = document.getElementById('log-list');
@@ -1451,61 +1338,12 @@ function openLogEdit(lg) {
   document.getElementById('le-link').checked = lg ? (lg.link !== false) : true;
   document.getElementById('le-poem-info').textContent = '';
   clearStatus(document.getElementById('le-status'));
-  // 初始化迷你地图
-  initMiniMap(lg);
-  setTimeout(function() { scrollMapIntoView(); }, 80);
-}
-function scrollMapIntoView() {
-  var mapEl = document.getElementById('le-map');
-  mapEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  edit.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 document.getElementById('log-edit-back').addEventListener('click', function() { goBack(); });
 document.getElementById('le-cancel').addEventListener('click', function() { goBack(); });
 document.getElementById('log-new-btn').addEventListener('click', function() { openLogEdit(null); });
 
-function initMiniMap(lg) {
-  var mapEl = document.getElementById('le-map');
-  if (logMap) { logMap.destroy(); logMap = null; logMarker = null; }
-  var hasCoord = lg && lg.lat != null && lg.lng != null;
-  var center = hasCoord ? wgs84ToGcj02(lg.lng, lg.lat) : [104.5, 35.5];
-  logMap = new AMap.Map(mapEl, {
-    zoom: hasCoord ? 10 : 4,
-    center: center,
-    viewMode: '2D',
-    resizeEnable: true
-  });
-  if (hasCoord) {
-    logMarker = new AMap.Marker({
-      position: center,
-      content: '<div style="width:12px;height:12px;border-radius:50%;background:#D4B896;border:2px solid #fff;box-shadow:0 0 0 1.5px #D4B896;"></div>',
-      offset: new AMap.Pixel(-6, -6)
-    });
-    logMap.add(logMarker);
-  }
-  logMap.on('click', function(e) {
-    if (logMarker) { logMap.remove(logMarker); logMarker = null; }
-    var gcj = [e.lnglat.getLng(), e.lnglat.getLat()];
-    var wgs = gcj02ToWgs84(gcj[0], gcj[1]);
-    logMarker = new AMap.Marker({
-      position: gcj,
-      content: '<div style="width:12px;height:12px;border-radius:50%;background:#D4B896;border:2px solid #fff;box-shadow:0 0 0 1.5px #D4B896;"></div>',
-      offset: new AMap.Pixel(-6, -6)
-    });
-    logMap.add(logMarker);
-    document.getElementById('le-lat').value = wgs[1].toFixed(5);
-    document.getElementById('le-lng').value = wgs[0].toFixed(5);
-  });
-  document.getElementById('le-map-jump').addEventListener('click', function() {
-    var lat = parseFloat(document.getElementById('le-lat').value);
-    var lng = parseFloat(document.getElementById('le-lng').value);
-    if (!isNaN(lat) && !isNaN(lng)) {
-      var g = wgs84ToGcj02(lng, lat);
-      logMap.setZoomAndCenter(10, g);
-    } else {
-      logMap.setZoomAndCenter(4, [104.5, 35.5]);
-    }
-  });
-}
 // 「选诗」：跳到诗歌 tab 查找（返回链回漂流地点）
 document.getElementById('le-poem-pick').addEventListener('click', function() {
   navStack.push({ tab: 'logs' });
@@ -1520,7 +1358,7 @@ document.getElementById('le-save').addEventListener('click', async function() {
   var lng = parseFloat(document.getElementById('le-lng').value);
   var date = document.getElementById('le-date').value.trim();
   if (!place) { setStatus(st, '地点名不能为空', 'err'); return; }
-  if (isNaN(lat) || isNaN(lng)) { setStatus(st, '请填写经纬度或在地图上点选', 'err'); return; }
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) { setStatus(st, '请填写有效的纬度和经度', 'err'); return; }
   setStatus(st, '保存中…', 'loading');
   try {
     var { sha, data } = await readFromGitHub('data/logs.json');
@@ -1567,32 +1405,16 @@ async function deleteLog(lg) {
 // ===== 初始化 =====
 var currentEditingLogId = null;
 function init() {
-  var saved = localStorage.getItem('gh_creds');
-  if (saved) {
-    try {
-      var c = JSON.parse(saved);
-      els.owner.value = c.owner || '';
-      els.repo.value = c.repo || '';
-      els.token.value = c.token || '';
-      els.remember.checked = true;
-    } catch(e) {}
-  }
+  localStorage.removeItem('gh_creds');
+  sessionStorage.removeItem('admin_auth');
   var now = new Date();
   var y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
   document.getElementById('pe-date').value = y + '-' + m + '-' + d;
-  // 记住 credentials
-  els.token.addEventListener('change', function() {
-    if (els.remember.checked) localStorage.setItem('gh_creds', JSON.stringify({ owner: els.owner.value.trim(), repo: els.repo.value.trim(), token: els.token.value.trim() }));
-    else localStorage.removeItem('gh_creds');
-  });
   loadPoemList();
   loadAuthorList();
   loadLogList();
 }
-// 若已登录则直接初始化
-if (sessionStorage.getItem('admin_auth') === 'true') {
-  init();
-}
+init();
 </script>
 </body>
 </html>

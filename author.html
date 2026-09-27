@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); } catch (_) {}</script>
 <title>同志 · 诗歌漂流</title>
 <meta name="description" content="诗行背后的名字">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -473,7 +474,7 @@ footer a:hover { color: var(--paper); }
         <li><a href="authors.html" class="active">同志们</a></li>
         <li><a href="voyage.html">漂流</a></li>
         <li><a href="about.html">关于</a></li>
-        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank" rel="noopener noreferrer">投稿</a></li>
+        <li><a href="submit.html">投稿</a></li>
       </ul>
     </nav>
   </div>
@@ -558,7 +559,7 @@ Promise.all([
   document.title = author.name + ' · 同志们 · 诗歌漂流';
 
   // 归一化别名（name 也参与匹配，保证无别名作者也能聚合）
-  var aliasMap = {};
+  var aliasMap = Object.create(null);
   (author.aliases || []).forEach(function(al) { aliasMap[al] = author.id; });
   aliasMap[author.name] = author.id;
 
@@ -578,7 +579,7 @@ Promise.all([
     return w;
   }
   var seriesOrder = [];
-  var seenSeries = {};
+  var seenSeries = Object.create(null);
   poems.forEach(function(p) {
     var s = p.series || '未分类';
     if (!seenSeries[s]) { seenSeries[s] = 1; seriesOrder.push(s); }
@@ -687,7 +688,7 @@ Promise.all([
         worksHtml += workRowHtml(p);
       });
       // 子分类分组
-      var subGroups = {};
+      var subGroups = Object.create(null);
       var subOrder = [];
       works.forEach(function(p) {
         if (!p.subseries) return;

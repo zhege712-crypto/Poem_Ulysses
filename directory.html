@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); } catch (_) {}</script>
 <title>目录 · 诗歌漂流</title>
 <meta name="description" content="诗歌漂流目录 — 按系列和子分类浏览所有诗歌。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -557,7 +558,7 @@ footer a:hover { color: var(--paper); }
         <li><a href="authors.html">同志们</a></li>
         <li><a href="voyage.html">漂流</a></li>
         <li><a href="about.html">关于</a></li>
-        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank" rel="noopener noreferrer">投稿</a></li>
+        <li><a href="submit.html">投稿</a></li>
       </ul>
     </nav>
   </div>
@@ -603,7 +604,7 @@ footer a:hover { color: var(--paper); }
 
   <div class="search-box">
     <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input type="text" id="search-input" placeholder="搜索标题、正文、作者或子分类…">
+    <input type="text" id="search-input" placeholder="搜索标题、正文、作者或分类…">
   </div>
   <div class="search-hint" id="search-hint"></div>
 
@@ -697,7 +698,7 @@ function renderCatalog(poems) {
     return;
   }
   poems = poems.slice().sort(sortByDate);
-  var groups = {};
+  var groups = Object.create(null);
   var order = [];
   poems.forEach(function(p) {
     var s = p.series || '未分类';
@@ -709,7 +710,7 @@ function renderCatalog(poems) {
     var rows;
     if (list.some(function(p) { return p.subseries; })) {
       rows = list.filter(function(p) { return !p.subseries; }).map(rowHtml).join('');
-      var subGroups = {};
+      var subGroups = Object.create(null);
       var subOrder = [];
       list.forEach(function(p) {
         if (!p.subseries) return;
@@ -729,8 +730,8 @@ function renderCatalog(poems) {
 
 // ===== 树状图 =====
 var viewMode = localStorage.getItem('catalog_view') === 'tree' ? 'tree' : 'list';
-var collapsed = {};
-try { collapsed = JSON.parse(localStorage.getItem('catalog_collapsed') || '{}'); } catch(e) { collapsed = {}; }
+var collapsed = Object.create(null);
+try { collapsed = Object.assign(Object.create(null), JSON.parse(localStorage.getItem('catalog_collapsed') || '{}')); } catch(e) { collapsed = Object.create(null); }
 
 function leafHtml(p) {
   return '<a class="tree-leaf" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
@@ -744,7 +745,7 @@ function renderTree(poems) {
     return;
   }
   poems = poems.slice().sort(sortByDate);
-  var groups = {};
+  var groups = Object.create(null);
   var order = [];
   poems.forEach(function(p) {
     var s = p.series || '未分类';
@@ -754,7 +755,7 @@ function renderTree(poems) {
   listEl.innerHTML = order.map(function(series) {
     var list = groups[series];
     var inner = list.filter(function(p) { return !p.subseries; }).map(leafHtml).join('');
-    var subGroups = {};
+    var subGroups = Object.create(null);
     var subOrder = [];
     list.forEach(function(p) {
       if (!p.subseries) return;
@@ -800,7 +801,7 @@ listEl.addEventListener('click', function(e) {
       viewMode = this.getAttribute('data-view');
       localStorage.setItem('catalog_view', viewMode);
       toggleBtns.forEach(function(b) { b.classList.toggle('active', b === btn); });
-      render(allPoems);
+      doSearch(document.getElementById('search-input').value);
     });
   });
 })();
@@ -824,6 +825,7 @@ function doSearch(query) {
     return (p.title || '').toLowerCase().indexOf(query) !== -1 ||
            (p.content || '').toLowerCase().indexOf(query) !== -1 ||
            (p.author || '').toLowerCase().indexOf(query) !== -1 ||
+           (p.series || '').toLowerCase().indexOf(query) !== -1 ||
            (p.subseries || '').toLowerCase().indexOf(query) !== -1;
   });
   hintEl.textContent = '找到 ' + matched.length + ' 首';
@@ -842,7 +844,7 @@ fetch(dataUrl)
       listEl.innerHTML = '<div class="empty-state">暂时还没有诗，敬请期待。</div>';
       return;
     }
-    render(allPoems);
+    doSearch(document.getElementById('search-input').value);
 
     // 入场渐显
     if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
