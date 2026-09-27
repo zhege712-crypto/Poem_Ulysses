@@ -1,0 +1,16 @@
+name = "poem-submissions-public"
+main = "public.mjs"
+compatibility_date = "2026-09-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://zhege712-crypto.github.io"
+PUBLIC_HOSTNAME = "zhege712-crypto.github.io"
+PUBLIC_SITE_URL = "https://zhege712-crypto.github.io/Poem_Ulysses/"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "poem-submissions"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[triggers]
+crons = ["0 0 * * *"]

@@ -2,7 +2,7 @@
 
 ## Project overview
 
-**Poem's Ulysses (诗歌漂流)** — a static poetry reading/publishing platform deployed on GitHub Pages (`zhege712-crypto/Poem_Ulysses`). Seven flat HTML pages with inline CSS/JS, no build step, no framework, no package manager.
+**Poem's Ulysses (诗歌漂流)** — a static poetry reading/publishing platform deployed on GitHub Pages (`zhege712-crypto/Poem_Ulysses`). Public pages use flat HTML with inline CSS/JS, no build step, no framework, no package manager. The optional submission service lives in `submissions/` and is deployed separately to Cloudflare Workers.
 
 Design context lives in `PRODUCT.md` (product truth) and `DESIGN.md` (design system + tokens, with machine-readable YAML frontmatter). Re-run the detector after UI changes: `node C:\Users\10141\.agents\skills\impeccable\scripts\detect.mjs --json <targets>`.
 
@@ -10,7 +10,7 @@ Design context lives in `PRODUCT.md` (product truth) and `DESIGN.md` (design sys
 
 - There is **no `package.json`, no bundler, no build step**. The `.opencode/.gitignore` explicitly ignores `package.json`, `package-lock.json`, and `bun.lock` — never add these.
 - Local preview: `python -m http.server` (or any static file server) from the repo root.
-- All HTML, CSS, and JavaScript live inline in each `.html` file. There are no external `.css` or `.js` files.
+- Page CSS and behavior live inline in each `.html` file. The public, secret-free `submission-config.js` supplies the submission API URL and Turnstile site key to `submit.html` and `status.html`.
 
 ## Data layer
 
@@ -52,9 +52,11 @@ Not all `poems.json` `author` strings are in `authors.json`; unlisted names rend
 | `authors.html` | Author card wall ("同志们"), alias-merged with poems | — |
 | `author.html` | Single-author detail: bio, stats, works list; subseries poems grouped under subseries headers (same convention as directory) | `?id=<author id>` (required) |
 | `about.html` | About page with project background | — |
+| `submit.html` | Public text submission and live preview | — |
+| `status.html` | Private receipt status and pre-review withdrawal | `#<receipt token>` |
 | `admin.html` | Admin backend (GitHub API CRUD + image upload) | — |
 
-Navigation appears on the five public pages (not `admin.html`): 首页 / 目录 / 同志们 / 关于 / 投稿. New pages must match this header, side-theme, and footer structure exactly.
+Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投稿. The submission and status pages inherit the warm paper, ink, gold, and three-theme system. `submissions/README.md` documents the public and protected Workers.
 
 ## Design conventions (shared across all pages)
 
@@ -68,7 +70,7 @@ Navigation appears on the five public pages (not `admin.html`): 首页 / 目录 
 
 - Uses GitHub API to read/write `data/poems.json` (panel ②③) and `data/authors.json` (panel ④) and upload images directly to the repo.
 - Falls back to `raw.githubusercontent.com` for reads (avoids GitHub API cache).
-- Default password: `umbrella2026`. Token/repo settings persisted via `localStorage`.
+- The old client-side password was removed because it did not protect a public static page. Existing `gh_creds` storage is cleared on page load, and the Token is no longer persisted. The legacy admin still requires a GitHub token entered for the current page and should eventually move behind the protected Worker.
 - Deleting a poem also deletes its associated images from the repo.
 - Panel ④ edits author profiles: id/name/aliases (顿号- or comma-separated), bio, tags, link. The author form pre-fills from clicking 编辑 on a listed author.
 

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); } catch (_) {}</script>
 <title>诗歌 · 诗歌漂流</title>
 <meta name="description" content="待到山花烂漫时">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -433,7 +434,7 @@ footer a:hover { color: var(--paper); }
         <li><a href="authors.html">同志们</a></li>
         <li><a href="voyage.html">漂流</a></li>
         <li><a href="about.html">关于</a></li>
-        <li><a href="https://github.com/zhege712-crypto/Poem_Ulysses/discussions/new/choose" target="_blank" rel="noopener noreferrer">投稿</a></li>
+        <li><a href="submit.html">投稿</a></li>
       </ul>
     </nav>
   </div>
@@ -504,7 +505,7 @@ function escapeHtml(s) {
   var back = document.getElementById('back-link');
   if (!back) return;
   back.addEventListener('click', function(e) {
-    if (history.length > 1) {
+    if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
       e.preventDefault();
       history.back();
     }
@@ -565,7 +566,7 @@ Promise.all([
     document.title = poem.title + ' · 诗歌漂流';
 
     // ===== 署名 → 作者 id 映射（用于作者名链接；name 也参与匹配） =====
-    var aliasMap = {};
+    var aliasMap = Object.create(null);
     authors.forEach(function(a) {
       (a.aliases || []).forEach(function(al) { aliasMap[al] = a.id; });
       if (a.name) aliasMap[a.name] = a.id;
@@ -584,7 +585,7 @@ Promise.all([
       return w;
     }
     var seriesOrder = [];
-    var seenSeries = {};
+    var seenSeries = Object.create(null);
     poems.forEach(function(p) {
       var s = p.series || '未分类';
       if (!seenSeries[s]) { seenSeries[s] = 1; seriesOrder.push(s); }
@@ -687,7 +688,7 @@ Promise.all([
     script.setAttribute('data-reactions-enabled', '1');
     script.setAttribute('data-emit-metadata', '0');
     script.setAttribute('data-input-position', 'bottom');
-    script.setAttribute('data-theme', 'light');
+    script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
     script.setAttribute('data-lang', 'zh-CN');
     script.crossOrigin = 'anonymous';
     script.async = true;
