@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); var savedTheme = localStorage.getItem('theme'); if (savedTheme === 'dark' || savedTheme === 'eye-care') document.documentElement.setAttribute('data-theme', savedTheme); } catch (_) {}</script>
+<meta name="referrer" content="no-referrer">
+<title>查询投稿 · 诗歌漂流</title>
+<style>
+:root{--paper:#f7f5f0;--paper-dark:#ede9e2;--ink:#2c2a28;--ink-light:#5a554e;--gold:#d4b896;--gold-light:#ded5c7;--clay:#9c4d32;--serif:Georgia,"Noto Serif SC",serif;--sans:"Noto Sans SC",system-ui,sans-serif}[data-theme=dark]{--paper:#1e1e1c;--paper-dark:#2a2a27;--ink:#ecece5;--ink-light:#c4c4be;--gold:#d4a373;--gold-light:#4a4a45;--clay:#e55a5f}[data-theme=eye-care]{--paper:#ecf3e5;--paper-dark:#dee8d4;--ink:#3a4632;--ink-light:#5c6a4f;--gold:#bda26c;--gold-light:#c6d3b4;--clay:#a4553e}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.8 var(--sans);min-height:100vh}a{color:inherit}header{border-bottom:1px solid var(--gold-light);padding:18px max(24px,calc((100vw - 960px)/2))}header a{text-decoration:none;font:normal 25px var(--serif)}header span{color:var(--clay)}main{max-width:760px;margin:auto;padding:90px 24px 120px}h1{font:normal clamp(38px,6vw,60px)/1.2 var(--serif);margin:0 0 13px}.intro{color:var(--ink-light);margin:0 0 30px}.panel{border:1px solid var(--gold-light);border-radius:12px;padding:32px;background:var(--paper-dark)}.state{font:normal 32px var(--serif);margin:0 0 10px}.muted{font-size:13px;color:var(--ink-light)}.note{white-space:pre-wrap;margin:20px 0}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:25px}.actions a,.actions button{display:inline-block;border:1px solid var(--gold-light);border-radius:999px;background:transparent;color:var(--ink);padding:10px 20px;font:13px var(--sans);text-decoration:none;cursor:pointer}.actions a.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}.actions button.danger{color:var(--clay)}.error{color:var(--clay)}.privacy{margin-top:20px;font-size:12px;color:var(--ink-light)}:focus-visible{outline:3px solid var(--gold);outline-offset:3px}@media(max-width:600px){main{padding:52px 20px 80px}.panel{padding:24px}}
+</style>
+</head>
+<body>
+<header><a href="index.html">诗歌<span>漂流</span></a></header>
+<main><h1>投稿的下一程</h1><p class="intro">这里仅显示投稿进度。请勿公开分享此链接。</p>
+  <section class="panel" aria-live="polite"><div class="state" id="state">正在查询…</div><div class="muted" id="time"></div><p class="note" id="note"></p><div class="actions"><a id="read-link" class="primary" hidden target="_blank" rel="noopener noreferrer">阅读已发表作品 →</a><button id="withdraw" class="danger" hidden type="button">撤回投稿</button><a href="submit.html">再投一首</a></div><div class="muted" id="feedback" role="status"></div></section>
+  <p class="privacy">查询链接包含一段私密凭据。页面不会展示未公开的正文或联系方式；稿件被撤回或未采用后，记录将在决定后 30 天内删除。超过 180 天仍未处理的稿件也会删除。</p>
+</main>
+<script src="submission-config.js"></script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var token=location.hash.slice(1), cfg=window.POEM_SUBMISSIONS||{};
+  var labels={submitted:'稿件已收到',reviewing:'正在审核',published:'已发表',declined:'暂未采用',withdrawn:'已撤回'};
+  if(!/^[a-f0-9]{64}$/.test(token)){$('state').textContent='查询链接无效';return}
+  if(!cfg.apiBase){$('state').textContent='查询服务准备中';return}
+  var base=cfg.apiBase.replace(/\/$/,'');
+  async function api(path,method){var response=await fetch(base+path,{method:method||'GET',headers:{Authorization:'Bearer '+token}});var data=await response.json();if(!response.ok)throw new Error(data.error||'查询失败');return data}
+  async function refresh(){
+    try{var data=await api('/api/status');$('state').textContent=labels[data.status]||'状态待更新';$('time').textContent=data.createdAt?'投稿于 '+new Date(data.createdAt).toLocaleString('zh-CN'):'';$('note').textContent=data.note||'';$('read-link').hidden=!data.publishedUrl;if(data.publishedUrl)$('read-link').href=data.publishedUrl;$('withdraw').hidden=!['submitted','reviewing'].includes(data.status);$('feedback').textContent=''}
+    catch(error){$('state').textContent='未能取得投稿状态';$('feedback').textContent=error.message;$('feedback').classList.add('error')}
+  }
+  $('withdraw').addEventListener('click',async function(){if(!confirm('确定撤回这篇投稿？撤回后不能恢复。'))return;this.disabled=true;try{await api('/api/withdraw','POST');await refresh()}catch(error){$('feedback').textContent=error.message;$('feedback').classList.add('error');this.disabled=false}});
+  refresh();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>try { localStorage.removeItem('gh_creds'); sessionStorage.removeItem('admin_auth'); } catch (_) {}</script>
+<meta name="referrer" content="no-referrer">
+<title>投稿 · 诗歌漂流</title>
+<meta name="description" content="向诗歌漂流投稿。无需 GitHub 账号，作品经审核后发表。">
+<style>
+:root{--paper:#f7f5f0;--paper-dark:#ede9e2;--ink:#2c2a28;--ink-light:#5a554e;--gold:#d4b896;--gold-light:#ded5c7;--clay:#9c4d32;--serif:Georgia,"Noto Serif SC",serif;--sans:"Noto Sans SC",system-ui,sans-serif}
+[data-theme=dark]{--paper:#1e1e1c;--paper-dark:#2a2a27;--ink:#ecece5;--ink-light:#c4c4be;--gold:#d4a373;--gold-light:#4a4a45;--clay:#e55a5f}[data-theme=eye-care]{--paper:#ecf3e5;--paper-dark:#dee8d4;--ink:#3a4632;--ink-light:#5c6a4f;--gold:#bda26c;--gold-light:#c6d3b4;--clay:#a4553e}
+*{box-sizing:border-box}[hidden]{display:none!important}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);font:16px/1.8 var(--sans)}button,input,textarea{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}header{border-bottom:1px solid var(--gold-light);background:var(--paper)}header .wrap{max-width:1020px;margin:auto;padding:17px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}.logo{font:normal 25px var(--serif);white-space:nowrap}.logo span{color:var(--clay)}nav ul{list-style:none;display:flex;gap:20px;flex-wrap:wrap;margin:0;padding:0}nav a{font-size:12px;color:var(--ink-light)}nav a:hover,nav a[aria-current=page]{color:var(--clay)}main{max-width:980px;margin:auto;padding:72px 28px 100px}.eyeline{width:68px;height:1px;background:var(--gold);margin-bottom:28px}.intro{max-width:680px;margin-bottom:46px}.intro h1{font:normal clamp(40px,7vw,70px)/1.15 var(--serif);letter-spacing:.03em;margin:0 0 20px}.intro p{color:var(--ink-light);margin:0;max-width:600px}.steps{display:flex;flex-wrap:wrap;gap:8px 26px;color:var(--ink-light);font-size:12px;margin-top:25px}.steps strong{color:var(--clay);font-weight:500;margin-right:6px}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(270px,.88fr);gap:44px;align-items:start}.form-section h2,.preview-section h2{font:normal 27px var(--serif);margin:0 0 18px}.field{display:flex;flex-direction:column;gap:6px;margin-bottom:19px}.field label{font-size:13px;color:var(--ink-light)}.field input,.field textarea{background:var(--paper);color:var(--ink);border:1px solid var(--gold-light);border-radius:8px;width:100%;padding:12px 13px;outline:none}.field input:focus,.field textarea:focus{border-color:var(--clay);box-shadow:0 0 0 3px color-mix(in srgb,var(--clay) 15%,transparent)}.field textarea{min-height:340px;resize:vertical;line-height:1.9}.field small{font-size:12px;color:var(--ink-light)}.field .count{text-align:right}.consent{display:flex;gap:10px;align-items:start;font-size:13px;color:var(--ink-light);margin:18px 0 22px}.consent input{margin-top:6px;accent-color:var(--clay)}.button{border:1px solid var(--ink);border-radius:999px;background:var(--ink);color:var(--paper);padding:12px 27px;font-size:13px;min-height:45px}.button:hover{background:var(--clay);border-color:var(--clay);color:var(--paper)}.button:disabled{opacity:.5;cursor:not-allowed}.feedback{min-height:30px;margin-top:13px;color:var(--ink-light);font-size:13px}.feedback.error{color:var(--clay)}.privacy{font-size:12px;color:var(--ink-light);margin-top:30px;padding-top:17px;border-top:1px solid var(--gold-light)}.preview-section{position:sticky;top:24px}.paper{background:var(--paper-dark);border:1px solid var(--gold-light);border-radius:12px;padding:32px 28px;min-height:360px}.paper-title{font:normal 31px var(--serif);overflow-wrap:anywhere}.paper-author{color:var(--ink-light);font-size:12px;margin:7px 0 25px}.paper-divider{width:48px;height:1px;background:var(--gold);margin-bottom:24px}.paper-body{font:18px/2.05 "STKaiti","KaiTi",var(--serif);white-space:pre-wrap;overflow-wrap:anywhere}.preview-note{font-size:12px;color:var(--ink-light);margin-top:12px}.honey{position:absolute;left:-9999px}.success{border:1px solid var(--gold-light);border-radius:12px;background:var(--paper-dark);padding:35px;max-width:700px}.success h2{font:normal 32px var(--serif);margin:0 0 12px}.success p{color:var(--ink-light)}.success a{color:var(--clay);overflow-wrap:anywhere;text-decoration:underline}.success button{border:1px solid var(--gold-light);border-radius:999px;background:transparent;color:var(--ink);padding:8px 18px;margin-top:14px}.theme-side{position:fixed;right:12px;bottom:18px;display:flex;background:var(--paper);border:1px solid var(--gold-light);border-radius:999px;padding:3px;z-index:3}.theme-side button{border:0;background:transparent;color:var(--ink-light);width:36px;height:36px;border-radius:50%;font-size:11px}.theme-side button.active{background:var(--gold);color:var(--paper)}footer{border-top:1px solid var(--gold-light);color:var(--ink-light);font-size:12px;text-align:center;padding:28px}footer a{text-decoration:underline}:focus-visible{outline:3px solid var(--gold);outline-offset:3px}@media(max-width:780px){.layout{grid-template-columns:1fr}.preview-section{position:static}.paper{min-height:240px}main{padding-top:48px}}@media(max-width:620px){header .wrap{display:block}nav ul{gap:8px 15px;margin-top:12px}main{padding:40px 20px 70px}.steps{display:block}.steps span{display:block;margin:5px 0}.paper{padding:25px 20px}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a class="logo" href="index.html">诗歌<span>漂流</span></a><nav aria-label="主导航"><ul><li><a href="index.html">首页</a></li><li><a href="directory.html">目录</a></li><li><a href="authors.html">同志们</a></li><li><a href="voyage.html">漂流</a></li><li><a href="about.html">关于</a></li><li><a href="submit.html" aria-current="page">投稿</a></li></ul></nav></div></header>
+<main>
+  <div class="eyeline" aria-hidden="true"></div>
+  <div class="intro"><h1>把诗交给漂流</h1><p>在这里写下作品，不需要 GitHub 账号。稿件先由维护者阅读，决定收录后才会出现在诗集里。</p><div class="steps"><span><strong>01</strong>写下诗</span><span><strong>02</strong>确认排版与公开意愿</span><span><strong>03</strong>保存私密查询链接</span></div></div>
+  <div id="form-layout" class="layout">
+    <section class="form-section"><h2>投稿</h2><form id="submission-form" novalidate>
+      <div class="field"><label for="title">诗题 *</label><input id="title" name="title" maxlength="80" required autocomplete="off"></div>
+      <div class="field"><label for="author">发表笔名 *</label><input id="author" name="author" maxlength="40" required autocomplete="nickname"><small>采用后将按这个名字公开。请勿冒用他人笔名。</small></div>
+      <div class="field"><label for="content">诗的正文 *</label><textarea id="content" name="content" maxlength="12000" required spellcheck="false"></textarea><small class="count" id="content-count">0 / 12000 字</small></div>
+      <div class="field"><label for="contact">联系方式（选填）</label><input id="contact" name="contact" maxlength="120" autocomplete="email"><small>只用于联系你处理这篇投稿，不会随作品公开。</small></div>
+      <div class="honey" aria-hidden="true"><label for="website">网站</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+      <div id="turnstile-slot" aria-label="防刷验证"></div>
+      <label class="consent"><input id="consent" type="checkbox" required><span>我确认有权投稿此作品，并同意在审核通过后按上述笔名公开展示诗题和正文。审核前稿件仅供维护者查看。</span></label>
+      <button class="button" id="submit-button" type="submit" disabled>正在检查投稿服务…</button><div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+    </form><p class="privacy">投稿后会提供无需登录的私密查询链接。请妥善保存；拿到链接的人可以查看状态，并在审核前撤回稿件。未采用或撤回的稿件会在决定后 30 天内删除；超过 180 天仍未处理的稿件也会删除。已发表作品在待审库中的正文副本于发表 30 天后清除。防刷验证会处理必要的访问设备信号；投稿页不加载访问统计脚本。</p></section>
+    <aside class="preview-section" aria-label="诗歌排版预览"><h2>排版预览</h2><div class="paper"><div class="paper-title" id="preview-title">未题</div><div class="paper-author" id="preview-author">你的笔名</div><div class="paper-divider"></div><div class="paper-body" id="preview-content">在左侧写下诗行，预览会出现在这里。</div></div><p class="preview-note">此处只在你的浏览器中预览，提交前不会上传。</p></aside>
+  </div>
+  <section id="success" class="success" hidden><h2>稿件已收到</h2><p>请保存下面的私密链接。它可以查看审核状态，也可以在审核前撤回稿件；不要公开分享。</p><a id="status-link" href=""></a><div><button id="copy-link" type="button">复制查询链接</button></div><p id="submission-number"></p></section>
+</main>
+<div class="theme-side" id="theme-side" aria-label="页面主题"><button type="button" data-theme="light" aria-label="日间模式">日</button><button type="button" data-theme="dark" aria-label="夜间模式">夜</button><button type="button" data-theme="eye-care" aria-label="护眼模式">护</button></div>
+<footer>© 2026 诗歌漂流 · <a href="about.html">关于诗歌漂流</a></footer>
+<script src="submission-config.js"></script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var cfg=window.POEM_SUBMISSIONS||{};
+  var widgetId=null,turnstileReady=false,sending=false;
+  function setFeedback(message,error){$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
+  function preview(){var content=$('content').value;$('preview-title').textContent=$('title').value.trim()||'未题';$('preview-author').textContent=$('author').value.trim()||'你的笔名';$('preview-content').textContent=content||'在左侧写下诗行，预览会出现在这里。';$('content-count').textContent=content.length+' / 12000 字'}
+  ['title','author','content'].forEach(function(id){$(id).addEventListener('input',preview)});
+  var savedTheme=localStorage.getItem('theme');var theme=['light','dark','eye-care'].includes(savedTheme)?savedTheme:'light';
+  function applyTheme(value){document.documentElement.setAttribute('data-theme',value);localStorage.setItem('theme',value);document.querySelectorAll('#theme-side button').forEach(function(b){b.classList.toggle('active',b.dataset.theme===value)})}
+  applyTheme(theme);document.getElementById('theme-side').addEventListener('click',function(e){var b=e.target.closest('button[data-theme]');if(b)applyTheme(b.dataset.theme)});
+  if(!cfg.apiBase||!cfg.siteKey){$('submit-button').textContent='投稿服务准备中';setFeedback('投稿服务尚未启用，请稍后再来。',true);return}
+  var apiBase=cfg.apiBase.replace(/\/$/,'');
+  var widgetScript=document.createElement('script');widgetScript.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';widgetScript.async=true;widgetScript.onload=function(){widgetId=window.turnstile.render('#turnstile-slot',{sitekey:cfg.siteKey,callback:function(){turnstileReady=true;$('submit-button').disabled=false;$('submit-button').textContent='送出投稿'}})};widgetScript.onerror=function(){setFeedback('验证组件无法载入，请检查网络后刷新页面。',true);$('submit-button').textContent='验证暂不可用'};document.head.appendChild(widgetScript);
+  $('submission-form').addEventListener('submit',async function(e){
+    e.preventDefault();if(sending||!turnstileReady)return;
+    var title=$('title').value.trim(),author=$('author').value.trim(),content=$('content').value.trim();
+    if(!title||!author||content.length<2||!$('consent').checked){setFeedback('请填写诗题、笔名和正文，并确认公开发表说明。',true);return}
+    sending=true;$('submit-button').disabled=true;$('submit-button').textContent='正在送出…';setFeedback('');
+    try{
+      var response=await fetch(apiBase+'/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
+      var result=await response.json();if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
+      $('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
+    }catch(error){setFeedback(error.message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;if(window.turnstile)window.turnstile.reset(widgetId)}
+    finally{sending=false;$('submit-button').disabled=!turnstileReady;$('submit-button').textContent='送出投稿'}
+  });
+  $('copy-link').addEventListener('click',async function(){try{await navigator.clipboard.writeText($('status-link').href);this.textContent='已复制'}catch{this.textContent='复制失败，请手动保存链接'}});
+})();
+</script>
+</body>
+</html>

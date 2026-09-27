@@ -1,0 +1,16 @@
+name = "poem-submissions-review"
+main = "review.mjs"
+compatibility_date = "2026-09-01"
+
+[vars]
+REVIEW_AUTH = "github"
+REVIEWER_EMAILS = "zhege712@gmail.com"
+GITHUB_OAUTH_CLIENT_ID = "REPLACE_WITH_GITHUB_OAUTH_CLIENT_ID"
+GITHUB_OWNER = "zhege712-crypto"
+GITHUB_REPO = "Poem_Ulysses"
+PUBLIC_SITE_URL = "https://zhege712-crypto.github.io/Poem_Ulysses/"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "poem-submissions"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
