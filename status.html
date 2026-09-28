@@ -7,7 +7,21 @@
 <meta name="referrer" content="no-referrer">
 <title>查询投稿 · 诗歌漂流</title>
 <style>
-:root{--paper:#f7f5f0;--paper-dark:#ede9e2;--ink:#2c2a28;--ink-light:#5a554e;--gold:#d4b896;--gold-light:#ded5c7;--clay:#9c4d32;--serif:Georgia,"Noto Serif SC",serif;--sans:"Noto Sans SC",system-ui,sans-serif}[data-theme=dark]{--paper:#1e1e1c;--paper-dark:#2a2a27;--ink:#ecece5;--ink-light:#c4c4be;--gold:#d4a373;--gold-light:#4a4a45;--clay:#e55a5f}[data-theme=eye-care]{--paper:#ecf3e5;--paper-dark:#dee8d4;--ink:#3a4632;--ink-light:#5c6a4f;--gold:#bda26c;--gold-light:#c6d3b4;--clay:#a4553e}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.8 var(--sans);min-height:100vh}a{color:inherit}header{border-bottom:1px solid var(--gold-light);padding:18px max(24px,calc((100vw - 960px)/2))}header a{text-decoration:none;font:normal 25px var(--serif)}header span{color:var(--clay)}main{max-width:760px;margin:auto;padding:90px 24px 120px}h1{font:normal clamp(38px,6vw,60px)/1.2 var(--serif);margin:0 0 13px}.intro{color:var(--ink-light);margin:0 0 30px}.panel{border:1px solid var(--gold-light);border-radius:12px;padding:32px;background:var(--paper-dark)}.state{font:normal 32px var(--serif);margin:0 0 10px}.muted{font-size:13px;color:var(--ink-light)}.note{white-space:pre-wrap;margin:20px 0}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:25px}.actions a,.actions button{display:inline-block;border:1px solid var(--gold-light);border-radius:999px;background:transparent;color:var(--ink);padding:10px 20px;font:13px var(--sans);text-decoration:none;cursor:pointer}.actions a.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}.actions button.danger{color:var(--clay)}.error{color:var(--clay)}.privacy{margin-top:20px;font-size:12px;color:var(--ink-light)}:focus-visible{outline:3px solid var(--gold);outline-offset:3px}@media(max-width:600px){main{padding:52px 20px 80px}.panel{padding:24px}}
+:root{--paper:#f7f5f0;--paper-dark:#ede9e2;--ink:#2c2a28;--ink-light:#5a554e;--gold:#d4b896;--gold-light:#e8e2d8;--clay:#b85c3a;--clay-contrast:#8f432c;--serif:"Cormorant Garamond","Noto Serif SC",Georgia,serif;--sans:"Inter","Noto Sans SC",system-ui,sans-serif}[data-theme=dark]{--paper:#1e1e1c;--paper-dark:#2a2a27;--ink:#ecece5;--ink-light:#c4c4be;--gold:#d4a373;--gold-light:#4a4a45;--clay:#e55a5f;--clay-contrast:#f17b80}[data-theme=eye-care]{--paper:#ecf3e5;--paper-dark:#dee8d4;--ink:#3a4632;--ink-light:#5c6a4f;--gold:#bda26c;--gold-light:#c6d3b4;--clay:#b2674f;--clay-contrast:#8f3e2e}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.8 var(--sans);min-height:100vh}a{color:inherit}header{border-bottom:1px solid var(--gold-light);padding:18px max(24px,calc((100vw - 960px)/2))}header a{text-decoration:none;font:normal 25px var(--serif)}header span{color:var(--clay)}main{max-width:760px;margin:auto;padding:90px 24px 120px}h1{font:normal clamp(38px,6vw,60px)/1.2 var(--serif);margin:0 0 13px}.intro{color:var(--ink-light);margin:0 0 30px}.panel{border:1px solid var(--gold-light);border-radius:12px;padding:32px;background:var(--paper-dark)}.state{font:normal 32px var(--serif);margin:0 0 10px}.muted{font-size:13px;color:var(--ink-light)}.note{white-space:pre-wrap;margin:20px 0}.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:25px}.actions a,.actions button{display:inline-block;border:1px solid var(--gold-light);border-radius:999px;background:transparent;color:var(--ink);padding:10px 20px;font:13px var(--sans);text-decoration:none;cursor:pointer}.actions a.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}.actions button.danger{color:var(--clay)}.error{color:var(--clay)}.privacy{margin-top:20px;font-size:12px;color:var(--ink-light)}:focus-visible{outline:3px solid var(--gold);outline-offset:3px}@media(max-width:600px){main{padding:52px 20px 80px}.panel{padding:24px}}
+/* 与诗集主站共用的玻璃导航与主题栏 */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 74%,transparent);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%)}
+header a{font-size:1.15rem;letter-spacing:.15em}header span{color:var(--gold)}
+.panel{background:color-mix(in srgb,var(--paper-dark) 76%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%)}
+.actions button.danger,.error{color:var(--clay-contrast)}
+.side-theme{position:fixed;right:28px;bottom:100px;z-index:150;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px;border:1px solid var(--gold-light);border-radius:24px;background:color-mix(in srgb,var(--paper) 74%,transparent);backdrop-filter:blur(18px) saturate(170%);-webkit-backdrop-filter:blur(18px) saturate(170%)}
+.side-theme .theme-btn{width:30px;height:30px;padding:0;border:0;border-radius:50%;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.side-theme .theme-btn svg{width:18px;height:18px;stroke:var(--ink-light);stroke-width:1.2;fill:none;transition:stroke .25s}
+.side-theme .theme-btn:hover{background:var(--gold-light)}
+.side-theme .theme-btn.active{background:var(--ink);box-shadow:0 0 0 1.5px var(--gold)}
+.side-theme .theme-btn.active svg{stroke:var(--paper)}
+.side-theme .line{width:1.5px;height:10px;background:var(--gold-light);border-radius:1px}
+.side-theme .theme-btn:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+@media(max-width:820px){.side-theme{right:16px;bottom:80px}}
 </style>
 </head>
 <body>
@@ -16,10 +30,20 @@
   <section class="panel" aria-live="polite"><div class="state" id="state">正在查询…</div><div class="muted" id="time"></div><p class="note" id="note"></p><div class="actions"><a id="read-link" class="primary" hidden target="_blank" rel="noopener noreferrer">阅读已发表作品 →</a><button id="withdraw" class="danger" hidden type="button">撤回投稿</button><a href="submit.html">再投一首</a></div><div class="muted" id="feedback" role="status"></div></section>
   <p class="privacy">查询链接包含一段私密凭据。页面不会展示未公开的正文或联系方式；稿件被撤回或未采用后，记录将在决定后 30 天内删除。超过 180 天仍未处理的稿件也会删除。</p>
 </main>
+<div class="side-theme" id="theme-side" aria-label="页面主题">
+  <button class="theme-btn" type="button" data-theme="light" aria-label="日间模式"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
+  <div class="line" aria-hidden="true"></div>
+  <button class="theme-btn" type="button" data-theme="dark" aria-label="夜间模式"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/></svg></button>
+  <div class="line" aria-hidden="true"></div>
+  <button class="theme-btn" type="button" data-theme="eye-care" aria-label="护眼模式"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+</div>
 <script src="submission-config.js"></script>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id)};
+  function applyTheme(value){document.documentElement.setAttribute('data-theme',value);try{localStorage.setItem('theme',value)}catch(_){}document.querySelectorAll('#theme-side button').forEach(function(b){b.classList.toggle('active',b.dataset.theme===value)})}
+  var savedTheme;try{savedTheme=localStorage.getItem('theme')}catch(_){}applyTheme(['light','dark','eye-care'].includes(savedTheme)?savedTheme:'light');
+  $('theme-side').addEventListener('click',function(e){var b=e.target.closest('button[data-theme]');if(b)applyTheme(b.dataset.theme)});
   var token=location.hash.slice(1), cfg=window.POEM_SUBMISSIONS||{};
   var labels={submitted:'稿件已收到',reviewing:'正在审核',published:'已发表',declined:'暂未采用',withdrawn:'已撤回'};
   if(!/^[a-f0-9]{64}$/.test(token)){$('state').textContent='查询链接无效';return}

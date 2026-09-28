@@ -48,9 +48,9 @@ header {
   top: 0;
   z-index: 100;
   padding: 22px 0;
-  background: rgba(247, 245, 240, 0.72);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  backdrop-filter: blur(24px) saturate(170%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
   border-bottom: 1px solid var(--gold-light);
 }
 header .wrap {
@@ -113,9 +113,9 @@ nav a.active::after { width: 100%; }
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  background: rgba(247, 245, 240, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
   padding: 10px 8px;
   border-radius: 24px;
   border: 1px solid var(--gold-light);
@@ -137,17 +137,18 @@ nav a.active::after { width: 100%; }
 .side-theme .theme-btn svg {
   width: 18px;
   height: 18px;
-  stroke: var(--ink-faded);
+  stroke: var(--ink-light);
   stroke-width: 1.2;
   fill: none;
   transition: stroke 0.25s;
 }
 .side-theme .theme-btn:hover { background: var(--gold-light); transform: scale(1.05); }
 .side-theme .theme-btn.active {
-  background: var(--gold);
+  background: var(--ink);
   box-shadow: 0 0 0 1.5px var(--gold);
 }
 .side-theme .theme-btn.active svg { stroke: var(--paper); }
+.side-theme .theme-btn:focus-visible { outline: 2px solid var(--clay); outline-offset: 3px; }
 .side-theme .line {
   width: 1.5px;
   height: 10px;
@@ -789,7 +790,7 @@ Promise.all([
     }
     [data-theme="dark"] .side-theme,
     [data-theme="eye-care"] .side-theme {
-      background: rgba(30, 30, 28, 0.7);
+      background: color-mix(in srgb, var(--paper) 74%, transparent);
       border-color: var(--gold-light);
     }
   `;
