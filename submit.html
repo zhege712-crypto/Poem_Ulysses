@@ -34,6 +34,8 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
 .draft-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;margin:0 0 23px;padding:12px 0;border-top:1px solid var(--gold-light);border-bottom:1px solid var(--gold-light);font-size:13px;color:var(--ink-light)}
 .draft-tools label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--ink)}.draft-tools input{accent-color:var(--clay-contrast)}.draft-tools button{border:0;background:none;color:var(--clay-contrast);text-decoration:underline;text-underline-offset:3px;padding:4px 0}.draft-tools small{display:block;flex-basis:100%;font-size:12px;line-height:1.55}
 .field-error{display:block;color:var(--clay-contrast)!important;font-size:12px;line-height:1.5}.field [aria-invalid=true]{border-color:var(--clay-contrast);box-shadow:0 0 0 2px color-mix(in srgb,var(--clay) 16%,transparent)}.consent-error{margin:-14px 0 18px}
+.verification-help{display:flex;align-items:center;gap:12px;margin:10px 0 2px}.verification-help button,.mail-fallback button,.mail-fallback a{min-height:44px;border:1px solid var(--gold-light);border-radius:999px;padding:9px 17px;background:color-mix(in srgb,var(--paper) 82%,transparent);color:var(--ink);font-size:13px;text-decoration:none}.verification-help button:hover,.mail-fallback button:hover,.mail-fallback a:hover{border-color:var(--gold);background:var(--paper-dark)}
+.mail-fallback{margin:22px 0 6px;padding:17px 19px;border:1px solid var(--gold-light);border-radius:12px;background:color-mix(in srgb,var(--paper-dark) 70%,transparent)}.mail-fallback summary{cursor:pointer;color:var(--ink);font-size:14px;font-weight:500}.mail-fallback p{font-size:12px;color:var(--ink-light);margin:10px 0;line-height:1.65}.mail-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.mail-fallback textarea{width:100%;min-height:130px;margin-top:12px;padding:10px;border:1px solid var(--gold-light);border-radius:8px;background:var(--paper);color:var(--ink);font-size:13px;line-height:1.6}.mail-feedback{min-height:1.5em;overflow-wrap:anywhere}.mail-fallback code{font:inherit;color:var(--ink)}
 @media(max-width:820px){.side-theme{right:16px;bottom:80px}}
 @media(max-width:620px){header .wrap{display:flex;flex-wrap:wrap}nav ul{gap:2px 12px}}
 </style>
@@ -51,9 +53,10 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
       <div class="field"><label for="content">诗的正文 *</label><textarea id="content" name="content" maxlength="12000" required spellcheck="false" aria-describedby="content-count content-error"></textarea><small class="count" id="content-count">0 / 12000 字</small><small class="field-error" id="content-error" hidden></small></div>
       <div class="field"><label for="contact">联系方式（选填）</label><input id="contact" name="contact" maxlength="120" autocomplete="email"><small>只用于联系你处理这篇投稿，不会随作品公开。</small></div>
       <div class="honey" aria-hidden="true"><label for="website">网站</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-      <div id="turnstile-slot" aria-label="防刷验证"></div>
+      <div id="turnstile-slot" aria-label="防刷验证"></div><div class="verification-help"><button id="retry-verification" type="button" hidden>重试验证</button></div>
       <label class="consent"><input id="consent" type="checkbox" required aria-describedby="consent-error"><span>我确认有权投稿此作品，并同意在审核通过后按上述笔名公开展示诗题和正文。审核前稿件仅供维护者查看。</span></label><small class="field-error consent-error" id="consent-error" hidden></small>
       <button class="button" id="submit-button" type="submit" disabled>正在检查投稿服务…</button><div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+      <details class="mail-fallback" id="mail-fallback"><summary>验证无法完成？使用邮件投稿</summary><p>如果防刷验证长时间无法加载，可以把稿件从自己的邮箱发给维护者。邮件会显示你的发件地址；这条备用通道不进入站内审核箱，也不会生成私密状态链接。</p><div class="mail-actions"><button id="copy-email" type="button">复制邮件稿件</button><a id="email-link" href="mailto:zhege712@gmail.com?subject=%E8%AF%97%E6%AD%8C%E6%BC%82%E6%B5%81%E6%8A%95%E7%A8%BF">打开邮箱写信</a></div><p class="mail-feedback" id="mail-feedback" role="status" aria-live="polite">先复制稿件，再打开邮箱并粘贴到正文；确认收件人是 <code>zhege712@gmail.com</code> 后自行发送。</p><textarea id="mail-copy-text" aria-label="待复制的邮件稿件" readonly hidden></textarea></details>
     </form><p class="privacy">投稿后会提供无需登录的私密查询链接。请妥善保存；拿到链接的人可以查看状态，并在审核前撤回稿件。草稿暂存默认关闭；开启后仅写入此标签页的浏览器会话，投稿成功会清除。未采用或撤回的稿件会在决定后 30 天内删除；超过 180 天仍未处理的稿件也会删除。已发表作品在待审库中的正文副本于发表 30 天后清除。防刷验证会处理必要的访问设备信号；投稿页不加载访问统计脚本。</p></section>
     <aside class="preview-section" aria-label="诗歌排版预览"><h2>排版预览</h2><div class="paper"><div class="paper-title" id="preview-title">未题</div><div class="paper-author" id="preview-author">你的笔名</div><div class="paper-divider"></div><div class="paper-body" id="preview-content">在左侧写下诗行，预览会出现在这里。</div></div><p class="preview-note">此处只在你的浏览器中预览，提交前不会上传。</p></aside>
   </div>
@@ -72,36 +75,62 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
 (function(){
   var $=function(id){return document.getElementById(id)};
   var cfg=window.POEM_SUBMISSIONS||{};
-  var widgetId=null,turnstileReady=false,sending=false;
+  var widgetId=null,widgetScript=null,turnstileReady=false,sending=false,emailPrepared=false,loadTimer=null,verifyTimer=null;
   var draftKey='poem_submission_draft_v1';
   function setFeedback(message,error){$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
   function preview(){var content=$('content').value;$('preview-title').textContent=$('title').value.trim()||'未题';$('preview-author').textContent=$('author').value.trim()||'你的笔名';$('preview-content').textContent=content||'在左侧写下诗行，预览会出现在这里。';$('content-count').textContent=content.length+' / 12000 字'}
+  function invalidateEmailDraft(){emailPrepared=false;$('mail-copy-text').hidden=true;$('mail-copy-text').value='';$('mail-feedback').textContent='内容已修改。请重新复制稿件，再打开邮箱发送。'}
   function fieldError(id,message){var field=$(id),error=$(id+'-error');error.textContent=message;error.hidden=!message;if(message)field.setAttribute('aria-invalid','true');else field.removeAttribute('aria-invalid')}
   function saveDraft(){if(!$('save-draft').checked)return;try{sessionStorage.setItem(draftKey,JSON.stringify({title:$('title').value,author:$('author').value,content:$('content').value}));$('clear-draft').hidden=false}catch(_){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='浏览器未能暂存草稿；请先在别处备份正文。'}}
   function removeDraft(){try{sessionStorage.removeItem(draftKey)}catch(_){}$('clear-draft').hidden=true}
   try{var draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(draft&&typeof draft==='object'&&['title','author','content'].every(function(id){return typeof draft[id]==='string'})){['title','author','content'].forEach(function(id){$(id).value=draft[id]});$('save-draft').checked=true;$('clear-draft').hidden=false;$('draft-note').textContent='已恢复此标签页暂存的草稿；联系方式不会暂存。';preview()}}catch(_){removeDraft()}
-  ['title','author','content'].forEach(function(id){$(id).addEventListener('input',function(){preview();fieldError(id,'');saveDraft()})});
+  ['title','author','content'].forEach(function(id){$(id).addEventListener('input',function(){preview();fieldError(id,'');saveDraft();invalidateEmailDraft()})});
+  $('contact').addEventListener('input',invalidateEmailDraft);
   $('save-draft').addEventListener('change',function(){if(this.checked){saveDraft();$('draft-note').textContent='草稿仅留在此标签页：诗题、笔名和正文。联系方式不会暂存。'}else{removeDraft();$('draft-note').textContent='已停止暂存；当前输入仍留在页面上。'}});
   $('clear-draft').addEventListener('click',function(){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='暂存已清除；当前输入仍留在页面上。'});
-  $('consent').addEventListener('change',function(){if(this.checked){$('consent-error').hidden=true;this.removeAttribute('aria-invalid')}});
+  $('consent').addEventListener('change',function(){invalidateEmailDraft();if(this.checked){$('consent-error').hidden=true;this.removeAttribute('aria-invalid')}});
   function validate(){var first=null;[['title','请填写诗题。'],['author','请填写发表笔名。'],['content','请写下至少 2 个字的正文。']].forEach(function(item){var id=item[0],invalid=id==='content'?$(id).value.trim().length<2:!$(id).value.trim();fieldError(id,invalid?item[1]:'');if(invalid&&!first)first=$(id)});var consentMissing=!$('consent').checked;$('consent-error').textContent=consentMissing?'请先确认作品与公开展示说明。':'';$('consent-error').hidden=!consentMissing;if(consentMissing){$('consent').setAttribute('aria-invalid','true');if(!first)first=$('consent')}else $('consent').removeAttribute('aria-invalid');if(first){first.focus();setFeedback('请根据标出的提示补全投稿信息。',true);return false}return true}
   var savedTheme;try{savedTheme=localStorage.getItem('theme')}catch(_){}var theme=['light','dark','eye-care'].includes(savedTheme)?savedTheme:'light';
   function applyTheme(value){document.documentElement.setAttribute('data-theme',value);try{localStorage.setItem('theme',value)}catch(_){}document.querySelectorAll('#theme-side button').forEach(function(b){b.classList.toggle('active',b.dataset.theme===value)})}
   applyTheme(theme);document.getElementById('theme-side').addEventListener('click',function(e){var b=e.target.closest('button[data-theme]');if(b)applyTheme(b.dataset.theme)});
-  if(!cfg.apiBase||!cfg.siteKey){$('submit-button').textContent='投稿服务准备中';setFeedback('投稿服务尚未启用，请稍后再来。',true);return}
+  $('copy-email').addEventListener('click',async function(){
+    if(!validate())return;
+    var content=['诗题：'+$('title').value.trim(),'发表笔名：'+$('author').value.trim(),'','正文：',$('content').value.trim()];
+    if($('contact').value.trim())content.push('','其他联系方式：'+$('contact').value.trim());
+    content.push('','我确认有权投稿此作品，并同意审核通过后按上述笔名公开展示诗题和正文。');
+    var text=content.join('\n');
+    try{await navigator.clipboard.writeText(text);$('mail-copy-text').hidden=true;$('mail-feedback').textContent='稿件已复制。现在打开邮箱，粘贴到邮件正文并自行发送至 zhege712@gmail.com。'}
+    catch(_){$('mail-copy-text').value=text;$('mail-copy-text').hidden=false;$('mail-copy-text').focus();$('mail-copy-text').select();$('mail-feedback').textContent='无法自动复制。稿件已在下方选中，请手动复制，再打开邮箱粘贴。'}
+    emailPrepared=true;
+  });
+  $('email-link').addEventListener('click',function(e){if(!emailPrepared){e.preventDefault();$('mail-feedback').textContent='请先填写并复制邮件稿件，再打开邮箱。';$('copy-email').focus()}});
+  if(!cfg.apiBase||!cfg.siteKey){$('submit-button').textContent='投稿服务准备中';setFeedback('站内投稿服务尚未启用；可以使用下方邮件备用投稿。',true);return}
   var apiBase=cfg.apiBase.replace(/\/$/,'');
-  var widgetScript=document.createElement('script');widgetScript.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';widgetScript.async=true;widgetScript.onload=function(){widgetId=window.turnstile.render('#turnstile-slot',{sitekey:cfg.siteKey,callback:function(){turnstileReady=true;$('submit-button').disabled=false;$('submit-button').textContent='送出投稿'}})};widgetScript.onerror=function(){setFeedback('验证组件无法载入，请检查网络后刷新页面。',true);$('submit-button').textContent='验证暂不可用'};document.head.appendChild(widgetScript);
+  function verificationProblem(message){clearTimeout(loadTimer);clearTimeout(verifyTimer);turnstileReady=false;$('submit-button').disabled=true;$('submit-button').textContent='验证未完成';$('retry-verification').hidden=false;setFeedback(message+' 可点击“重试验证”，或使用下方邮件投稿。',true)}
+  function startVerification(){
+    clearTimeout(loadTimer);clearTimeout(verifyTimer);turnstileReady=false;$('submit-button').disabled=true;$('submit-button').textContent='正在加载验证…';$('retry-verification').hidden=true;setFeedback('');
+    if(widgetId!==null&&window.turnstile){try{window.turnstile.reset(widgetId);verifyTimer=setTimeout(function(){if(!turnstileReady)verificationProblem('防刷验证仍未完成。')},20000);return}catch(_){widgetId=null}}
+    if(widgetScript){widgetScript.onload=null;widgetScript.onerror=null;widgetScript.remove()}
+    var scriptLoaded=false;widgetScript=document.createElement('script');widgetScript.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';widgetScript.async=true;
+    widgetScript.onload=function(){scriptLoaded=true;clearTimeout(loadTimer);try{if(!window.turnstile)throw new Error();widgetId=window.turnstile.render('#turnstile-slot',{sitekey:cfg.siteKey,callback:function(){clearTimeout(verifyTimer);turnstileReady=true;$('submit-button').disabled=false;$('submit-button').textContent='送出投稿';$('retry-verification').hidden=true;setFeedback('')},'expired-callback':function(){verificationProblem('验证已过期。')},'error-callback':function(){verificationProblem('防刷验证出错。')}});verifyTimer=setTimeout(function(){if(!turnstileReady)verificationProblem('防刷验证仍未完成。')},20000)}catch(_){verificationProblem('防刷验证无法启动。')}};
+    widgetScript.onerror=function(){clearTimeout(loadTimer);verificationProblem('防刷验证无法载入，可能是当前网络无法连接验证服务。')};
+    document.head.appendChild(widgetScript);
+    loadTimer=setTimeout(function(){if(!scriptLoaded)verificationProblem('防刷验证加载超时，可能是当前网络无法连接验证服务。')},12000);
+  }
+  $('retry-verification').addEventListener('click',startVerification);
+  startVerification();
   $('submission-form').addEventListener('submit',async function(e){
     e.preventDefault();if(sending||!turnstileReady)return;
     var title=$('title').value.trim(),author=$('author').value.trim(),content=$('content').value.trim();
     if(!validate())return;
     sending=true;$('submit-button').disabled=true;$('submit-button').textContent='正在送出…';setFeedback('');
+    var controller=new AbortController(),requestTimer=setTimeout(function(){controller.abort()},25000);
     try{
-      var response=await fetch(apiBase+'/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
-      var result=await response.json();if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
+      var response=await fetch(apiBase+'/api/submissions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
+      var result=await response.json().catch(function(){throw new Error('投稿服务返回异常，请稍后再试')});if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
       removeDraft();$('save-draft').checked=false;$('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
-    }catch(error){setFeedback(error.message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;if(window.turnstile)window.turnstile.reset(widgetId)}
-    finally{sending=false;$('submit-button').disabled=!turnstileReady;$('submit-button').textContent='送出投稿'}
+    }catch(error){var message=error.name==='AbortError'?'连接超时，无法确认是否收到稿件。请勿立即重复提交；可通过邮件备用通道说明刚才可能已提交。':error instanceof TypeError?'无法连接投稿服务，请检查网络；也可以使用下方邮件投稿。':error.message;setFeedback(message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;$('retry-verification').hidden=false;if(window.turnstile&&widgetId!==null)window.turnstile.reset(widgetId)}
+    finally{clearTimeout(requestTimer);sending=false;$('submit-button').disabled=!turnstileReady;$('submit-button').textContent=turnstileReady?'送出投稿':'验证未完成'}
   });
   $('copy-link').addEventListener('click',async function(){try{await navigator.clipboard.writeText($('status-link').href);this.textContent='已复制'}catch{this.textContent='复制失败，请手动保存链接'}});
 })();

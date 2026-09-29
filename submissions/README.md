@@ -2,6 +2,12 @@
 
 公开网页仍由 GitHub Pages 托管。两个 Cloudflare Workers 共用一座 D1 数据库：`public.mjs` 接收投稿和私密状态查询；`review.mjs` 提供审核页面并发布到 GitHub。两个 Worker 必须分开部署，只给审核 Worker 配置 GitHub 写入凭证。
 
+## 网络受限时的备用投稿
+
+Cloudflare 官方说明 Turnstile 在中国大陆不受支持，部分读者可能无法完成验证或连接公开 Worker。`submit.html` 在验证失败、超时或提交网络异常时给出明确提示，并始终提供“邮件投稿”备用入口。读者先复制诗题、笔名、正文和自愿填写的联系方式，再由自己的邮箱发至 `zhege712@gmail.com`。邮箱地址会暴露给邮件服务和维护者；**邮件稿不会自动进入 D1 审核箱，不提供站内私密状态链接**，须由维护者在邮箱中手工处理。若提交请求超时，读者应在邮件中说明可能已通过站内表单提交，以免重复收录。备用入口不绕过公开 Worker 的 Turnstile 验证。
+
+参考：<https://developers.cloudflare.com/china-network/faq/#is-turnstile-available-in-mainland-china>
+
 ## 部署前准备
 
 1. 确认正式网站地址。两个示例配置中的 `PUBLIC_SITE_URL` 必须是以 `/` 结尾的网站目录，`ALLOWED_ORIGIN` 是其域名的 origin，`PUBLIC_HOSTNAME` 是该域名的 hostname。若正式网站使用自定义域名，三个值要一起改。
