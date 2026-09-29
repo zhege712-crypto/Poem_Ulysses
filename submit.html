@@ -15,7 +15,7 @@
 header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 74%,transparent);backdrop-filter:blur(24px) saturate(170%);-webkit-backdrop-filter:blur(24px) saturate(170%)}
 header .wrap{max-width:960px;padding:20px 28px}
 .logo{font-size:1.15rem;letter-spacing:.15em}.logo span{color:var(--gold)}
-nav ul{gap:28px}nav a{font-family:"JetBrains Mono",monospace;font-size:.6rem;font-weight:300;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-light);position:relative;padding-bottom:2px}
+nav ul{gap:20px}nav a{font-family:"JetBrains Mono",monospace;font-size:.85rem;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-light);position:relative;display:inline-flex;align-items:center;min-height:44px;padding:9px 2px}
 nav a::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .25s ease}
 nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[aria-current=page]::after{transform:scaleX(1)}
 .paper,.success{background:color-mix(in srgb,var(--paper-dark) 76%,transparent);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%)}
@@ -31,8 +31,11 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
 .side-theme .theme-btn.active svg{stroke:var(--paper)}
 .side-theme .line{width:1.5px;height:10px;background:var(--gold-light);border-radius:1px}
 .side-theme .theme-btn:focus-visible{outline:2px solid var(--clay);outline-offset:3px}
+.draft-tools{display:flex;align-items:center;flex-wrap:wrap;gap:8px 18px;margin:0 0 23px;padding:12px 0;border-top:1px solid var(--gold-light);border-bottom:1px solid var(--gold-light);font-size:13px;color:var(--ink-light)}
+.draft-tools label{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:var(--ink)}.draft-tools input{accent-color:var(--clay-contrast)}.draft-tools button{border:0;background:none;color:var(--clay-contrast);text-decoration:underline;text-underline-offset:3px;padding:4px 0}.draft-tools small{display:block;flex-basis:100%;font-size:12px;line-height:1.55}
+.field-error{display:block;color:var(--clay-contrast)!important;font-size:12px;line-height:1.5}.field [aria-invalid=true]{border-color:var(--clay-contrast);box-shadow:0 0 0 2px color-mix(in srgb,var(--clay) 16%,transparent)}.consent-error{margin:-14px 0 18px}
 @media(max-width:820px){.side-theme{right:16px;bottom:80px}}
-@media(max-width:620px){header .wrap{display:flex;flex-wrap:wrap}nav ul{gap:8px 16px}}
+@media(max-width:620px){header .wrap{display:flex;flex-wrap:wrap}nav ul{gap:2px 12px}}
 </style>
 </head>
 <body>
@@ -42,15 +45,16 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
   <div class="intro"><h1>把诗交给漂流</h1><p>在这里写下作品，不需要 GitHub 账号。稿件先由维护者阅读，决定收录后才会出现在诗集里。</p><div class="steps"><span><strong>01</strong>写下诗</span><span><strong>02</strong>确认排版与公开意愿</span><span><strong>03</strong>保存私密查询链接</span></div></div>
   <div id="form-layout" class="layout">
     <section class="form-section"><h2>投稿</h2><form id="submission-form" novalidate>
-      <div class="field"><label for="title">诗题 *</label><input id="title" name="title" maxlength="80" required autocomplete="off"></div>
-      <div class="field"><label for="author">发表笔名 *</label><input id="author" name="author" maxlength="40" required autocomplete="nickname"><small>采用后将按这个名字公开。请勿冒用他人笔名。</small></div>
-      <div class="field"><label for="content">诗的正文 *</label><textarea id="content" name="content" maxlength="12000" required spellcheck="false"></textarea><small class="count" id="content-count">0 / 12000 字</small></div>
+      <div class="draft-tools"><label for="save-draft"><input id="save-draft" type="checkbox">在此标签页暂存草稿</label><button id="clear-draft" type="button" hidden>清除暂存</button><small id="draft-note">仅暂存诗题、笔名和正文，刷新可恢复；不保存联系方式。关闭标签页后通常会清除。</small></div>
+      <div class="field"><label for="title">诗题 *</label><input id="title" name="title" maxlength="80" required autocomplete="off" aria-describedby="title-error"><small class="field-error" id="title-error" hidden></small></div>
+      <div class="field"><label for="author">发表笔名 *</label><input id="author" name="author" maxlength="40" required autocomplete="nickname" aria-describedby="author-hint author-error"><small id="author-hint">采用后将按这个名字公开。请勿冒用他人笔名。</small><small class="field-error" id="author-error" hidden></small></div>
+      <div class="field"><label for="content">诗的正文 *</label><textarea id="content" name="content" maxlength="12000" required spellcheck="false" aria-describedby="content-count content-error"></textarea><small class="count" id="content-count">0 / 12000 字</small><small class="field-error" id="content-error" hidden></small></div>
       <div class="field"><label for="contact">联系方式（选填）</label><input id="contact" name="contact" maxlength="120" autocomplete="email"><small>只用于联系你处理这篇投稿，不会随作品公开。</small></div>
       <div class="honey" aria-hidden="true"><label for="website">网站</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
       <div id="turnstile-slot" aria-label="防刷验证"></div>
-      <label class="consent"><input id="consent" type="checkbox" required><span>我确认有权投稿此作品，并同意在审核通过后按上述笔名公开展示诗题和正文。审核前稿件仅供维护者查看。</span></label>
+      <label class="consent"><input id="consent" type="checkbox" required aria-describedby="consent-error"><span>我确认有权投稿此作品，并同意在审核通过后按上述笔名公开展示诗题和正文。审核前稿件仅供维护者查看。</span></label><small class="field-error consent-error" id="consent-error" hidden></small>
       <button class="button" id="submit-button" type="submit" disabled>正在检查投稿服务…</button><div class="feedback" id="feedback" role="status" aria-live="polite"></div>
-    </form><p class="privacy">投稿后会提供无需登录的私密查询链接。请妥善保存；拿到链接的人可以查看状态，并在审核前撤回稿件。未采用或撤回的稿件会在决定后 30 天内删除；超过 180 天仍未处理的稿件也会删除。已发表作品在待审库中的正文副本于发表 30 天后清除。防刷验证会处理必要的访问设备信号；投稿页不加载访问统计脚本。</p></section>
+    </form><p class="privacy">投稿后会提供无需登录的私密查询链接。请妥善保存；拿到链接的人可以查看状态，并在审核前撤回稿件。草稿暂存默认关闭；开启后仅写入此标签页的浏览器会话，投稿成功会清除。未采用或撤回的稿件会在决定后 30 天内删除；超过 180 天仍未处理的稿件也会删除。已发表作品在待审库中的正文副本于发表 30 天后清除。防刷验证会处理必要的访问设备信号；投稿页不加载访问统计脚本。</p></section>
     <aside class="preview-section" aria-label="诗歌排版预览"><h2>排版预览</h2><div class="paper"><div class="paper-title" id="preview-title">未题</div><div class="paper-author" id="preview-author">你的笔名</div><div class="paper-divider"></div><div class="paper-body" id="preview-content">在左侧写下诗行，预览会出现在这里。</div></div><p class="preview-note">此处只在你的浏览器中预览，提交前不会上传。</p></aside>
   </div>
   <section id="success" class="success" hidden><h2>稿件已收到</h2><p>请保存下面的私密链接。它可以查看审核状态，也可以在审核前撤回稿件；不要公开分享。</p><a id="status-link" href=""></a><div><button id="copy-link" type="button">复制查询链接</button></div><p id="submission-number"></p></section>
@@ -69,9 +73,18 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
   var $=function(id){return document.getElementById(id)};
   var cfg=window.POEM_SUBMISSIONS||{};
   var widgetId=null,turnstileReady=false,sending=false;
+  var draftKey='poem_submission_draft_v1';
   function setFeedback(message,error){$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
   function preview(){var content=$('content').value;$('preview-title').textContent=$('title').value.trim()||'未题';$('preview-author').textContent=$('author').value.trim()||'你的笔名';$('preview-content').textContent=content||'在左侧写下诗行，预览会出现在这里。';$('content-count').textContent=content.length+' / 12000 字'}
-  ['title','author','content'].forEach(function(id){$(id).addEventListener('input',preview)});
+  function fieldError(id,message){var field=$(id),error=$(id+'-error');error.textContent=message;error.hidden=!message;if(message)field.setAttribute('aria-invalid','true');else field.removeAttribute('aria-invalid')}
+  function saveDraft(){if(!$('save-draft').checked)return;try{sessionStorage.setItem(draftKey,JSON.stringify({title:$('title').value,author:$('author').value,content:$('content').value}));$('clear-draft').hidden=false}catch(_){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='浏览器未能暂存草稿；请先在别处备份正文。'}}
+  function removeDraft(){try{sessionStorage.removeItem(draftKey)}catch(_){}$('clear-draft').hidden=true}
+  try{var draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(draft&&typeof draft==='object'&&['title','author','content'].every(function(id){return typeof draft[id]==='string'})){['title','author','content'].forEach(function(id){$(id).value=draft[id]});$('save-draft').checked=true;$('clear-draft').hidden=false;$('draft-note').textContent='已恢复此标签页暂存的草稿；联系方式不会暂存。';preview()}}catch(_){removeDraft()}
+  ['title','author','content'].forEach(function(id){$(id).addEventListener('input',function(){preview();fieldError(id,'');saveDraft()})});
+  $('save-draft').addEventListener('change',function(){if(this.checked){saveDraft();$('draft-note').textContent='草稿仅留在此标签页：诗题、笔名和正文。联系方式不会暂存。'}else{removeDraft();$('draft-note').textContent='已停止暂存；当前输入仍留在页面上。'}});
+  $('clear-draft').addEventListener('click',function(){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='暂存已清除；当前输入仍留在页面上。'});
+  $('consent').addEventListener('change',function(){if(this.checked){$('consent-error').hidden=true;this.removeAttribute('aria-invalid')}});
+  function validate(){var first=null;[['title','请填写诗题。'],['author','请填写发表笔名。'],['content','请写下至少 2 个字的正文。']].forEach(function(item){var id=item[0],invalid=id==='content'?$(id).value.trim().length<2:!$(id).value.trim();fieldError(id,invalid?item[1]:'');if(invalid&&!first)first=$(id)});var consentMissing=!$('consent').checked;$('consent-error').textContent=consentMissing?'请先确认作品与公开展示说明。':'';$('consent-error').hidden=!consentMissing;if(consentMissing){$('consent').setAttribute('aria-invalid','true');if(!first)first=$('consent')}else $('consent').removeAttribute('aria-invalid');if(first){first.focus();setFeedback('请根据标出的提示补全投稿信息。',true);return false}return true}
   var savedTheme;try{savedTheme=localStorage.getItem('theme')}catch(_){}var theme=['light','dark','eye-care'].includes(savedTheme)?savedTheme:'light';
   function applyTheme(value){document.documentElement.setAttribute('data-theme',value);try{localStorage.setItem('theme',value)}catch(_){}document.querySelectorAll('#theme-side button').forEach(function(b){b.classList.toggle('active',b.dataset.theme===value)})}
   applyTheme(theme);document.getElementById('theme-side').addEventListener('click',function(e){var b=e.target.closest('button[data-theme]');if(b)applyTheme(b.dataset.theme)});
@@ -81,12 +94,12 @@ nav a:hover,nav a[aria-current=page]{color:var(--ink)}nav a:hover::after,nav a[a
   $('submission-form').addEventListener('submit',async function(e){
     e.preventDefault();if(sending||!turnstileReady)return;
     var title=$('title').value.trim(),author=$('author').value.trim(),content=$('content').value.trim();
-    if(!title||!author||content.length<2||!$('consent').checked){setFeedback('请填写诗题、笔名和正文，并确认公开发表说明。',true);return}
+    if(!validate())return;
     sending=true;$('submit-button').disabled=true;$('submit-button').textContent='正在送出…';setFeedback('');
     try{
       var response=await fetch(apiBase+'/api/submissions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
       var result=await response.json();if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
-      $('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
+      removeDraft();$('save-draft').checked=false;$('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){setFeedback(error.message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;if(window.turnstile)window.turnstile.reset(widgetId)}
     finally{sending=false;$('submit-button').disabled=!turnstileReady;$('submit-button').textContent='送出投稿'}
   });

@@ -137,7 +137,7 @@ components:
     rounded: "{rounded.pill}"
     padding: "12px 26px"
   nav-link:
-    textColor: "{colors.ink-faded}"
+    textColor: "{colors.ink-light}"
     rounded: "{rounded.pill}"
   search-input:
     backgroundColor: "{colors.ivory-paper}"
@@ -259,7 +259,7 @@ components:
 
 ### Navigation
 - 顶部 header，玻璃拟态 + 浅鎏金底边。logo 用衬线 + 鎏金点缀「漂」，nav 用等宽小字。
-- 默认 nav 为残墨色；hover / active 变宿墨 + 底部鎏金线从 0 展开至 100%（`width 0 → 100%`）。
+- 默认 nav 为淡墨色，字号至少 0.85rem、点击区高度至少 44px；hover / active 变宿墨 + 底部鎏金线从 0 展开至 100%（`width 0 → 100%`）。
 - 侧边主题栏：竖直胶囊组，三个图标主题钮（日/夜/护眼）间以 1.5px 鎏金竖线分隔；激活钮填宿墨底、以纸色图标和鎏金细环标示。
 
 ### List / Catalog Row

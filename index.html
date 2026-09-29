@@ -156,20 +156,25 @@ img { max-width: 100%; display: block; }
 /* ---- 开幕跳过 ---- */
 .intro-skip {
   position: absolute;
-  bottom: 40px;
-  right: 32px;
+  bottom: 28px;
+  right: 24px;
   z-index: 5;
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.78rem;
   letter-spacing: 0.15em;
-  color: rgba(236, 232, 223, 0.5);
+  color: #ece8df;
+  background: rgba(236, 232, 223, 0.1);
+  border: 1px solid rgba(236, 232, 223, 0.5);
+  border-radius: 999px;
+  padding: 9px 20px;
+  min-height: 44px;
   cursor: pointer;
   opacity: 0;
-  animation: subFade 0.8s ease 1.8s forwards;
+  animation: subFade 0.35s ease 0.15s forwards;
   pointer-events: auto;
   transition: color 0.3s;
 }
-.intro-skip:hover { color: var(--gold); }
+.intro-skip:hover, .intro-skip:focus-visible { color: var(--gold); border-color: var(--gold); }
 
 /* ---- 跳过时首页立即可见 ---- */
 body.intro-skipped header,
@@ -220,18 +225,18 @@ header .wrap {
 nav ul {
   list-style: none;
   display: flex;
-  gap: 28px;
+  gap: 20px;
   align-items: center;
 }
 nav a {
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  font-weight: 300;
+  font-size: 0.85rem;
+  font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--ink-faded);
+  color: var(--ink-light);
   position: relative;
-  padding-bottom: 2px;
+  display: inline-flex; align-items: center; min-height: 44px; padding: 9px 2px;
   transition: color 0.3s;
 }
 nav a::after {
@@ -607,7 +612,7 @@ footer a:hover { color: var(--paper); }
   </div>
 
   <div class="intro-sub">Poem's Ulysses</div>
-  <div class="intro-skip" id="intro-skip" role="button" tabindex="0">跳过</div>
+  <button class="intro-skip" id="intro-skip" type="button">跳过开场</button>
 </div>
 
 <!-- ===== 导航 ===== -->
@@ -734,6 +739,8 @@ footer a:hover { color: var(--paper); }
 
   function finishIntro() {
     overlay.classList.add('hidden');
+    if (overlay.contains(document.activeElement)) document.querySelector('header .logo').focus();
+    overlay.inert = true;
     sessionStorage.setItem('intro_poem_shown', '1');
     if (animId) { cancelAnimationFrame(animId); animId = null; }
     setTimeout(function() { overlay.style.display = 'none'; }, 1000);
@@ -773,8 +780,8 @@ footer a:hover { color: var(--paper); }
     return;
   }
 
-  // 2.8 秒后关闭
-  setTimeout(finishIntro, 2800);
+  // 开场完整呈现后及时进入正文
+  setTimeout(finishIntro, 2200);
 
   // 跳过按钮
   var skip = document.getElementById('intro-skip');
