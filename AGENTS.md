@@ -54,7 +54,7 @@ Not all `poems.json` `author` strings are in `authors.json`; unlisted names rend
 | `about.html` | About page with project background | — |
 | `submit.html` | Public text submission and live preview | — |
 | `status.html` | Private receipt status and pre-review withdrawal | `#<receipt token>` |
-| `admin.html` | Admin backend (GitHub API CRUD + image upload) | — |
+| `admin.html` | Redirect to the protected Worker management page | — |
 
 Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投稿. The submission and status pages inherit the warm paper, ink, gold, and three-theme system. `submissions/README.md` documents the public and protected Workers.
 
@@ -66,13 +66,12 @@ Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投�
 - **JS convention**: Vanilla ES6, IIFE pattern for scoping, `sessionStorage`/`localStorage` for state, `fetch` for data, `IntersectionObserver` for scroll reveal, `Date.now()` cache busters on fetches.
 - **Responsive**: `clamp()` and media queries at 640px / 820px.
 
-## Admin panel (`admin.html`)
+## Admin panel (`/admin` on the review Worker)
 
-- Uses GitHub API to read/write `data/poems.json` (panel ②③) and `data/authors.json` (panel ④) and upload images directly to the repo.
-- Falls back to `raw.githubusercontent.com` for reads (avoids GitHub API cache).
-- The old client-side password was removed because it did not protect a public static page. Existing `gh_creds` storage is cleared on page load, and the Token is no longer persisted. The legacy admin still requires a GitHub token entered for the current page and should eventually move behind the protected Worker.
-- Deleting a poem also deletes its associated images from the repo.
-- Panel ④ edits author profiles: id/name/aliases (顿号- or comma-separated), bio, tags, link. The author form pre-fills from clicking 编辑 on a listed author.
+- `admin.html` redirects to the review Worker's `/admin` page, which uses the same reviewer login as the submission queue. The protected page lives in `submissions/admin-ui.mjs`.
+- Its server-side API reads and writes `data/poems.json`, `data/authors.json`, and `data/logs.json` with a GitHub file SHA check. The browser never receives a GitHub token.
+- Image uploads use `/api/images`. Removing an image reference or deleting a poem does not delete the image file from the repository.
+- The author panel edits id/name/aliases/bio/tags/link; the travel log panel supports editing and ordering map points.
 
 ## Comments
 

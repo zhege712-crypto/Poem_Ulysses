@@ -11,7 +11,7 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
 <style>header nav button{margin-left:12px;border:1px solid var(--gold-light);border-radius:999px;padding:4px 11px;background:transparent;color:var(--ink-light);font-size:12px}</style>
 </head>
 <body>
-<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav>投稿审核 · 仅维护者 <button id="logout" type="button" hidden>退出登录</button></nav></header>
+<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav>投稿审核 · 仅维护者 <a href="/poems">管理已发表诗歌</a> <a href="/admin">管理后台</a> <button id="logout" type="button" hidden>退出登录</button></nav></header>
 <main>
   <div class="intro"><div><h1>待审稿件</h1><p>从收到到发表，稿件都留在这里。</p></div><button class="refresh" id="refresh" type="button">刷新列表</button></div>
   <div class="filters" id="filters" aria-label="筛选投稿状态">
