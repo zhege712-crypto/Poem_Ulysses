@@ -7,6 +7,13 @@ ALLOWED_ORIGIN = "https://zhege712-crypto.github.io"
 PUBLIC_HOSTNAME = "zhege712-crypto.github.io"
 PUBLIC_SITE_URL = "https://zhege712-crypto.github.io/Poem_Ulysses/"
 
+[[ratelimits]]
+name = "BURST_LIMITER"
+namespace_id = "712002"
+[ratelimits.simple]
+limit = 120
+period = 60
+
 [[d1_databases]]
 binding = "DB"
 database_name = "poem-submissions"

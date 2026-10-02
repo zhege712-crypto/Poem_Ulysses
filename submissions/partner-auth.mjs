@@ -1,3 +1,4 @@
+import { securityRate, tokenHash, browserLabel, audited, privateRate, rateReply } from './security.mjs';
 const SESSION = '__Host-poem_partner';
 const STATE = '__Host-poem_partner_state';
 const SESSION_MS = 7 * 86400000;
@@ -14,26 +15,27 @@ export async function partnerRate(request, env, kind, limit = 60) {
   if (!env.SESSION_SECRET) return false;
   const ip = request.headers.get('CF-Connecting-IP');
   if (!ip) return false;
-  const now = new Date();
-  const key = await crypto.subtle.importKey('raw',new TextEncoder().encode(env.SESSION_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  const signature = await crypto.subtle.sign('HMAC',key,new TextEncoder().encode('partner-rate:' + kind + ':' + ip + ':' + now.toISOString().slice(0,13)));
-  const rateKey = Array.from(new Uint8Array(signature),x=>x.toString(16).padStart(2,'0')).join('');
-  const result = await env.DB.prepare('INSERT INTO partner_rate (rate_key,count,expires_at) VALUES (?,1,?) ON CONFLICT(rate_key) DO UPDATE SET count=count+1 RETURNING count').bind(rateKey,new Date(now.getTime()+7200000).toISOString()).first();
-  return result.count <= limit;
+  return securityRate(env,'partner:'+kind+':'+ip,limit);
 }
 export async function partnerIdentity(request, env) {
   const value = cookie(request, SESSION);
   if (!/^[a-f0-9]{64}$/.test(value)) return null;
-  return env.DB.prepare('SELECT p.* FROM partner_sessions s JOIN partners p ON p.id=s.partner_id WHERE s.session_hash=? AND s.expires_at>?').bind(await digest(value),new Date().toISOString()).first();
+  const hash=await digest(value);
+  const person=await env.DB.prepare('SELECT p.*,s.created_at AS authenticated_at FROM partner_sessions s JOIN partners p ON p.id=s.partner_id WHERE s.session_hash=? AND s.expires_at>?').bind(hash,new Date().toISOString()).first();
+  return person?{...person,session_hash:hash}:null;
 }
 export async function partnerAuthRoute(request, env) {
   const url = new URL(request.url);
   if (!url.pathname.startsWith('/partner-auth/')) return null;
   if (url.pathname === '/partner-auth/logout' && request.method === 'POST') {
     if (!samePartnerOrigin(request,env)) return partnerJson({error:'请求来源无效'},403);
-    const token = cookie(request,SESSION);
-    if (/^[a-f0-9]{64}$/.test(token)) await env.DB.prepare('DELETE FROM partner_sessions WHERE session_hash=?').bind(await digest(token)).run();
-    return new Response(JSON.stringify({ok:true}),{headers:{...headers,'content-type':'application/json','set-cookie':cookieValue(SESSION,'',0)}});
+    const person=await partnerIdentity(request,env);
+    if(!person)return partnerJson({error:'请先使用 Google 登录'},401);
+    if(!await privateRate(request,env,'partner:'+person.id))return rateReply();
+    return audited(request,env,'partner:'+person.id,async()=>{
+      await env.DB.prepare('DELETE FROM partner_sessions WHERE session_hash=?').bind(person.session_hash).run();
+      return new Response(JSON.stringify({ok:true}),{headers:{...headers,'content-type':'application/json','set-cookie':cookieValue(SESSION,'',0)}});
+    });
   }
   if (!partnerConfigured(env) || url.origin !== new URL(env.PARTNER_BASE_URL).origin) return partnerJson({error:'Google 登录尚未配置，请稍后再试；普通投稿仍可使用。'},503);
   if (url.pathname === '/partner-auth/login' && request.method === 'GET') {
@@ -64,8 +66,13 @@ export async function partnerAuthRoute(request, env) {
       const person=await env.DB.prepare('SELECT id,status FROM partners WHERE google_sub=?').bind(info.sub).first();
       if (person.status==='suspended') return partnerJson({error:'合作权限已暂停，请联系维护者'},403);
       const session=randomToken();
-      await env.DB.prepare('DELETE FROM partner_sessions WHERE partner_id=? AND (expires_at<? OR session_hash IN (SELECT session_hash FROM partner_sessions WHERE partner_id=? ORDER BY created_at DESC LIMIT -1 OFFSET 19))').bind(person.id,now,person.id).run();
-      await env.DB.prepare('INSERT INTO partner_sessions (session_hash,partner_id,expires_at,created_at) VALUES (?,?,?,?)').bind(await digest(session),person.id,new Date(Date.now()+SESSION_MS).toISOString(),now).run();
+      const hash=await tokenHash(session);
+      await env.DB.batch([
+        env.DB.prepare('DELETE FROM partner_sessions WHERE partner_id=? AND (expires_at<? OR session_hash IN (SELECT session_hash FROM partner_sessions WHERE partner_id=? ORDER BY created_at DESC LIMIT -1 OFFSET 19))').bind(person.id,now,person.id),
+        env.DB.prepare('INSERT INTO partner_sessions (session_hash,partner_id,expires_at,created_at) VALUES (?,?,?,?)').bind(hash,person.id,new Date(Date.now()+SESSION_MS).toISOString(),now),
+        env.DB.prepare('INSERT INTO session_labels (session_hash,browser) VALUES (?,?)').bind(hash,browserLabel(request)),
+        env.DB.prepare('INSERT INTO security_audit(id,actor,action,target,result,created_at) VALUES (?,?,?,?,?,?)').bind(crypto.randomUUID(),'partner:'+person.id,'LOGIN','partner-session',201,now)
+      ]);
       return redirect(new URL('partners',env.PARTNER_BASE_URL).href,[cookieValue(STATE,'',0),cookieValue(SESSION,session,SESSION_MS/1000)]);
     } catch { return partnerJson({error:'Google 登录暂时不可用，请重新登录；普通投稿不受影响。'},502); }
   }

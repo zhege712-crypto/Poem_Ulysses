@@ -77,6 +77,7 @@ Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投�
 - Its server-side API reads and writes `data/poems.json`, `data/authors.json`, and `data/logs.json` with a GitHub file SHA check. The browser never receives a GitHub token.
 - Image uploads use `/api/images`. Removing an image reference or deleting a poem does not delete the image file from the repository.
 - Collaborators use separate Google authentication at `/partners`; only maintainer-approved fixed author and poem ownership bindings grant access. Pending manuscript edits use versions and expected submission timestamps. Published changes require the maintainer's `/revisions` approval. Apply `submissions/partners-schema.sql` before deploying this feature; never associate private drafts by matching pen names.
+- Security extension requires additive `submissions/security-schema.sql` before either Worker deployment. `/security` and `/partner-security` expose only each account's sessions; operation audit and new-submission pause controls require maintainer identity. Never expose session hashes to the browser. GitHub mode requires a login within 30 minutes for important writes, with re-login in a separate tab to retain editor inputs.
 - The author panel edits id/name/aliases/bio/tags/link; the travel log panel supports editing and ordering map points.
 
 ## Comments

@@ -47,7 +47,7 @@ wrangler deploy --config wrangler.review.toml
 
 - 公开投稿接口只有新增投稿、查询状态和撤稿能力；没有 GitHub 凭证或发布接口。私密查询令牌是 32 字节随机值，数据库只保存其 SHA-256 摘要，查询令牌放在状态页 URL 的 fragment 中。
 - 服务端验证 Turnstile 结果和预期 hostname，并按来源每天、每小时限流。`Origin` 检查只用于降低跨站滥用，不能代替 Turnstile 或认证。
-- 审核 Worker 使用 GitHub OAuth 验证已确认的维护者邮箱，登录 Cookie 设置 `HttpOnly`、`Secure`、`SameSite=Lax` 且有签名与到期时间。OAuth 回调核对随机 `state`。审核页面不加载第三方脚本；发布凭证仅存在 Worker Secret 中。
+- 审核 Worker 使用 GitHub OAuth 验证已确认的维护者邮箱，登录 Cookie 设置 `HttpOnly`、`Secure`、`SameSite=Lax` 并由数据库中的哈希及到期时间验证。OAuth 回调核对随机 `state`、浏览器 Cookie 和数据库内一次性状态。审核页面不加载第三方脚本；发布凭证仅存在 Worker Secret 中。
 - 所有待审数据只存 D1。拒绝或撤回 30 天后删除；超过 180 天仍未处理的稿件删除；发表后 30 天清空待审库中的正文副本、内部备注和联系方式。撤回时立即清空正文和联系方式。Cloudflare 的数据库恢复历史可能在删除后继续保留一段时间。
 - 发表操作记录来源投稿 ID，重试时检测已发表作品，避免重复发表。诗歌和新作者写入两个 GitHub 文件，遇到中间失败时保留稿件以便重试。
 - 公开的 `admin.html` 只负责跳转到审核 Worker 的 `/admin`。受保护后台与审核页面共用账号登录，可维护诗歌、作者资料和漂流日志；所有 GitHub 写入都由审核 Worker 的 Secret 完成。漂流地点坐标填写 WGS84 经纬度。
@@ -101,3 +101,29 @@ Google 外部应用只请求基本身份权限时适用 Testing 限制的例外�
 5. 在审核页修改并发布测试稿；确认目录、阅读页和作者页能找到作品，重复点击不会产生第二首。
 6. 提交后撤回另一篇测试稿；确认无法再发布；验证防刷失败、限流和网络错误提示。
 7. 确认公开 `admin.html` 只跳转到受保护后台，未登录或非维护者无法操作 `/admin` 与其 API；浏览器页面及本地存储均无 GitHub Token。
+
+
+## 账号安全加固（2026-10-03）
+
+### 部署顺序
+
+先执行 `wrangler d1 execute poem-submissions --remote --config submissions/wrangler.review.toml --file submissions/security-schema.sql`，然后部署审核 Worker 和公开 Worker。此迁移只新增表，不更改投稿、作者绑定或诗歌数据。两个配置新增 `BURST_LIMITER`，需要 Wrangler 4.36.0 或更高版本；账号计划保持 Free，不需要增加 Secret。
+
+维护者旧版签名 Cookie 在部署后失效，需要重新通过 GitHub 登录。合作伙伴的已有随机会话继续有效。维护者 Cookie 8 小时、合作伙伴 Cookie 7 天；数据库只存凭证哈希，两类权限独立。`/security` 为维护者账号安全页，`/partner-security` 为合作账号安全页，两者能退出当前、其他或全部自己的会话。浏览器标签只存粗略类别，不能证明真实设备身份。
+
+### 重要操作与限额
+
+- 维护者发表、批准修订、作者绑定、恢复权限、批量数据保存及修改投稿接收设置，要求网站登录时间在最近 30 分钟内。编辑页提供在新标签页重新确认登录的入口，返回原页即可重试。该步骤重新验证 OAuth 登录，不保证 GitHub 每次要求输入密码或两步验证码。Cloudflare Access 模式的近期认证由其网关策略负责；当前正式站使用 GitHub 模式。
+- 快速限额为每个 IP、每个 Worker 每分钟约 120 次，先于数据库和 GitHub 请求执行。平台计数按 Cloudflare 地点生效、最终一致；它减少数据库负载，不是全球精确配额，也不能保证阻止分布式攻击耗尽 Workers 请求额度。配置缺少绑定时使用 D1 计数作为后备。
+- 已登录账号读取每小时 1200 次、写入每小时 120 次，账号限额独立于 IP；相同 IP 的已登录读取每小时 3600 次、写入每小时 300 次。普通投稿仍需 Turnstile 且保留每 IP 每小时 5 次、每天 15 次的投稿限制；查询另设每小时 1200 次，普通投稿/撤回接口尝试各每小时 120 次。
+- `/security` 的“暂停接收新投稿”作用于匿名投稿和合作伙伴首次送审。已有稿件查询/撤回、草稿保存、已发表修订和维护者审核不受此开关影响。开关不删除任何稿件。
+
+### 操作记录与维护
+
+`security_audit` 统一记录登录、会话撤销、草稿修改、送审、作品/作者/漂流数据维护、发表和合作账号操作的账号标识、方法、对象路径标识、时间和 HTTP 结果；不复制正文、联系方式、请求参数、Cookie、IP 或密钥。批量保存的对象为对应数据文件，并不为每篇作品生成独立明细。记录保留 90 天，由审核 Worker 每日任务清理。历史 `partner_audit` 也按 90 天清理，新账号安全页展示部署后产生的统一记录。
+
+写入前必须先保存尝试记录；无法记录时拒绝执行。若远程写入已成功而结果记录失败，保留“结果未确认”，不把已完成的发表谎报为失败。操作记录用于追查，不代替私密 D1 数据备份。
+
+代码测试：`node --test submissions/security-ui.test.mjs submissions/security.test.mjs submissions/partners.test.mjs submissions/workers.test.mjs submissions/review-published.test.mjs`。本轮 54 项合成测试覆盖会话撤销、跨账号隔离、CSRF、近期登录、双入口暂停/恢复、跨 IP 账号限流、预数据库拦截、私密信息排除、审计故障与保留期，以及原有投稿/发表/修改流程。测试不等同于第三方渗透测试。
+
+人工检查：分别进入安全页面查看当前会话；新增一次登录后退出其他会话，确认旧页无法继续访问；维护者可查看登录记录。正式环境不要为了测试随意发表、删除真实作品或暂停读者投稿。Google、GitHub、Cloudflare 的通行密钥/两步验证和恢复码，需要账号持有人自行设置。

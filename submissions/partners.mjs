@@ -1,5 +1,7 @@
-import { partnerJson as json, partnerIdentity, partnerConfigured, samePartnerOrigin, partnerRate, digest, randomToken } from './partner-auth.mjs';
+import { partnerJson as json, partnerIdentity, partnerConfigured, samePartnerOrigin, digest, randomToken } from './partner-auth.mjs';
 import { partnerPage } from './partner-ui.mjs';
+import { privateRate, rateReply, audited, sessionRoutes, submissionsPaused } from './security.mjs';
+import { securityPage } from './security-ui.mjs';
 
 const clean = value => typeof value === 'string' ? value.trim() : '';
 function fail(message, status = 400) { const error=new Error(message); error.status=status; throw error; }
@@ -48,13 +50,17 @@ function revisionView(row) { if (!row) return null; return {id:row.id,status:row
 export async function partnerRoutes(request, env, ops) {
   const url=new URL(request.url);
   if (url.pathname==='/partners' && request.method==='GET') return partnerPage('creator',env);
+  if (url.pathname==='/partner-security' && request.method==='GET') return securityPage(true);
   if (!url.pathname.startsWith('/api/partners/')) return null;
   try {
     if (!partnerConfigured(env)) return json({error:'Google 登录尚未配置，普通投稿仍可使用。'},503);
     if (request.method!=='GET' && !samePartnerOrigin(request,env)) fail('请求来源无效',403);
     const person=await partnerIdentity(request,env);
     if (!person) fail('请先使用 Google 登录',401);
-    if (request.method!=='GET' && !await partnerRate(request,env,'write:'+person.id,120)) fail('操作过于频繁，请稍后再试',429);
+    if (!await privateRate(request,env,'partner:'+person.id)) return rateReply();
+    return await audited(request,env,'partner:'+person.id,async()=>{
+    const session=await sessionRoutes(request,env,{kind:'partner',owner:person.id,accountLabel:person.email,sessionHash:person.session_hash,authenticatedAt:person.authenticated_at});
+    if(session)return session;
     if (url.pathname==='/api/partners/me' && request.method==='GET') return json({person:publicPerson(person)});
     if (url.pathname==='/api/partners/apply' && request.method==='POST') {
       const data=await body(request),name=clean(data.name),note=clean(data.note);
@@ -125,6 +131,7 @@ export async function partnerRoutes(request, env, ops) {
         return json({ok:true});
       }
       if (request.method==='POST' && action==='submit') {
+        if(await submissionsPaused(env))fail('目前暂停接收新投稿，草稿可以继续保存，请稍后再送审。',503);
         if (work.submission_id) fail('稿件已经送审，修改后会自动回到待审列表',409);
         if (data.consent!==true) fail('请确认有权投稿并同意审核后公开发表');
         const values=fields(work),{author}=await profile(env,ops,person),sid=crypto.randomUUID(),now=stamp(work.updated_at);
@@ -192,6 +199,7 @@ export async function partnerRoutes(request, env, ops) {
       fail('未找到',404);
     }
     fail('未找到',404);
+    });
   } catch (error) { return json({error:error.status?error.message:'暂时无法完成操作，请保留输入并稍后重试'},error.status||502); }
 }
 

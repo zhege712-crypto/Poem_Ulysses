@@ -44,6 +44,8 @@ web
 - 投稿与合作服务已有 Node 自动测试；公共静态页面本地预览用任意静态服务器（如 `python -m http.server`）。
 - 尚未决定是否记录绑定性的视觉约束。
 
+- 账号安全页 `/security`（维护者）与 `/partner-security`（合作伙伴）提供登录会话查看及服务端撤销；重要维护操作要求近期 GitHub 登录。双 Worker 快速限速和独立账号读写限额保护服务，维护者可暂停新的投稿接收、查看最近 90 天操作摘要。安全功能使用现有免费方案，平台账号两步验证由持有人设置。
+
 ## Brand Commitments
 
 产品名「诗歌漂流 (Poem's Ulysses)」，隶属「伞 umbrella」站点家族，与母站「伞 umbrella」互为友链。新投稿流程在站内完成；阅读页评论仍使用 Giscus / GitHub Discussions。

@@ -445,7 +445,7 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 <div class="content-wrapper">
   <div class="wrap">
     <h1>诗歌漂流 · 管理后台</h1>
-    <div class="sub"><a href="/">投稿审核</a> · <a href="/poems">作品管理</a> · <a href="/collaborators">合作伙伴</a> · <a href="/revisions">作品修订</a> · 仅维护者</div>
+    <div class="sub"><a href="/">投稿审核</a> · <a href="/poems">作品管理</a> · <a href="/collaborators">合作伙伴</a> · <a href="/revisions">作品修订</a> · <a href="/security">账号安全</a> · <a href="/auth/login?return=/security" target="_blank" rel="noopener">重新确认登录</a> · 仅维护者</div>
     <div class="warn-box">这里与投稿审核共用账号登录。保存会更新 GitHub 仓库；请核对内容后再操作。配图上传会立即写入公开仓库，移除配图或删除诗歌不会删除图片文件。</div>
 
     <div class="tab-bar" id="tab-bar">

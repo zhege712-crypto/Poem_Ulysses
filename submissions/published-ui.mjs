@@ -10,7 +10,7 @@ export const PUBLISHED_HTML = String.raw`<!doctype html>
 </style>
 </head>
 <body>
-<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav><a href="/">返回审核</a><a href="/admin">管理后台</a><button id="logout" type="button" hidden>退出登录</button></nav></header>
+<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav><a href="/">返回审核</a><a href="/admin">管理后台</a><a href="/security">账号安全</a> <a href="/auth/login?return=/security" target="_blank" rel="noopener">重新确认登录</a> <button id="logout" type="button" hidden>退出登录</button></nav></header>
 <main>
   <div class="intro"><div><h1>已发表诗歌</h1><p>在受保护的页面修改作品；保存后写入 GitHub，网站可能稍后更新。</p></div><button id="refresh" type="button">刷新作品</button></div>
   <div class="layout">

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { Script } from 'node:vm';
 import { readFileSync } from 'node:fs';
@@ -12,7 +13,7 @@ const reviewer = { access: { getIdentity: async () => ({ email: 'owner@example.c
 function request(path, method = 'GET', body, headers = {}) {
   return new Request(origin + path, {
     method,
-    headers: { Origin: origin, 'X-Requested-With': 'poem-review', ...(body && !(body instanceof Uint8Array) ? { 'Content-Type': 'application/json' } : {}), ...headers },
+    headers: { 'CF-Connecting-IP':'192.0.2.1', Origin: origin, 'X-Requested-With': 'poem-review', ...(body && !(body instanceof Uint8Array) ? { 'Content-Type': 'application/json' } : {}), ...headers },
     ...(body ? { body: body instanceof Uint8Array ? body : JSON.stringify(body) } : {})
   });
 }
@@ -46,8 +47,10 @@ function fixture() {
     assert.ok(Object.hasOwn(files, path));
     return Response.json({ sha: String(versions[path]), content: Buffer.from(JSON.stringify(files[path])).toString('base64') });
   };
-  const env = { REVIEW_AUTH: 'access', REVIEWER_EMAILS: 'owner@example.com', GITHUB_OWNER: 'owner', GITHUB_REPO: 'poems', GITHUB_TOKEN: 'server-only-token', PUBLIC_SITE_URL: 'https://poems.example/Poem_Ulysses/' };
-  return { files, versions, uploaded, env, close() { globalThis.fetch = previousFetch; } };
+  const sql=new DatabaseSync(':memory:');for(const name of ['schema.sql','partners-schema.sql','security-schema.sql'])sql.exec(readFileSync(new URL(name,import.meta.url),'utf8'));
+  const DB={prepare(query){const stmt=sql.prepare(query);let values=[];return{bind(...args){values=args;return this},async first(){return stmt.get(...values)||null},async all(){return{results:stmt.all(...values)}},async run(){return{meta:{changes:Number(stmt.run(...values).changes)}}}}}};
+  const env = { DB, SESSION_SECRET:'test-rate-secret', REVIEW_AUTH: 'access', REVIEWER_EMAILS: 'owner@example.com', GITHUB_OWNER: 'owner', GITHUB_REPO: 'poems', GITHUB_TOKEN: 'server-only-token', PUBLIC_SITE_URL: 'https://poems.example/Poem_Ulysses/' };
+  return { files, versions, uploaded, env, close() { globalThis.fetch = previousFetch; sql.close(); } };
 }
 
 test('published editor inline script parses', () => {
@@ -263,7 +266,8 @@ test('image upload validates signature and size before writing to GitHub', async
 
 test('published poem remains saved when the submission record cannot be synchronized', async () => {
   const f = fixture();
-  f.env.DB = { prepare() { throw new Error('database unavailable'); } };
+  const realDB=f.env.DB;
+  f.env.DB = { prepare(query) { if(query.includes('UPDATE submissions'))throw new Error('submission synchronization unavailable');return realDB.prepare(query); } };
   try {
     const poem = f.files['data/poems.json'][0];
     const response = await reviewWorker.fetch(request('/api/published-poems/' + poem.id, 'PUT', {
@@ -279,7 +283,8 @@ test('published poem remains saved when the submission record cannot be synchron
 test('published edit does not restore a retained private body in the review database', async () => {
   const f = fixture();
   let query = '';
-  f.env.DB = { prepare(sql) { query = sql; return { bind() { return this; }, async run() { return { meta: { changes: 1 } }; } }; } };
+  const realDB=f.env.DB;
+  f.env.DB = { prepare(sql) { if(sql.includes('UPDATE submissions'))query=sql;return realDB.prepare(sql); } };
   try {
     const poem = f.files['data/poems.json'][0];
     const response = await reviewWorker.fetch(request('/api/published-poems/' + poem.id, 'PUT', {

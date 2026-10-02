@@ -2,6 +2,7 @@ import { REVIEW_HTML } from './review-ui.mjs';
 import { PUBLISHED_HTML } from './published-ui.mjs';
 import { ADMIN_HTML } from './admin-ui.mjs';
 import { authorizeReviewer } from './review-auth.mjs';
+import { burstRate, privateRate, rateReply, recentReviewer, reauthReply, audited, securityAdminRoutes, cleanupSecurity } from './security.mjs';
 import { partnerAuthRoute, cleanupPartnerData } from './partner-auth.mjs';
 import { partnerRoutes, partnerAdminRoutes, partnerSubmission, recordPartnerPublication } from './partners.mjs';
 
@@ -369,6 +370,12 @@ async function publishSubmission(env, id, expectedUpdatedAt) {
 export default {
   async fetch(request, env, ctx) {
     const ops={readGitHubJson,writeGitHubJson,stampPoem};
+    const requestPath=new URL(request.url).pathname;
+    if(requestPath.startsWith('/api/') || requestPath.startsWith('/auth/') || requestPath.startsWith('/partner-auth/') || ['/','/admin','/poems','/collaborators','/revisions','/security'].includes(requestPath)) {
+      try {
+        if(!await burstRate(request,env,'review-ip'))return rateReply();
+      } catch { return editorError('访问验证暂时不可用，请稍后重试',503); }
+    }
     try {
       const partnerAuth=await partnerAuthRoute(request,env);
       if (partnerAuth) return partnerAuth;
@@ -376,17 +383,34 @@ export default {
       if (partnerResponse) return partnerResponse;
     } catch { return editorError('合作服务暂时不可用，请稍后重试',503); }
     const allowed = (env.REVIEWER_EMAILS || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
-    const auth = await authorizeReviewer(request, env, ctx, allowed);
+    let auth;try{auth = await authorizeReviewer(request, env, ctx, allowed)}catch{return editorError('登录服务暂时不可用，请稍后重试',503)}
     if (auth.response) return auth.response;
+    try {
+      const url=new URL(request.url);
+      if(request.method!=='GET' && (request.headers.get('Origin')!==url.origin || request.headers.get('x-requested-with')!=='poem-review'))return editorError('请求来源无效',403);
+      if(url.pathname.startsWith('/api/') && !await privateRate(request,env,'reviewer:'+auth.email))return rateReply();
+      return await audited(request,env,'reviewer:'+auth.email,async()=>{
+        const important=request.method==='DELETE' || (request.method!=='GET' && (/\/(publish|approve|assign|reactivate|recover)$/.test(url.pathname) || /^\/api\/admin\/files\//.test(url.pathname) || url.pathname.startsWith('/api/author-profiles')));
+        if(important && !recentReviewer(auth,env))return reauthReply();
+        return reviewerRoutes(request,env,auth,ops);
+      });
+    } catch { return editorError('服务暂时不可用，请保留输入并稍后重试',503); }
+  },
+  async scheduled(event,env) { await cleanupPartnerData(env); await cleanupSecurity(env); }
+};
+
+async function reviewerRoutes(request,env,auth,ops) {
     const url = new URL(request.url);
+    const securityResponse=await securityAdminRoutes(request,env,auth);
+    if(securityResponse)return securityResponse;
     const partnerAdmin=await partnerAdminRoutes(request,env,ops,auth.email);
     if (partnerAdmin) return partnerAdmin;
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/poems' || url.pathname === '/admin')) {
       const nonce = crypto.randomUUID().replace(/-/g, '');
       const template = url.pathname === '/poems' ? PUBLISHED_HTML : url.pathname === '/admin' ? ADMIN_HTML : REVIEW_HTML;
-      const html = template.replace('<script>', '<script nonce="' + nonce + '">').replace('id="logout" hidden', env.REVIEW_AUTH === 'github' ? 'id="logout"' : 'id="logout" hidden').replace('__PUBLIC_SITE_URL__', JSON.stringify(env.PUBLIC_SITE_URL).replace(/</g, '\\u003c'));
+      const html = template.replace('<script>', '<script nonce="' + nonce + '">').replace(/(id="logout"[^>]*?)\s+hidden(?=[\s>])/g,(_,prefix)=>env.REVIEW_AUTH==='github'?prefix:prefix+' hidden').replace('__PUBLIC_SITE_URL__', JSON.stringify(env.PUBLIC_SITE_URL).replace(/</g, '\\u003c'));
       const siteOrigin = new URL(env.PUBLIC_SITE_URL).origin;
-      return new Response(html, { headers: { ...BASE_HEADERS, 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'none'; script-src 'nonce-" + nonce + "'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data: " + siteOrigin + "; base-uri 'none'; form-action 'none'" } });
+      return new Response(html, { headers: { ...BASE_HEADERS, 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'none'; script-src 'nonce-" + nonce + "'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data: " + siteOrigin + "; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" } });
     }
     if (request.method === 'GET' && url.pathname === '/api/published-poems') {
       try { return json({ poems: await listPublishedPoems(env) }); }
@@ -444,6 +468,4 @@ export default {
       }
     } catch (error) { return editorError(error.message || '操作失败', 400); }
     return editorError('未找到', 404);
-  },
-  async scheduled(event,env) { await cleanupPartnerData(env); }
-};
+}

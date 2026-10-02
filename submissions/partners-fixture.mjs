@@ -6,7 +6,7 @@ import {digest} from './partner-auth.mjs';
 export const origin='https://review.example';
 export function fixture(){
   const sql=new DatabaseSync(':memory:');sql.exec('PRAGMA foreign_keys=ON');
-  for(const name of ['schema.sql','partners-schema.sql'])sql.exec(readFileSync(new URL(name,import.meta.url),'utf8'));
+  for(const name of ['schema.sql','partners-schema.sql','security-schema.sql'])sql.exec(readFileSync(new URL(name,import.meta.url),'utf8'));
   const DB={prepare(query){const statement=sql.prepare(query);let params=[];return {bind(...values){params=values;return this},async first(){return statement.get(...params)||null},async all(){return {results:statement.all(...params)}},async run(){return {meta:{changes:Number(statement.run(...params).changes)}}}}},async batch(statements){sql.exec('BEGIN');try{const results=[];for(const statement of statements)results.push(await statement.run());sql.exec('COMMIT');return results}catch(e){sql.exec('ROLLBACK');throw e}}};
   const env={DB,PARTNER_BASE_URL:origin+'/',GOOGLE_CLIENT_ID:'public-client',GOOGLE_CLIENT_SECRET:'google-private-secret',SESSION_SECRET:'test-private-session-secret',REVIEWER_EMAILS:'owner@example.com',GITHUB_OWNER:'owner',GITHUB_REPO:'poems',GITHUB_TOKEN:'private-github-token',PUBLIC_SITE_URL:'https://poems.example/'};
   const files={'data/authors.json':[{id:'a',name:'作者甲',aliases:['作者甲','甲'],bio:'',tags:[],link:''},{id:'b',name:'作者乙',aliases:['作者乙'],bio:'',tags:[],link:''}],'data/poems.json':[{id:'p1',title:'旧诗',author:'作者甲',content:'公开正文',date:'2026-09-30',series:'拾遗记',images:['images/old.jpg'],extra:'keep'},{id:'p2',title:'另一人',author:'作者乙',content:'另一首',date:'2026-09-30',series:'拾遗记',images:[]}]};

@@ -1,3 +1,4 @@
+import { securityRate, burstRate, submissionsPaused } from './security.mjs';
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 
 function json(value, status = 200, extra = {}) {
@@ -92,6 +93,7 @@ async function submit(request, env, headers) {
   const ip = request.headers.get('CF-Connecting-IP');
   if (!ip) return json({ error: '暂时无法验证投稿来源，请稍后重试' }, 503, headers);
   try {
+    if(await submissionsPaused(env))return json({error:'目前暂停接收新投稿，请稍后重试。稿件仍保留在此页面，也可使用邮件备用入口。'},503,headers);
     if (!await verifyTurnstile(clean(body.turnstileToken), ip, env)) return json({ error: '验证未通过，请刷新验证后重试' }, 403, headers);
     const now = new Date();
     if (!await consumeRateLimit(env, ip, now)) return json({ error: '投稿过于频繁，请稍后再试' }, 429, headers);
@@ -136,6 +138,13 @@ export default {
     if (!headers) return json({ error: '不允许的来源' }, 403);
     if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
     const path = new URL(request.url).pathname;
+    if(['/api/submissions','/api/status','/api/withdraw'].includes(path)) {
+      try {
+        const ip=request.headers.get('CF-Connecting-IP');
+        if(!ip || !await burstRate(request,env,'public-ip'))return json({error:'访问过于频繁，请稍后再试。'},429,{...headers,'retry-after':'60'});
+        if(!await securityRate(env,'public-ip:'+ip+':'+path,path==='/api/status'?1200:120))return json({error:'访问过于频繁，请稍后再试。'},429,{...headers,'retry-after':'60'});
+      } catch { return json({error:'投稿服务暂时不可用，请稍后重试。'},503,headers); }
+    }
     if (path === '/api/submissions' && request.method === 'POST') return submit(request, env, headers);
     if (path === '/api/status' && request.method === 'GET') return status(request, env, headers);
     if (path === '/api/withdraw' && request.method === 'POST') return withdraw(request, env, headers);

@@ -12,6 +12,13 @@ PUBLIC_SITE_URL = "https://zhege712-crypto.github.io/Poem_Ulysses/"
 PARTNER_BASE_URL = "https://poem-submissions-review.zhege712-872.workers.dev/"
 GOOGLE_CLIENT_ID = "371529775431-s5p1spsh2i27137lk5shcp0t22cdeh3h.apps.googleusercontent.com"
 
+[[ratelimits]]
+name = "BURST_LIMITER"
+namespace_id = "712001"
+[ratelimits.simple]
+limit = 120
+period = 60
+
 [triggers]
 crons = ["15 0 * * *"]
 

@@ -9,6 +9,7 @@ function fixture({ turnstileValid = true, failPoemOnce = false, oauthEmail = 'ow
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
   sqlite.exec(readFileSync(new URL('./partners-schema.sql', import.meta.url), 'utf8'));
+  sqlite.exec(readFileSync(new URL('./security-schema.sql', import.meta.url), 'utf8'));
   const DB = {
     prepare(sql) {
       const statement = sqlite.prepare(sql);
@@ -21,8 +22,9 @@ function fixture({ turnstileValid = true, failPoemOnce = false, oauthEmail = 'ow
       };
     }
   };
+  DB.batch=async statements=>{sqlite.exec('BEGIN');try{const results=[];for(const statement of statements)results.push(await statement.run());sqlite.exec('COMMIT');return results}catch(e){sqlite.exec('ROLLBACK');throw e}};
   const env = {
-    DB, ALLOWED_ORIGIN: 'https://poems.example', PUBLIC_HOSTNAME: 'poems.example',
+    DB, SESSION_SECRET:'test-session-rate-secret', ALLOWED_ORIGIN: 'https://poems.example', PUBLIC_HOSTNAME: 'poems.example',
     PUBLIC_SITE_URL: 'https://poems.example/Poem_Ulysses/',
     TURNSTILE_SECRET: 'test-secret', RATE_SECRET: 'rate-secret',
     REVIEWER_EMAILS: 'owner@example.com', GITHUB_OWNER: 'owner', GITHUB_REPO: 'poems', GITHUB_TOKEN: 'private-test-token'
@@ -75,7 +77,7 @@ function publicRequest(path, method = 'GET', body, headers = {}) {
 function reviewRequest(path, method = 'GET', body) {
   return new Request('https://review.example' + path, {
     method,
-    headers: { Origin: 'https://review.example', 'X-Requested-With': 'poem-review', ...(body ? { 'Content-Type': 'application/json' } : {}) },
+    headers: { 'CF-Connecting-IP':'192.0.2.1', Origin: 'https://review.example', 'X-Requested-With': 'poem-review', ...(body ? { 'Content-Type': 'application/json' } : {}) },
     ...(body ? { body: JSON.stringify(body) } : {})
   });
 }
@@ -190,7 +192,7 @@ test('submission enforces origin, consent, and reviewer identity', async () => {
     assert.equal((await publicWorker.fetch(noConsent, f.env)).status, 400);
     const other = { access: { getIdentity: async () => ({ email: 'other@example.com' }) } };
     assert.equal((await reviewWorker.fetch(reviewRequest('/'), f.env, other)).status, 403);
-    const forbiddenMutation = new Request('https://review.example/api/submissions/00000000-0000-0000-0000-000000000000', { method: 'PUT', headers: { Origin: 'https://review.example', 'Content-Type': 'application/json' }, body: '{}' });
+    const forbiddenMutation = new Request('https://review.example/api/submissions/00000000-0000-0000-0000-000000000000', { method: 'PUT', headers: { 'CF-Connecting-IP':'192.0.2.1', Origin: 'https://review.example', 'Content-Type': 'application/json' }, body: '{}' });
     assert.equal((await reviewWorker.fetch(forbiddenMutation, f.env, reviewer)).status, 403);
   } finally { f.close(); }
 });
@@ -271,23 +273,27 @@ test('GitHub login accepts only a verified reviewer email and signs a short sess
     assert.equal(authorize.searchParams.get('scope'), 'user:email');
     const state = authorize.searchParams.get('state');
     assert.match(state, /^[a-f0-9]{64}$/);
-    const callback = new Request('https://review.example/auth/callback?code=validCode123&state=' + state, { headers: { Cookie: '__Host-poem_oauth_state=' + state } });
+    const callback = new Request('https://review.example/auth/callback?code=validCode123&state=' + state, { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_oauth_state=' + state } });
     const completed = await reviewWorker.fetch(callback, f.env, {});
     assert.equal(completed.status, 302);
     const session = completed.headers.get('set-cookie').match(/__Host-poem_review=([^;]+)/)?.[1];
     assert.ok(session);
     assert.match(completed.headers.get('set-cookie'), /HttpOnly; Secure; SameSite=Lax/);
-    const authorized = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { Cookie: '__Host-poem_review=' + session } }), f.env, {});
+    const authorized = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_review=' + session } }), f.env, {});
     assert.equal(authorized.status, 200);
-    const page = await reviewWorker.fetch(new Request('https://review.example/', { headers: { Cookie: '__Host-poem_review=' + session } }), f.env, {});
-    assert.match(await page.text(), /id="logout"/);
-    const sigStart=session.indexOf('.')+1;
-    const forgedValue=session.slice(0,sigStart)+(session[sigStart]==='A'?'B':'A')+session.slice(sigStart+1);
-    const forged = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { Cookie: '__Host-poem_review=' + forgedValue } }), f.env, {});
+    const page = await reviewWorker.fetch(new Request('https://review.example/', { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_review=' + session } }), f.env, {});
+    const authenticatedHtml=await page.text();
+    assert.match(authenticatedHtml, /id="logout"/);
+    assert.doesNotMatch(authenticatedHtml, /<button[^>]*id="logout"[^>]*\bhidden\b/);
+    assert.equal((await reviewWorker.fetch(callback,f.env,{})).status,403);
+    assert.match(session,/^[a-f0-9]{64}$/);
+    const forgedValue=(session[0]==='a'?'b':'a')+session.slice(1);
+    const forged = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_review=' + forgedValue } }), f.env, {});
     assert.equal(forged.status, 401);
-    const logout = await reviewWorker.fetch(new Request('https://review.example/auth/logout', { method: 'POST', headers: { Cookie: '__Host-poem_review=' + session, Origin: 'https://review.example', 'X-Requested-With': 'poem-review' } }), f.env, {});
+    const logout = await reviewWorker.fetch(new Request('https://review.example/auth/logout', { method: 'POST', headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_review=' + session, Origin: 'https://review.example', 'X-Requested-With': 'poem-review' } }), f.env, {});
     assert.equal(logout.status, 302);
     assert.match(logout.headers.get('set-cookie'), /Max-Age=0/);
+    assert.equal((await reviewWorker.fetch(new Request('https://review.example/api/submissions',{headers:{'CF-Connecting-IP':'192.0.2.1',Cookie:'__Host-poem_review='+session}}),f.env,{})).status,401);
   } finally { f.close(); }
 
   const unverified = fixture({ oauthVerified: false });
@@ -295,7 +301,7 @@ test('GitHub login accepts only a verified reviewer email and signs a short sess
   try {
     const start = await reviewWorker.fetch(reviewRequest('/auth/login'), unverified.env, {});
     const state = new URL(start.headers.get('location')).searchParams.get('state');
-    const callback = new Request('https://review.example/auth/callback?code=validCode123&state=' + state, { headers: { Cookie: '__Host-poem_oauth_state=' + state } });
+    const callback = new Request('https://review.example/auth/callback?code=validCode123&state=' + state, { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_oauth_state=' + state } });
     assert.equal((await reviewWorker.fetch(callback, unverified.env, {})).status, 403);
   } finally { unverified.close(); }
 });
