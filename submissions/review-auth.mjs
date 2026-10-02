@@ -24,7 +24,8 @@ function fromBase64url(value) {
   try {
     const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
     const text = atob(normalized + '='.repeat((4 - normalized.length % 4) % 4));
-    return Uint8Array.from(text, c => c.charCodeAt(0));
+    const bytes=Uint8Array.from(text, c => c.charCodeAt(0));
+    return base64url(bytes)===value?bytes:null;
   } catch { return null; }
 }
 
@@ -129,7 +130,7 @@ export async function authorizeReviewer(request, env, ctx, allowed) {
   if (request.method === 'GET' && url.pathname === '/auth/callback') return { response: await githubCallback(request, env, allowed) };
   if (!configured(env)) return { response: reply('审核登录尚未配置', 503) };
   const email = await readSession(env.SESSION_SECRET, cookie(request, SESSION_COOKIE));
-  if (!email || !allowed.includes(email.toLowerCase())) return { response: request.method === 'GET' && (url.pathname === '/' || url.pathname === '/poems' || url.pathname === '/admin') ? loginPage() : reply('请先登录', 401) };
+  if (!email || !allowed.includes(email.toLowerCase())) return { response: request.method === 'GET' && ['/', '/poems', '/admin', '/collaborators', '/revisions'].includes(url.pathname) ? loginPage() : reply('请先登录', 401) };
   if (request.method === 'POST' && url.pathname === '/auth/logout') {
     if (request.headers.get('Origin') !== url.origin || request.headers.get('x-requested-with') !== 'poem-review') return { response: reply('请求来源无效') };
     return { response: redirect(url.origin + '/', [`${SESSION_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax`]) };

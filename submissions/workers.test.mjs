@@ -8,6 +8,7 @@ import reviewWorker from './review.mjs';
 function fixture({ turnstileValid = true, failPoemOnce = false, oauthEmail = 'owner@example.com', oauthVerified = true } = {}) {
   const sqlite = new DatabaseSync(':memory:');
   sqlite.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
+  sqlite.exec(readFileSync(new URL('./partners-schema.sql', import.meta.url), 'utf8'));
   const DB = {
     prepare(sql) {
       const statement = sqlite.prepare(sql);
@@ -280,7 +281,9 @@ test('GitHub login accepts only a verified reviewer email and signs a short sess
     assert.equal(authorized.status, 200);
     const page = await reviewWorker.fetch(new Request('https://review.example/', { headers: { Cookie: '__Host-poem_review=' + session } }), f.env, {});
     assert.match(await page.text(), /id="logout"/);
-    const forged = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { Cookie: '__Host-poem_review=' + session.slice(0, -1) + 'A' } }), f.env, {});
+    const sigStart=session.indexOf('.')+1;
+    const forgedValue=session.slice(0,sigStart)+(session[sigStart]==='A'?'B':'A')+session.slice(sigStart+1);
+    const forged = await reviewWorker.fetch(new Request('https://review.example/api/submissions', { headers: { Cookie: '__Host-poem_review=' + forgedValue } }), f.env, {});
     assert.equal(forged.status, 401);
     const logout = await reviewWorker.fetch(new Request('https://review.example/auth/logout', { method: 'POST', headers: { Cookie: '__Host-poem_review=' + session, Origin: 'https://review.example', 'X-Requested-With': 'poem-review' } }), f.env, {});
     assert.equal(logout.status, 302);

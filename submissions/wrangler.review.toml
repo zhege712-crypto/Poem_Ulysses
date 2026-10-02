@@ -9,6 +9,11 @@ GITHUB_OAUTH_CLIENT_ID = "Ov23lilBPgxUsTZs7uXP"
 GITHUB_OWNER = "zhege712-crypto"
 GITHUB_REPO = "Poem_Ulysses"
 PUBLIC_SITE_URL = "https://zhege712-crypto.github.io/Poem_Ulysses/"
+PARTNER_BASE_URL = "https://poem-submissions-review.zhege712-872.workers.dev/"
+GOOGLE_CLIENT_ID = "371529775431-s5p1spsh2i27137lk5shcp0t22cdeh3h.apps.googleusercontent.com"
+
+[triggers]
+crons = ["15 0 * * *"]
 
 [[d1_databases]]
 binding = "DB"

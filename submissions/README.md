@@ -58,7 +58,41 @@ wrangler deploy --config wrangler.review.toml
 
 旧 `admin.html` 若提示 `HTTP 401: Bad credentials`，是它当前输入的浏览器 GitHub Token 无效。新版本会直接跳转到受保护的 `/admin`，不再向浏览器索要 Token。`/poems` 适合修改单篇已发表诗歌，`/admin` 还支持新建与删除诗歌、作者，以及管理漂流日志。正式使用前需部署新的审核 Worker 并发布网页中的跳转页；本地修改本身不会改变线上页面。
 
-## 发布前手动验收
+## 稳定合作伙伴
+
+普通匿名投稿继续使用现有流程。`partners.html` 跳转到审核 Worker 的 `/partners`：Google 登录后申请，由维护者在 `/collaborators` 核实身份、绑定固定作者 ID，并逐篇选择可管理的历史作品。相同笔名不会自动取得权限。一个作者资料只绑定一个账号；暂停权限会撤销其所有合作登录会话。
+
+合作伙伴可建立/删除未送审草稿，修改自己的待审稿件、查看最近 10 个保存版本、撤回待审投稿，维护自己的作者简介、标签和 HTTPS 链接。笔名、别名与归属仍由维护者确认；配图由维护者在作品管理后台处理。账号标识采用 Google 的不可变 `sub`，邮箱不作为归属依据。
+
+已发表作品只允许保存修订草稿或提交修订请求。维护者在 `/revisions` 对照申请时的公开版本和提议版本，批准后才更新原诗歌 ID。版本号、投稿时间戳、逐诗内容哈希及 GitHub 文件 SHA 一起阻止覆盖并发修改；公开作品发生变动时，作者须明确更新对照并重送修订。修订重试使用操作标记避免重复写入。作品作者归属改变后原账号编辑被阻止，需维护者核实。Google 会话不赋予维护者 GitHub 审核权限。
+
+### 首次启用
+
+1. Google Auth Platform 创建 Web OAuth 客户端，回调 URI 精确为 `https://poem-submissions-review.zhege712-872.workers.dev/partner-auth/callback`；JavaScript 来源可以留空。仅请求 `openid email`。应用首页为本站、隐私说明为本站 `privacy.html`。
+2. 设置 `GOOGLE_CLIENT_ID` 普通变量、`GOOGLE_CLIENT_SECRET` Secret、`PARTNER_BASE_URL` 固定 HTTPS 根地址。不要提交客户端密钥或 Google 下载的凭证 JSON。既有 `SESSION_SECRET` 继续使用，合作会话以独立随机凭证及数据库哈希保存，不和维护者 Cookie 混用。
+3. **先执行增加表的迁移，再部署审核 Worker**：
+
+```text
+wrangler d1 execute poem-submissions --remote --file submissions/partners-schema.sql --config submissions/wrangler.review.toml
+wrangler deploy --config submissions/wrangler.review.toml
+node --test submissions/partners.test.mjs submissions/workers.test.mjs submissions/review-published.test.mjs
+```
+
+迁移只增加表/索引，不修改现有投稿和查询权限；可重复执行。回退到旧 Worker 代码时保留这些表，不删除真实账号/稿件。合作工作台不含第三方脚本，登录短暂使用的 Google 访问令牌不入库。登录状态值单次使用；会话最长 7 天，最多 20 个同时存在的账号会话。每日任务清理过期会话、验证状态、访问计数，以及结束 30 天后的修订正文和历史副本；原投稿被清理后也清理合作账号中的投稿副本。未送审草稿保留到本人删除或联系维护者删除，账号删除也由维护者核实后处理。
+
+Google 应用若仍为 Testing，只有添加的测试账号可使用；要让其他合作伙伴登录，需在 Google Auth Platform 的“目标对象”发布应用。基本登录权限不读取邮件/云盘。Google 登录仍依赖读者可访问 Google；无法访问时保留普通/邮件投稿。
+
+### 合作账号验收
+
+- 未登录只能看到登录/申请说明；Google 登录后仍须申请并获批才能新建稿件。
+- 维护者选择固定作者且只关联勾选的作品；可以之后补选历史作品。
+- 检查两个合作账号不能互相读取草稿、改作者资料或编辑别人的作品。
+- 作者送审后修改，待审内容更新；维护者停留在旧页面的保存、发表、未采用操作都应拒绝。
+- 修订批准前公开内容保持原样；批准后保留作者、配图、原 ID 和额外字段，并更新时间。
+- 暂停账号后其已有会话失效；发生开通中断时等待五分钟，可在合作伙伴页恢复申请后重试。
+- `partners-fixture.mjs` 和 `partners.test.mjs` 是本地合成测试，不从 Worker 入口导入；部署包不包含 Node SQLite 或测试授权。
+
+## 原有投稿验收
 
 1. 未配置的网站表单必须显示“投稿服务准备中”，不能假装投稿成功。
 2. 用手机和电脑各提交一篇测试稿；确认未审核时它不在诗歌目录里。

@@ -2,6 +2,8 @@ import { REVIEW_HTML } from './review-ui.mjs';
 import { PUBLISHED_HTML } from './published-ui.mjs';
 import { ADMIN_HTML } from './admin-ui.mjs';
 import { authorizeReviewer } from './review-auth.mjs';
+import { partnerAuthRoute, cleanupPartnerData } from './partner-auth.mjs';
+import { partnerRoutes, partnerAdminRoutes, partnerSubmission, recordPartnerPublication } from './partners.mjs';
 
 const BASE_HEADERS = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'referrer-policy': 'no-referrer', 'x-frame-options': 'DENY' };
 function json(value, status = 200) { return new Response(JSON.stringify(value), { status, headers: { ...BASE_HEADERS, 'content-type': 'application/json; charset=utf-8' } }); }
@@ -293,6 +295,11 @@ async function getSubmission(env, id) {
 
 async function saveSubmission(request, env, id) {
   const body = await readBody(request, 60000);
+  const current = await getSubmission(env, id);
+  if (!current) return editorError('稿件不存在',404);
+  const member = await partnerSubmission(env,id);
+  if ((member && body.expectedUpdatedAt !== current.updated_at) || (body.expectedUpdatedAt !== undefined && body.expectedUpdatedAt !== current.updated_at)) return editorError('稿件已有新版本，请刷新核对后再保存',409);
+  if (member && (member.status !== 'active' || body.authorId !== member.author_id)) return editorError('合作权限或作者归属已变化，请核对合作账号',409);
   const title = clean(body.title);
   const author = clean(body.author);
   const content = clean(body.content).replace(/\r\n?/g, '\n');
@@ -303,28 +310,34 @@ async function saveSubmission(request, env, id) {
   const privateNote = clean(body.privateNote);
   const parsedDate = new Date(date + 'T00:00:00Z');
   if (!title || title.length > 80 || !author || author.length > 40 || content.length < 2 || content.length > 12000 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date || series.length > 60 || subseries.length > 60 || authorId.length > 100 || privateNote.length > 500) return editorError('请检查标题、笔名、正文、日期和分类长度');
-  const now = new Date().toISOString();
-  const result = await env.DB.prepare("UPDATE submissions SET title = ?, author = ?, content = ?, date = ?, series = ?, subseries = ?, author_id = ?, private_note = ?, status = 'reviewing', updated_at = ? WHERE id = ? AND status IN ('submitted', 'reviewing')")
-    .bind(title, author, content, date, series, subseries, authorId, privateNote, now, id).run();
+  const now = new Date(Math.max(Date.now(),Date.parse(current.updated_at)+1)).toISOString();
+  const result = await env.DB.prepare("UPDATE submissions SET title = ?, author = ?, content = ?, date = ?, series = ?, subseries = ?, author_id = ?, private_note = ?, status = 'reviewing', updated_at = ? WHERE id = ? AND updated_at = ? AND status IN ('submitted', 'reviewing')")
+    .bind(title, author, content, date, series, subseries, authorId, privateNote, now, id, current.updated_at).run();
   if (!result.meta?.changes) return editorError('稿件状态已变化，请刷新后重试', 409);
-  return json({ ok: true });
+  return json({ ok: true, updatedAt: now });
 }
 
 async function declineSubmission(request, env, id) {
   const body = await readBody(request);
   const note = clean(body.note);
   if (note.length > 300) return editorError('给投稿人的说明不能超过 300 字');
-  const now = new Date().toISOString();
-  const result = await env.DB.prepare("UPDATE submissions SET status = 'declined', public_note = ?, contact = '', decided_at = ?, updated_at = ? WHERE id = ? AND status IN ('submitted', 'reviewing')")
-    .bind(note, now, now, id).run();
+  const current = await getSubmission(env,id), member = await partnerSubmission(env,id);
+  if (!current) return editorError('稿件不存在',404);
+  if ((member && body.expectedUpdatedAt !== current.updated_at) || (body.expectedUpdatedAt !== undefined && body.expectedUpdatedAt !== current.updated_at)) return editorError('稿件已有新版本，请重新核对后再处理',409);
+  const now = new Date(Math.max(Date.now(),Date.parse(current.updated_at)+1)).toISOString();
+  const result = await env.DB.prepare("UPDATE submissions SET status = 'declined', public_note = ?, contact = '', decided_at = ?, updated_at = ? WHERE id = ? AND updated_at = ? AND status IN ('submitted', 'reviewing')")
+    .bind(note, now, now, id, current.updated_at).run();
   if (!result.meta?.changes) return editorError('稿件状态已变化，请刷新后重试', 409);
   return json({ ok: true });
 }
 
-async function publishSubmission(env, id) {
+async function publishSubmission(env, id, expectedUpdatedAt) {
   const row = await getSubmission(env, id);
   if (!row) return editorError('稿件不存在', 404);
-  if (row.status === 'published') return json({ ok: true, publishedUrl: row.published_url });
+  const member = await partnerSubmission(env,id);
+  if (row.status === 'published') { await recordPartnerPublication(env,member,row.poem_id); return json({ ok: true, publishedUrl: row.published_url }); }
+  if (member && (member.status !== 'active' || row.author_id !== member.author_id)) return editorError('合作权限或作者归属已变化，请先核对',409);
+  if ((member && expectedUpdatedAt !== row.updated_at) || (expectedUpdatedAt !== undefined && expectedUpdatedAt !== row.updated_at)) return editorError('稿件已有新版本，请重新查看后再发表',409);
   let readPage;
   try {
     readPage = new URL('read.html', env.PUBLIC_SITE_URL);
@@ -333,13 +346,14 @@ async function publishSubmission(env, id) {
   const now = new Date();
   const stale = new Date(now.getTime() - 5 * 60000).toISOString();
   const poemId = row.poem_id || String(now.getTime());
-  const lock = await env.DB.prepare("UPDATE submissions SET status = 'publishing', poem_id = ?, publishing_at = ?, updated_at = ? WHERE id = ? AND (status IN ('submitted', 'reviewing') OR (status = 'publishing' AND publishing_at < ?))")
-    .bind(poemId, now.toISOString(), now.toISOString(), id, stale).run();
+  const lock = await env.DB.prepare("UPDATE submissions SET status = 'publishing', poem_id = ?, publishing_at = ?, updated_at = ? WHERE id = ? AND updated_at = ? AND (status IN ('submitted', 'reviewing') OR (status = 'publishing' AND publishing_at < ?))")
+    .bind(poemId, now.toISOString(), now.toISOString(), id, row.updated_at, stale).run();
   if (!lock.meta?.changes) return editorError('稿件正在发布、已撤回或已处理，请刷新后重试', 409);
   try {
     const current = { ...row, poem_id: poemId };
     await updateAuthors(env, current);
     const publishedId = await writePoem(env, current);
+    await recordPartnerPublication(env,member,publishedId);
     readPage.searchParams.set('id', publishedId);
     const url = readPage.href;
     await env.DB.prepare("UPDATE submissions SET status = 'published', published_url = ?, contact = '', decided_at = ?, updated_at = ? WHERE id = ? AND status = 'publishing'")
@@ -354,10 +368,19 @@ async function publishSubmission(env, id) {
 
 export default {
   async fetch(request, env, ctx) {
+    const ops={readGitHubJson,writeGitHubJson,stampPoem};
+    try {
+      const partnerAuth=await partnerAuthRoute(request,env);
+      if (partnerAuth) return partnerAuth;
+      const partnerResponse=await partnerRoutes(request,env,ops);
+      if (partnerResponse) return partnerResponse;
+    } catch { return editorError('合作服务暂时不可用，请稍后重试',503); }
     const allowed = (env.REVIEWER_EMAILS || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
     const auth = await authorizeReviewer(request, env, ctx, allowed);
     if (auth.response) return auth.response;
     const url = new URL(request.url);
+    const partnerAdmin=await partnerAdminRoutes(request,env,ops,auth.email);
+    if (partnerAdmin) return partnerAdmin;
     if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/poems' || url.pathname === '/admin')) {
       const nonce = crypto.randomUUID().replace(/-/g, '');
       const template = url.pathname === '/poems' ? PUBLISHED_HTML : url.pathname === '/admin' ? ADMIN_HTML : REVIEW_HTML;
@@ -415,8 +438,12 @@ export default {
     try {
       if (request.method === 'PUT' && !action) return await saveSubmission(request, env, id);
       if (request.method === 'POST' && action === 'decline') return await declineSubmission(request, env, id);
-      if (request.method === 'POST' && action === 'publish') return await publishSubmission(env, id);
+      if (request.method === 'POST' && action === 'publish') {
+        const body=request.headers.get('content-type')?.startsWith('application/json')?await readBody(request):{};
+        return await publishSubmission(env, id, body.expectedUpdatedAt);
+      }
     } catch (error) { return editorError(error.message || '操作失败', 400); }
     return editorError('未找到', 404);
-  }
+  },
+  async scheduled(event,env) { await cleanupPartnerData(env); }
 };

@@ -58,6 +58,8 @@ Not all `poems.json` `author` strings are in `authors.json`; unlisted names rend
 | `submit.html` | Public text submission and live preview | — |
 | `status.html` | Private receipt status and pre-review withdrawal | `#<receipt token>` |
 | `admin.html` | Redirect to the protected Worker management page | — |
+| `partners.html` | Redirect to Google-login collaborator workspace on the review Worker | — |
+| `privacy.html` | Submission and collaborator account privacy policy | — |
 
 Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投稿. The submission and status pages inherit the warm paper, ink, gold, and three-theme system. `submissions/README.md` documents the public and protected Workers.
 
@@ -74,6 +76,7 @@ Public navigation includes 首页 / 目录 / 同志们 / 漂流 / 关于 / 投�
 - `admin.html` redirects to the review Worker's `/admin` page, which uses the same reviewer login as the submission queue. The protected page lives in `submissions/admin-ui.mjs`.
 - Its server-side API reads and writes `data/poems.json`, `data/authors.json`, and `data/logs.json` with a GitHub file SHA check. The browser never receives a GitHub token.
 - Image uploads use `/api/images`. Removing an image reference or deleting a poem does not delete the image file from the repository.
+- Collaborators use separate Google authentication at `/partners`; only maintainer-approved fixed author and poem ownership bindings grant access. Pending manuscript edits use versions and expected submission timestamps. Published changes require the maintainer's `/revisions` approval. Apply `submissions/partners-schema.sql` before deploying this feature; never associate private drafts by matching pen names.
 - The author panel edits id/name/aliases/bio/tags/link; the travel log panel supports editing and ordering map points.
 
 ## Comments

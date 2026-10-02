@@ -11,7 +11,7 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
 <style>header nav button{margin-left:12px;border:1px solid var(--gold-light);border-radius:999px;padding:4px 11px;background:transparent;color:var(--ink-light);font-size:12px}</style>
 </head>
 <body>
-<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav>投稿审核 · 仅维护者 <a href="/poems">管理已发表诗歌</a> <a href="/admin">管理后台</a> <button id="logout" type="button" hidden>退出登录</button></nav></header>
+<header><a href="/" aria-label="投稿审核首页"><strong>诗歌<span>漂流</span></strong></a><nav>投稿审核 · 仅维护者 <a href="/poems">管理已发表诗歌</a> <a href="/admin">管理后台</a> <a href="/collaborators">合作伙伴</a> <a href="/revisions">作品修订</a> <button id="logout" type="button" hidden>退出登录</button></nav></header>
 <main>
   <div class="intro"><div><h1>待审稿件</h1><p>从收到到发表，稿件都留在这里。</p></div><button class="refresh" id="refresh" type="button">刷新列表</button></div>
   <div class="filters" id="filters" aria-label="筛选投稿状态">
@@ -87,18 +87,18 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
       feedback('');preview();await loadList();
     }catch(e){feedback(e.message,true)}
   }
-  function values(){return {title:$('title').value,author:$('author').value,content:$('content').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,authorId:$('author-id').value,privateNote:$('private-note').value}}
+  function values(){return {expectedUpdatedAt:current.updated_at,title:$('title').value,author:$('author').value,content:$('content').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,authorId:$('author-id').value,privateNote:$('private-note').value}}
   async function save(){if(!current)throw new Error('请先选择稿件');await api('/api/submissions/'+current.id,'PUT',values());feedback('修改已保存');await open(current.id)}
   $('save').addEventListener('click',async function(){busy(true);try{await save()}catch(e){feedback(e.message,true)}finally{busy(false)}});
   $('publish').addEventListener('click',async function(){
     if(!current||!confirm('确认发表这首诗？发表后将对所有读者公开。'))return;
     busy(true);feedback('正在保存并发表，请勿重复操作…');
-    try{await api('/api/submissions/'+current.id,'PUT',values());var result=await api('/api/submissions/'+current.id+'/publish','POST');await open(current.id);feedback('已发表。站点更新可能需要一点时间。');if(result.publishedUrl)$('published-link').href=result.publishedUrl}
+    try{var saved=await api('/api/submissions/'+current.id,'PUT',values());var result=await api('/api/submissions/'+current.id+'/publish','POST',{expectedUpdatedAt:saved.updatedAt});await open(current.id);feedback('已发表。站点更新可能需要一点时间。');if(result.publishedUrl)$('published-link').href=result.publishedUrl}
     catch(e){feedback(e.message,true)}finally{busy(false)}
   });
   $('decline').addEventListener('click',async function(){
     if(!current||!confirm('确认将这篇稿件标为未采用？'))return;
-    busy(true);try{await api('/api/submissions/'+current.id+'/decline','POST',{note:$('public-note').value});await open(current.id);feedback('已标为未采用')}catch(e){feedback(e.message,true)}finally{busy(false)}
+    busy(true);try{await api('/api/submissions/'+current.id+'/decline','POST',{note:$('public-note').value,expectedUpdatedAt:current.updated_at});await open(current.id);feedback('已标为未采用')}catch(e){feedback(e.message,true)}finally{busy(false)}
   });
   $('filters').addEventListener('click',async function(e){var button=e.target.closest('button[data-status]');if(!button)return;status=button.dataset.status;document.querySelectorAll('#filters button').forEach(function(item){item.classList.toggle('active',item===button)});current=null;$('editor').hidden=true;try{await loadList()}catch(error){$('queue').textContent=error.message}});
   $('refresh').addEventListener('click',function(){loadList().catch(function(e){$('queue').textContent=e.message})});

@@ -27,6 +27,9 @@ colors:
   globe-ocean: "#16212E"
   globe-land: "#EDE9E0"
   globe-coast: "#D4B896"
+  partner-line: "#D6CCBD"
+  partner-focus-gold: "#B79B76"
+  partner-clay: "#9C4D32"
 typography:
   display-font:
     fontFamily: "Oswald, Noto Sans SC, sans-serif"
@@ -93,6 +96,19 @@ typography:
     fontWeight: 300
     letterSpacing: "0.15em"
     textTransform: "uppercase"
+  partner-heading:
+    fontFamily: "Georgia, Noto Serif SC, serif"
+    fontSize: "clamp(34px, 5vw, 50px)"
+    fontWeight: 400
+    lineHeight: 1.2
+  partner-body:
+    fontFamily: "system-ui, Noto Sans SC, sans-serif"
+    fontSize: "16px"
+    lineHeight: 1.65
+  partner-poem:
+    fontFamily: "KaiTi, STKaiti, Georgia, Noto Serif SC, serif"
+    fontSize: "19px"
+    lineHeight: 1.95
 rounded:
   hairline: "1px"
   input: "8px"
@@ -269,6 +285,22 @@ components:
 
 ### Status（admin）
 - 成功（浅绿底 `#E6F2E8` / 深绿字 `#2B6B3A`）、错误（浅粉底 `#F7E6E6` / 陶土字）、加载（浅鎏金底 / 淡墨字）。错误可加陶土左边框警示。这些反馈色仅用于后台操作结果提示。
+
+### Protected Collaborator Extension（合作工作台与审核，`submissions/partner-ui.mjs`）
+
+此扩展沿用既有受保护编辑器的列表—详情结构与暖纸、宿墨、陶土、玻璃导航。它服务写作者管理诗稿与维护者核实归属、审核修订；本节的字体、760px 断点和局部状态规则限定于 `/partners`、`/collaborators`、`/revisions`，公共阅读、作者页和地图页继续遵循各自既有设计。
+
+**颜色与主题：** 日间纸底 `#F7F5F0`、次层纸 `#EDE9E2`、宿墨 `#2C2A28`、次文字 `#5A554E`；本节 frontmatter 的 `partner-line` 用于 1px 边界，`partner-clay` 为保证小字对比的深陶土，`partner-focus-gold` 用于焦点。夜间使用纸底 `#1E1E1C`、次层 `#292925`、文字 `#ECECE5` / `#BFBEB3`、边界 `#58574D`、金 `#D4A373`、陶 `#EE9481`；护眼使用纸底 `#ECF3E5`、次层 `#E0E8D9`、文字 `#3A4632` / `#505D46`、边界 `#B6C2A9`、金 `#977D47`、陶 `#925336`。样式通过同一组 `--paper` / `--sheet` / `--ink` / `--muted` / `--line` / `--gold` / `--clay` 变量随 `data-theme` 切换，选择沿用 `poem-theme` 存储键。
+
+**字体：** 标题用 Georgia / 本机 Noto Serif SC / serif；操作文字用 system-ui / 本机 Noto Sans SC / sans-serif。编辑正文与阅读预览用 KaiTi / STKaiti / 衬线回退，19px，编辑行高 1.9、预览行高 1.95，保留换行并允许长文本换行。工作台不加载第三方字体；这些本机回退是受保护操作面的已实现范围，不替换公共页的字体系统。
+
+**布局与深度：** 首屏为页面标题和状态筛选，下方左侧作品或申请列表、右侧带标签的编辑器。主容器最大宽 1200px，桌面内边距 44px 24px 80px；两栏为 `minmax(230px,310px) minmax(0,1fr)`，栏距 30px。列表最多高 700px，可滚动；详情有 12px 圆角、1px 边界、28px 内边距。顶部 sticky 导航使用 18px blur 与半透明主题纸底（日间 `.88`，夜间/护眼 `.9`），保持平底与细线层次。在宽度 ≤760px 时列表与详情、双栏字段、修订对照均堆叠，列表最多高 270px、详情内边距 20px，导航换行，操作按钮可伸展。
+
+**操作与状态：** 按钮为 pill（9px 17px），主操作宿墨底与纸色字；表单为纸底、8px 圆角、10px 12px 内边距。所有可聚焦交互都有 3px 金色 `:focus-visible` outline、3px 外偏移。列表选择以次层纸底标示；状态筛选按钮以 `aria-pressed` 和宿墨实心标示。全部 / 草稿 / 送审中 / 已发表与作者资料入口在切换资料面板时保留，允许返回作品列表。
+
+保存、冲突和错误提示放在当前编辑器或资料表单附近的 `role="status"` / `aria-live="polite"` 区域。请求期间禁用主内容操作，结束后恢复原状态；失败保留输入。作品与资料输入具有未保存标记，切换作品、筛选、刷新、退出和关闭页面前提示。最近 10 个保存版本由用户明确载入编辑器，载入后须核对并手动保存；公开版本变化时提示备份、明确更新修订对照并重新送审。维护者修订页并列展示申请时公开版本与请求版本，变动字段同时以文字和陶土标记，移动端按顺序堆叠。
+
+**入口与验证边界：** `submit.html` 增加合作申请及隐私说明链接；`partners.html` 是暖纸与 Georgia 标题的跳转页，`privacy.html` 是同系字体、深陶土链接与金色焦点的窄列说明页。两者为静态入口/说明，不具备工作台完整三主题结构。工作台本轮完成本地测试与 finish 评审，审核 Worker 已部署；真实 Google 登录与账号审批仍待人工验收。
 
 ## Animus Extension（漂流地图页专属，`voyage.html`）
 
