@@ -81,6 +81,50 @@ function reviewRequest(path, method = 'GET', body) {
 const reviewer = { access: { getIdentity: async () => ({ email: 'owner@example.com' }) } };
 const draft = { title: '一首诗', author: '新笔名', content: '第一行\n第二行', contact: 'private@example.com', consent: true, turnstileToken: 'valid' };
 
+test('reader metadata survives submission, review and publication without leaking through receipts', async () => {
+  const f = fixture();
+  try {
+    const fields = { date: '2000-02-29', series: '读者合集', subseries: '现代诗' };
+    const response = await publicWorker.fetch(publicRequest('/api/submissions', 'POST', { ...draft, ...fields }), f.env);
+    assert.equal(response.status, 201);
+    const receipt = await response.json();
+    const detail = await (await reviewWorker.fetch(reviewRequest('/api/submissions/' + receipt.id), f.env, reviewer)).json();
+    for (const key of Object.keys(fields)) assert.equal(detail.submission[key], fields[key]);
+    const status = await (await publicWorker.fetch(publicRequest('/api/status', 'GET', null, { Authorization: 'Bearer ' + receipt.statusUrl.split('#')[1] }), f.env)).json();
+    for (const key of Object.keys(fields)) assert.equal(status[key], undefined);
+    assert.equal((await reviewWorker.fetch(reviewRequest('/api/submissions/' + receipt.id + '/publish', 'POST'), f.env, reviewer)).status, 200);
+    const poem = f.files['data/poems.json'][0];
+    for (const key of Object.keys(fields)) assert.equal(poem[key], fields[key]);
+    assert.equal(poem.updatedAt, poem.publishedAt);
+    assert.ok(Date.parse(poem.updatedAt) >= Date.now() - 10000);
+  } finally { f.close(); }
+});
+
+test('metadata is optional, but malformed dates and collections cannot enter the review database', async () => {
+  const f = fixture();
+  try {
+    for (const fields of [{ date: '2025-02-29' }, { date: '2026-04-31' }, { date: 'yesterday' }, { date: [] }, { series: {} }, { series: '诗'.repeat(61) }, { subseries: '<script>' }]) {
+      assert.equal((await publicWorker.fetch(publicRequest('/api/submissions', 'POST', { ...draft, ...fields }), f.env)).status, 400);
+    }
+    assert.equal(f.sqlite.prepare('SELECT count(*) AS count FROM submissions').get().count, 0);
+    assert.equal((await publicWorker.fetch(publicRequest('/api/submissions', 'POST', draft), f.env)).status, 201);
+    assert.deepEqual({ ...f.sqlite.prepare('SELECT date, series, subseries FROM submissions').get() }, { date: '', series: '', subseries: '' });
+  } finally { f.close(); }
+});
+
+test('the full advertised Chinese text limit fits submission and review requests with metadata', async () => {
+  const f = fixture();
+  try {
+    const content = '诗'.repeat(12000);
+    const fields = { ...draft, content, date: '2026-10-02', series: '集'.repeat(60), subseries: '类'.repeat(60) };
+    const response = await publicWorker.fetch(publicRequest('/api/submissions', 'POST', fields), f.env);
+    assert.equal(response.status, 201);
+    const receipt = await response.json();
+    assert.equal((await reviewWorker.fetch(reviewRequest('/api/submissions/' + receipt.id, 'PUT', { ...fields, authorId: '', privateNote: '' }), f.env, reviewer)).status, 200);
+    assert.equal(f.sqlite.prepare('SELECT content FROM submissions').get().content.length, 12000);
+  } finally { f.close(); }
+});
+
 test('submission remains private, receipt shows only status, and reviewer can publish once', async () => {
   const f = fixture();
   try {

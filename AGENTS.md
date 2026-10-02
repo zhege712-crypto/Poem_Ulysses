@@ -25,9 +25,12 @@ series    — string (e.g. "天一篇", "匡园篇", "洛社篇", "最初的序�
 subseries — string (optional)
 author    — string
 images    — string[] (paths relative to repo root, e.g. "images/1784094796315-wanchunqiuqibyeno.jpeg")
+publishedAt / updatedAt — optional server-owned ISO timestamps for new publications / changed poems
 ```
 
 Poems are ordered by series then date (not by array position). All pages that consume this data follow that ordering convention: sort by series occurrence order, then `getDateWeight` (constant weights per year/month/day part) descending, then `localeCompare` ascending. Copy this exact comparator from `read.html`; do not "improve" it.
+
+Exception: homepage “最近更新” and “最近的诗” use `updatedAt`, then `publishedAt`, then legacy numeric timestamp IDs, descending. They describe publication/edit activity, not the work's date. Server write paths stamp changed poems only; no-op saves and reordering do not change timestamps.
 
 `data/authors.json` holds author profiles. Schema:
 

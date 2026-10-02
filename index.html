@@ -799,6 +799,7 @@ footer a:hover { color: var(--paper); }
 // ============================================================
 function formatPoemDate(dateStr) {
   if (!dateStr || dateStr.trim() === '') return '年代不详';
+  if (!/^\d{4}(-\d{1,2}){0,2}$/.test(dateStr.trim())) return escapeHtml(dateStr.trim());
   var parts = dateStr.trim().split('-');
   var year = parts[0];
   var month = parts[1];
@@ -807,20 +808,24 @@ function formatPoemDate(dateStr) {
   if (!day) return year + '年' + parseInt(month) + '月';
   return year + '年' + parseInt(month) + '月' + parseInt(day) + '日';
 }
-function getDateWeight(dateStr) {
-  if (!dateStr || dateStr.trim() === '') return -1;
-  var parts = dateStr.trim().split('-');
-  var weight = 0;
-  if (parts[0]) weight += 10000;
-  if (parts[1]) weight += 100;
-  if (parts[2]) weight += 1;
-  return weight;
+// 与目录的作品日期排序不同，这里显示真正最近发表或修改的作品。
+function poemUpdateTime(poem) {
+  for (var key of ['updatedAt', 'publishedAt']) {
+    var value = poem[key];
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value)) {
+      var time = Date.parse(value);
+      if (Number.isFinite(time)) return time;
+    }
+  }
+  // 旧作品的编号记录了收录时间，不用创作日期冒充更新时间。
+  if (/^\d{13}$/.test(String(poem.id))) return Number(poem.id);
+  return 0;
 }
-function sortByDate(a, b) {
-  var wA = getDateWeight(a.date);
-  var wB = getDateWeight(b.date);
-  if (wA !== wB) return wB - wA;
-  return (a.date || '').localeCompare(b.date || '');
+function sortByUpdate(a, b) {
+  return poemUpdateTime(b) - poemUpdateTime(a) || String(b.id).localeCompare(String(a.id));
+}
+function formatUpdateDate(time) {
+  return time ? new Date(time).toLocaleDateString('zh-CN', { timeZone: 'Asia/Shanghai', year: 'numeric', month: 'long', day: 'numeric' }) : '—';
 }
 function escapeHtml(s) {
   var d = document.createElement('div');
@@ -840,8 +845,9 @@ fetch(dataUrl)
     var latest = document.getElementById('stat-latest');
     count.textContent = poems.length;
     if (poems.length) {
-      var sorted = poems.slice().sort(sortByDate);
-      latest.textContent = formatPoemDate(sorted[0].date);
+      var sorted = poems.slice().sort(sortByUpdate);
+      latest.textContent = formatUpdateDate(poemUpdateTime(sorted[0]));
+      latest.title = '最近一次发表或修改作品的日期（北京时间）';
     } else {
       latest.textContent = '—';
     }
@@ -851,7 +857,7 @@ fetch(dataUrl)
       list.innerHTML = '<div class="empty-state">还没有诗，等待第一首漂流而来。</div>';
       return;
     }
-    var recent = poems.slice().sort(sortByDate).slice(0, 6);
+    var recent = poems.slice().sort(sortByUpdate).slice(0, 6);
     list.innerHTML = recent.map(function(p) {
       return '<a class="recent-item" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
         '<span class="ri-title">' + escapeHtml(p.title) + '</span>' +

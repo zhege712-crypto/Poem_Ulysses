@@ -23,7 +23,7 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
       <h2 id="detail-heading">稿件</h2><div class="sub" id="detail-meta"></div>
       <div class="grid"><div class="field"><label for="title">标题</label><input id="title" maxlength="80"></div><div class="field"><label for="author">发表笔名</label><input id="author" maxlength="40"></div></div>
       <div class="field"><label for="content">正文</label><textarea id="content" maxlength="12000"></textarea></div>
-      <div class="grid"><div class="field"><label for="date">发表日期</label><input id="date" type="date" required></div><div class="field"><label for="series">系列</label><input id="series" list="series-options" maxlength="60"><datalist id="series-options"></datalist></div></div>
+      <div class="grid"><div class="field"><label for="date">作品日期</label><input id="date" type="date" required></div><div class="field"><label for="series">系列</label><input id="series" list="series-options" maxlength="60"><datalist id="series-options"></datalist></div></div>
       <div class="field"><label for="subseries">子系列（选填）</label><input id="subseries" maxlength="60"></div>
       <div class="field"><label for="author-id">作者资料</label><select id="author-id"><option value="">按笔名自动匹配；若无匹配则新建作者</option></select></div>
       <p class="hint">选择已有作者会把当前笔名加入其别名；请确认投稿人确实使用该身份。</p>
@@ -77,7 +77,7 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
     try{
       var result=await api('/api/submissions/'+id);current=result.submission;
       $('editor').hidden=false;$('detail-heading').textContent=current.title;$('detail-meta').textContent='投稿于 '+new Date(current.created_at).toLocaleString('zh-CN')+' · '+current.status;
-      ['title','author','content','series','subseries','private-note'].forEach(function(key){$(key).value=current[key]||''});$('date').value=current.date||new Date().toLocaleDateString('sv-SE');
+      ['title','author','content','series','subseries','private-note'].forEach(function(key){$(key).value=current[key]||''});$('date').value=current.date||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'});
       $('author-id').value=current.author_id||'';$('public-note').value=current.public_note||'';
       $('contact').textContent=current.contact?'投稿人联系方式：'+current.contact:'投稿人未留联系方式';
       var editable=['submitted','reviewing'].includes(current.status);

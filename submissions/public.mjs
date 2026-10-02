@@ -29,7 +29,7 @@ function receiptToken() {
 
 function clean(value) { return typeof value === 'string' ? value.trim() : ''; }
 
-async function readBody(request, limit = 30000) {
+async function readBody(request, limit = 60000) {
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new Error('请使用正确的提交格式');
   const contentLength = Number(request.headers.get('content-length') || 0);
   if (contentLength > limit) throw new Error('稿件过长');
@@ -75,6 +75,12 @@ async function submit(request, env, headers) {
   const author = clean(body.author);
   const content = clean(body.content).replace(/\r\n?/g, '\n');
   const contact = clean(body.contact);
+  const date = clean(body.date), series = clean(body.series), subseries = clean(body.subseries);
+  const invalidMetadata = ['date', 'series', 'subseries'].some(key => body[key] !== undefined && typeof body[key] !== 'string');
+  const parsedDate = date ? new Date(date + 'T00:00:00Z') : null;
+  if (invalidMetadata || (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date)) || series.length > 60 || subseries.length > 60 || /[\u0000-\u001f<>]/.test(series + subseries)) {
+    return json({ error: '请检查作品日期、合集和子分类，日期须为有效的年月日，合集及子分类最多 60 字' }, 400, headers);
+  }
   if (!title || title.length > 80 || !author || author.length > 40 || content.length < 2 || content.length > 12000 || contact.length > 120 || body.consent !== true) {
     return json({ error: '请检查标题、笔名、正文及公开发表确认' }, 400, headers);
   }
@@ -92,8 +98,8 @@ async function submit(request, env, headers) {
     const token = receiptToken();
     const id = crypto.randomUUID();
     const timestamp = now.toISOString();
-    await env.DB.prepare('INSERT INTO submissions (id, receipt_hash, consent_version, consent_at, title, author, content, contact, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(id, await sha256(token), 'v1', timestamp, title, author, content, contact, timestamp, timestamp).run();
+    await env.DB.prepare('INSERT INTO submissions (id, receipt_hash, consent_version, consent_at, title, author, content, contact, date, series, subseries, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(id, await sha256(token), 'v1', timestamp, title, author, content, contact, date, series, subseries, timestamp, timestamp).run();
     statusPage.hash = token;
     return json({ ok: true, id, statusUrl: statusPage.href }, 201, headers);
   } catch {

@@ -70,6 +70,14 @@ function validImagePath(value) {
   return typeof value === 'string' && /^images\/[A-Za-z0-9._/-]{1,180}$/.test(value) && !value.split('/').includes('..');
 }
 function validId(value) { return typeof value === 'string' && /^[\p{L}\p{N}_.-]{1,100}$/u.test(value); }
+// Work dates describe the poem; these server-owned timestamps describe publication and edits.
+function stampPoem(row, previous, now = new Date().toISOString()) {
+  const keys = ['title', 'author', 'date', 'series', 'subseries', 'content', 'images'];
+  const changed = !previous || keys.some(key => JSON.stringify(row[key] ?? (key === 'images' ? [] : '')) !== JSON.stringify(previous[key] ?? (key === 'images' ? [] : '')));
+  if (!previous) row.publishedAt = now;
+  if (changed) row.updatedAt = now;
+  return row;
+}
 function validateAdminData(kind, incoming, current) {
   if (!Array.isArray(incoming) || incoming.length > 5000 || !Array.isArray(current)) return null;
   const ids = new Set();
@@ -86,7 +94,7 @@ function validateAdminData(kind, incoming, current) {
       if (!title || title.length > 80 || !author || author.length > 40 || !date || !validDate(date) || !series || series.length > 60 || subseries.length > 60 || content.trim().length < 2 || content.length > 12000 || !Array.isArray(item.images) || item.images.length > 20 || item.images.some(x => !validImagePath(x))) return null;
       const row = { ...old, id: item.id, title, author, date, series, content, images: item.images };
       if (subseries) row.subseries = subseries; else delete row.subseries;
-      output.push(row);
+      output.push(stampPoem(row, previous.get(item.id)));
     } else if (kind === 'authors') {
       const profile = validProfile(item);
       if (!profile) return null;
@@ -158,9 +166,11 @@ async function savePublishedPoem(request, env, id) {
   if (!Array.isArray(data)) throw new Error('诗歌数据格式错误');
   const poem = data.find(p => p.id === id);
   if (!poem) return editorError('这首诗已不存在，请刷新列表', 404);
+  const previous = { ...poem };
   Object.assign(poem, { title, author, date, series, content, images });
   if (subseries) poem.subseries = subseries;
   else delete poem.subseries;
+  stampPoem(poem, previous);
   if (!await writeGitHubJson(env, 'data/poems.json', data, sha, '修改已发表诗歌: ' + title)) return editorError('诗歌数据同时被修改，请刷新后重试', 409);
   let warning = '';
   if (poem.sourceSubmissionId && env.DB) {
@@ -249,16 +259,19 @@ async function writePoem(env, row) {
     const already = data.find(p => p.sourceSubmissionId === row.id);
     if (already) return already.id;
     if (data.some(p => p.id === row.poem_id)) throw new Error('诗歌编号冲突，请联系维护者');
+    const now = new Date().toISOString();
     data.push({
       id: row.poem_id,
       title: row.title,
-      date: row.date || new Date().toISOString().slice(0, 10),
+      date: row.date || new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' }),
       content: row.content,
       series: row.series || '未分类',
       ...(row.subseries ? { subseries: row.subseries } : {}),
       author: row.author,
       images: [],
-      sourceSubmissionId: row.id
+      sourceSubmissionId: row.id,
+      publishedAt: now,
+      updatedAt: now
     });
     if (await writeGitHubJson(env, 'data/poems.json', data, sha, '发表投稿: ' + row.title)) return row.poem_id;
   }
@@ -279,7 +292,7 @@ async function getSubmission(env, id) {
 }
 
 async function saveSubmission(request, env, id) {
-  const body = await readBody(request);
+  const body = await readBody(request, 60000);
   const title = clean(body.title);
   const author = clean(body.author);
   const content = clean(body.content).replace(/\r\n?/g, '\n');

@@ -122,6 +122,54 @@ test('unified admin writes validated poems and rejects stale, invalid or cross-s
   } finally { f.close(); }
 });
 
+test('both editors timestamp only changed poems and cannot accept forged timestamps', async () => {
+  const f = fixture();
+  const initial = '2026-09-30T00:00:00.000Z';
+  try {
+    const rows = f.files['data/poems.json'];
+    rows[0].publishedAt = initial;
+    rows[0].updatedAt = initial;
+    rows.push({ ...rows[0], id: '1790741273053', title: '另一首诗' });
+    const changed = structuredClone(rows);
+    changed[0].title = '修改诗题';
+    changed[0].updatedAt = '2099-01-01T00:00:00.000Z';
+    changed[0].publishedAt = '2099-01-01T00:00:00.000Z';
+    changed.push({ ...changed[0], id: '1790741273054', title: '新诗' });
+    assert.equal((await reviewWorker.fetch(request('/api/admin/files/poems', 'PUT', { sha: '1', data: changed }), f.env, reviewer)).status, 200);
+    const saved = f.files['data/poems.json'];
+    assert.ok(Date.parse(saved[0].updatedAt) >= Date.now() - 10000);
+    assert.equal(saved[0].publishedAt, initial);
+    assert.equal(saved[1].updatedAt, initial);
+    assert.equal(saved[2].publishedAt, saved[2].updatedAt);
+    assert.notEqual(saved[2].updatedAt, changed[0].updatedAt);
+    const noChange = structuredClone(saved);
+    assert.equal((await reviewWorker.fetch(request('/api/admin/files/poems', 'PUT', { sha: '2', data: noChange }), f.env, reviewer)).status, 200);
+    assert.deepEqual(f.files['data/poems.json'], saved);
+    const poem = f.files['data/poems.json'][1];
+    assert.equal((await reviewWorker.fetch(request('/api/published-poems/' + poem.id, 'PUT', { ...poem, sha: '3', content: '修改后的正文' }), f.env, reviewer)).status, 200);
+    const edited = f.files['data/poems.json'][1];
+    assert.equal(edited.publishedAt, initial);
+    assert.ok(Date.parse(edited.updatedAt) >= Date.now() - 10000);
+    assert.equal((await reviewWorker.fetch(request('/api/published-poems/' + poem.id, 'PUT', { ...edited, sha: '4' }), f.env, reviewer)).status, 200);
+    assert.equal(f.files['data/poems.json'][1].updatedAt, edited.updatedAt);
+  } finally { f.close(); }
+});
+
+test('homepage orders actual publication and edit times, including legacy poems and Beijing midnight', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const code = html.slice(html.indexOf('function poemUpdateTime('), html.indexOf('function escapeHtml('));
+  const functions = new Script(code + ';({poemUpdateTime,sortByUpdate,formatUpdateDate})').runInNewContext();
+  const poems = [
+    { id: '1790741273052', date: '2099-12-31' },
+    { id: '1780000000000', date: '1999-01-01', updatedAt: '2026-10-02T16:05:00.000Z' },
+    { id: '1790741273053', date: '1900-01-01' },
+    { id: 'unknown', updatedAt: 'bad-date', publishedAt: '2026-10-01T08:00:00.000Z' }
+  ];
+  assert.deepEqual(poems.slice().sort(functions.sortByUpdate).map(p => p.id), ['1780000000000', 'unknown', '1790741273053', '1790741273052']);
+  assert.equal(functions.formatUpdateDate(functions.poemUpdateTime(poems[1])), '2026年10月3日');
+  assert.equal(functions.formatUpdateDate(functions.poemUpdateTime({ id: 'unknown', date: '2099-01-01' })), '—');
+});
+
 test('unified admin maintains authors and travel log order without browser credentials', async () => {
   const f = fixture();
   try {
