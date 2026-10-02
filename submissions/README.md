@@ -80,7 +80,7 @@ node --test submissions/partners.test.mjs submissions/workers.test.mjs submissio
 
 迁移只增加表/索引，不修改现有投稿和查询权限；可重复执行。回退到旧 Worker 代码时保留这些表，不删除真实账号/稿件。合作工作台不含第三方脚本，登录短暂使用的 Google 访问令牌不入库。登录状态值单次使用；会话最长 7 天，最多 20 个同时存在的账号会话。每日任务清理过期会话、验证状态、访问计数，以及结束 30 天后的修订正文和历史副本；原投稿被清理后也清理合作账号中的投稿副本。未送审草稿保留到本人删除或联系维护者删除，账号删除也由维护者核实后处理。
 
-Google 应用若仍为 Testing，只有添加的测试账号可使用；要让其他合作伙伴登录，需在 Google Auth Platform 的“目标对象”发布应用。基本登录权限不读取邮件/云盘。Google 登录仍依赖读者可访问 Google；无法访问时保留普通/邮件投稿。
+Google 外部应用只请求基本身份权限时适用 Testing 限制的例外；本工作台仅请求 `openid email`，不依赖把每位合作伙伴加入 Google 测试名单，也不请求离线刷新令牌。参见 [Google 官方目标对象说明](https://support.google.com/cloud/answer/15549945?hl=en)。如果以后增加其他权限，要重新核对测试名单、发布和验证要求。基本登录权限不读取邮件/云盘；Google Workspace 账号仍可能受所属组织策略限制。Google 登录依赖读者可访问 Google；无法访问时保留普通/邮件投稿。
 
 ### 合作账号验收
 
