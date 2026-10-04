@@ -45,144 +45,47 @@ img { max-width: 100%; display: block; }
 
 .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
 
-/* ===== 开幕遮罩：夜潮 · 摊开的书 ===== */
-#intro-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: radial-gradient(ellipse at 50% 60%, #22211f, #131315 75%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.9s ease;
-  opacity: 1;
-  visibility: visible;
-  pointer-events: none;
-  transform: scale(1);
-}
-#intro-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  transform: scale(0.94);
-}
-#intro-overlay.skip { display: none; }
-
-/* ---- Canvas 海浪层 ---- */
-#intro-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.85;
-}
-
-/* ---- 瓶后柔光 ---- */
-.intro-glow {
-  position: absolute;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 184, 150, 0.08), transparent 60%);
-  filter: blur(18px);
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0;
-  animation: glowIn 1.2s ease 0.35s forwards;
-}
-@keyframes glowIn { to { opacity: 1; } }
-
-/* ---- 希腊回纹边框 ---- */
-.intro-meander {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 14px;
-  color: var(--gold);
-  opacity: 0;
-  transition: opacity 1s ease 0.25s;
-  z-index: 2;
-  pointer-events: none;
-}
-.intro-meander.top { top: 30px; }
-.intro-meander.bottom { bottom: 30px; }
-.intro-meander.show { opacity: 0.55; }
-
-/* ---- 摊开的书 ---- */
-#book-wrap {
-  position: relative;
-  z-index: 3;
-  opacity: 0;
-  transform: translateY(56px);
-  animation: bottleRise 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
-}
-#book {
-  width: clamp(200px, 28vw, 260px);
-  height: auto;
-  display: block;
-  animation: bottleBob 5.5s ease-in-out infinite;
-  transform-origin: 50% 90%;
-}
-@keyframes bottleRise {
-  0% { opacity: 0; transform: translateY(56px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-@keyframes bottleBob {
-  0%, 100% { transform: translateY(0) rotate(-1.6deg); }
-  50% { transform: translateY(-9px) rotate(1.6deg); }
-}
-
-/* ---- 副标题与铭文 ---- */
-.intro-sub {
-  position: relative;
-  z-index: 3;
-  font-family: var(--font-serif);
-  font-weight: 300;
-  font-size: clamp(0.85rem, 1.8vw, 1.3rem);
-  color: var(--gold);
-  letter-spacing: 0.4em;
-  text-transform: uppercase;
-  margin-top: 34px;
-  opacity: 0;
-  animation: subFade 1s ease 0.9s forwards;
-}
-@keyframes subFade {
-  0% { opacity: 0; transform: translateY(8px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-/* ---- 开幕跳过 ---- */
-.intro-skip {
-  position: absolute;
-  bottom: 28px;
-  right: 24px;
-  z-index: 5;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.15em;
-  color: #ece8df;
-  background: rgba(236, 232, 223, 0.1);
-  border: 1px solid rgba(236, 232, 223, 0.5);
-  border-radius: 999px;
-  padding: 9px 20px;
-  min-height: 44px;
-  cursor: pointer;
-  opacity: 0;
-  animation: subFade 0.35s ease 0.15s forwards;
-  pointer-events: auto;
-  transition: color 0.3s;
-}
-.intro-skip:hover, .intro-skip:focus-visible { color: var(--gold); border-color: var(--gold); }
-
-/* ---- 跳过时首页立即可见 ---- */
-body.intro-skipped header,
-body.intro-skipped .page-content {
-  opacity: 1;
-  animation: none;
-}
+/* ===== 开幕专属：航迹成诗（默认开放主页，成功初始化才覆盖） ===== */
+#intro-overlay { --intro-brass: var(--gold); --intro-rust: #A3462E; display: none; position: fixed; inset: 0; z-index: 9999; overflow: hidden; background: var(--paper); color: var(--ink); }
+#intro-overlay.is-playing { display: block; animation: intro-release 3s linear forwards; }
+body.intro-active { overflow: hidden; }
+body.intro-active .hero h1 { visibility: hidden; }
+body.intro-active.intro-arrived .hero h1 { visibility: visible; }
+/* The former homepage arrival delays belong to the intro; prepare content immediately. */
+body header, body .page-content { opacity: 1; animation: none; }
+.intro-plane { position: absolute; inset: 0; overflow: hidden; }
+.intro-band { position: absolute; width: 115vw; height: 19vh; left: -38vw; top: 49%; background: var(--intro-rust); transform: rotate(32deg); animation: intro-band 3s both; }
+.intro-disc { position: absolute; width: clamp(70px, 13vw, 180px); aspect-ratio: 1; border-radius: 50%; background: var(--ink); left: 24%; top: 23%; animation: intro-disc 3s both; }
+.intro-arc { position: absolute; left: 13%; top: 13%; width: 50%; height: 66%; color: var(--intro-brass); animation: intro-geometry 3s both; }
+.intro-arc path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw 1.4s ease-out forwards; }
+.intro-glass { position: absolute; width: 18vw; height: 24vh; top: 28%; left: 34%; background: color-mix(in srgb, var(--ink) 8%, transparent); animation: intro-geometry 3s both; }
+.intro-glass.second { left: 58%; top: 44%; width: 22vw; height: 20vh; background: color-mix(in srgb, var(--clay) 9%, transparent); }
+.intro-title { position: absolute; left: var(--intro-x); top: var(--intro-y); font-family: var(--font-serif); font-size: var(--intro-size); font-weight: 400; letter-spacing: .04em; line-height: 1.15; white-space: nowrap; transform: translate(var(--intro-dx), var(--intro-dy)); animation: intro-home 3s both; }
+.intro-title span { display: inline-block; opacity: 0; animation: intro-letter 3s both; --letter-y: -34px; }
+.intro-title span:nth-child(2) { --letter-y: -12px; animation-delay: 50ms; }
+.intro-title span:nth-child(3) { --letter-y: 12px; animation-delay: 100ms; }
+.intro-title span:nth-child(3) { color: var(--gold); }
+.intro-title span:nth-child(4) { --letter-y: 34px; animation-delay: 150ms; }
+.intro-trail { position: absolute; width: min(76vw, 680px); height: 90px; left: 50%; top: 53%; transform: translateX(-50%); color: var(--intro-brass); animation: intro-geometry 3s both; }
+.intro-trail path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw .65s ease-out 1.4s forwards; }
+.intro-trail circle { opacity: 0; animation: intro-node .25s ease-out 1.5s forwards; }
+.intro-trail circle:nth-of-type(2) { animation-delay: 1.65s; }
+.intro-trail circle:nth-of-type(3) { animation-delay: 1.8s; }
+.intro-meander { position: absolute; width: 150px; height: 12px; left: calc(50% - 75px); top: 65%; color: var(--intro-brass); animation: intro-geometry 3s both; }
+.intro-note { position: absolute; right: 12%; bottom: 20%; font-family: var(--font-kai); font-size: clamp(1.05rem, 2vw, 1.25rem); transform: rotate(-7deg); animation: intro-geometry 3s both; }
+.intro-skip { position: absolute; right: max(20px, env(safe-area-inset-right)); top: max(20px, env(safe-area-inset-top)); color: var(--ink); background: var(--paper); border: 1px solid var(--ink-light); padding: 9px 18px; min-height: 44px; font: 14px var(--font-sans); cursor: pointer; }
+.intro-skip:hover { background: var(--paper-dark); }
+.intro-skip:focus-visible { outline: 3px solid var(--clay-contrast); outline-offset: 4px; }
+@keyframes intro-release { 0%, 73% { background: var(--paper); opacity: 1; } 88%, 92% { background: transparent; opacity: 1; } 100% { background: transparent; opacity: 0; } }
+@keyframes intro-band { 0% { opacity: 1; transform: translate(-24px, 12px) rotate(32deg); } 20%, 65% { opacity: 1; transform: rotate(32deg); } 85%, 100% { opacity: 0; transform: translate(-12vw, 0) rotate(32deg); } }
+@keyframes intro-disc { 0% { opacity: 1; transform: translateY(12px); } 20% { opacity: 1; transform: none; } 45%, 100% { opacity: 0; transform: translateY(-16px); } }
+@keyframes intro-geometry { 0%, 65% { opacity: 1; } 90%, 100% { opacity: 0; } }
+@keyframes intro-letter { 0%, 20% { opacity: 0; transform: translateY(var(--letter-y)); clip-path: inset(0 0 100% 0); } 35%, 44% { opacity: 1; transform: translateY(var(--letter-y)); clip-path: inset(0); } 65%, 100% { opacity: 1; transform: none; clip-path: inset(0); } }
+@keyframes intro-home { 0%, 65% { transform: translate(var(--intro-dx), var(--intro-dy)); } 88%, 100% { transform: none; } }
+@keyframes intro-draw { to { stroke-dashoffset: 0; } }
+@keyframes intro-node { to { opacity: 1; } }
+@media (max-width: 640px) { .intro-band { width: 160vw; left: -72vw; height: 14vh; } .intro-note { right: 9%; bottom: 15%; } .intro-glass { width: 27vw; } .intro-arc { left: 5%; width: 75%; } }
+@media (prefers-reduced-motion: reduce) { #intro-overlay.is-playing { display: none; } }
 
 /* ---- 导航栏（动画结束后出现） ---- */
 header {
@@ -807,33 +710,17 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
 <body>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
 
-<!-- ===== 开幕遮罩：夜潮 · 摊开的书 ===== -->
-<div id="intro-overlay">
-  <canvas id="intro-canvas"></canvas>
-  <div class="intro-glow"></div>
-  <svg class="intro-meander top" width="100%" height="14" aria-hidden="true">
-    <defs><pattern id="meanderPatTop" width="20" height="10" patternUnits="userSpaceOnUse">
-      <path d="M0 10 V0 H10 V10 H20" fill="none" stroke="#D4B896" stroke-width="1.1"/>
-    </pattern></defs>
-    <rect width="100%" height="14" fill="url(#meanderPatTop)"/>
-  </svg>
-  <svg class="intro-meander bottom" width="100%" height="14" aria-hidden="true">
-    <defs><pattern id="meanderPatBot" width="20" height="10" patternUnits="userSpaceOnUse">
-      <path d="M0 10 V0 H10 V10 H20" fill="none" stroke="#D4B896" stroke-width="1.1"/>
-    </pattern></defs>
-    <rect width="100%" height="14" fill="url(#meanderPatBot)"/>
-  </svg>
-
-  <div id="book-wrap">
-    <svg id="book" viewBox="0 0 220 150" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M110 40 Q64 26 20 30 L20 104 Q64 98 110 106 Z" fill="#f2eee4" stroke="#d6cfc0" stroke-width="1"/>
-      <path d="M110 40 Q156 26 200 30 L200 104 Q156 98 110 106 Z" fill="#f2eee4" stroke="#d6cfc0" stroke-width="1"/>
-      <path d="M110 40 L110 106" stroke="#c9c1b2" stroke-width="1.4"/>
-      <path d="M110 106 C112 113 107 119 110 128" stroke="#D4B896" stroke-width="2"/>
-    </svg>
+<!-- ===== 开幕专属：原生平面构成，非外部图片 ===== -->
+<div id="intro-overlay" aria-label="诗歌漂流开场" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="intro-plane" aria-hidden="true">
+    <div class="intro-band"></div><div class="intro-disc"></div>
+    <svg class="intro-arc" viewBox="0 0 500 500" fill="none"><path d="M130 30 A210 210 0 1 1 130 450" stroke="currentColor" stroke-width="1.2" pathLength="1"/></svg>
+    <div class="intro-glass"></div><div class="intro-glass second"></div>
+    <div class="intro-title"><span>诗</span><span>歌</span><span>漂</span><span>流</span></div>
+    <svg class="intro-trail" viewBox="0 0 680 90" fill="none"><path d="M10 12 Q65 55 140 55 H650" stroke="currentColor" stroke-width="1.2" pathLength="1"/><g fill="currentColor"><circle cx="180" cy="55" r="4"/><circle cx="340" cy="55" r="4"/><circle cx="500" cy="55" r="4"/></g></svg>
+    <svg class="intro-meander" viewBox="0 0 150 12" fill="none" stroke="currentColor" stroke-width="1"><path d="M0 10V2H18V10H12V6H24V2H42V10H36V6H48V2H66V10H60V6H72V2H90V10H84V6H96V2H114V10H108V6H120V2H138V10H132V6H150"/></svg>
+    <div class="intro-note">航迹成诗</div>
   </div>
-
-  <div class="intro-sub">Poem's Ulysses</div>
   <button class="intro-skip" id="intro-skip" type="button">跳过开场</button>
 </div>
 
@@ -919,106 +806,104 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
 
 <script>
 // ============================================================
-// 开幕动画：夜潮 · 摊开的书
+// 开幕专属：三秒一次；任何失败都释放真实主页。
 // ============================================================
 (function() {
   var overlay = document.getElementById('intro-overlay');
-  var canvas = document.getElementById('intro-canvas');
-  var preview = /[?&]preview=1/.test(window.location.search);
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var W = 0, H = 0, animId = null;
-
-  var waves = [
-    { y: 0.56, amp: 7,  freq: 0.010, sp: 0.00035, w: 1,   c: 'rgba(212,184,150,0.30)' },
-    { y: 0.64, amp: 10, freq: 0.008, sp: 0.00028, w: 1.1, c: 'rgba(212,184,150,0.22)' },
-    { y: 0.72, amp: 8,  freq: 0.012, sp: 0.00032, w: 1,   c: 'rgba(168,146,118,0.26)' },
-    { y: 0.80, amp: 12, freq: 0.009, sp: 0.00040, w: 1.3, c: 'rgba(124,106,82,0.32)' }
-  ];
-
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+  var skip = document.getElementById('intro-skip');
+  var roots = [], timer, alignmentTimer, arrivalTimer, previousFocus = document.activeElement;
+  var oldOverflow = document.body.style.overflow;
+  var initialWidth = innerWidth, initialHeight = innerHeight;
+  var finished = false;
+  function finish() {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    clearTimeout(alignmentTimer);
+    clearTimeout(arrivalTimer);
+    var focused = overlay.contains(document.activeElement);
+    overlay.classList.remove('is-playing');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('intro-active', 'intro-arrived');
+    document.body.style.overflow = oldOverflow;
+    roots.forEach(function(item) { item.el.inert = item.inert; });
+    window.removeEventListener('error', finish);
+    window.removeEventListener('unhandledrejection', finish);
+    window.removeEventListener('resize', resizeIntro);
+    document.removeEventListener('keydown', keyboard);
+    if (focused) {
+      var target = previousFocus && previousFocus !== document.body ? previousFocus : document.querySelector('header .logo');
+      if (target) target.focus({ preventScroll: true });
+    }
   }
-  resize();
-  window.addEventListener('resize', resize);
-
-  function draw(time) {
-    ctx.clearRect(0, 0, W, H);
-    var stop = overlay.classList.contains('hidden') || overlay.classList.contains('skip');
-    if (stop) {
-      if (animId) { cancelAnimationFrame(animId); animId = null; }
+  function resizeIntro() {
+    if (innerWidth === initialWidth && innerHeight === initialHeight) return;
+    if (preview || (replay && params.has('intro-frame'))) {
+      var rect = heading.getBoundingClientRect();
+      overlay.style.setProperty('--intro-x', rect.left + 'px');
+      overlay.style.setProperty('--intro-y', rect.top + 'px');
       return;
     }
-    for (var i = 0; i < waves.length; i++) {
-      var cfg = waves[i];
-      ctx.beginPath();
-      for (var x = 0; x <= W; x += 10) {
-        var y = cfg.y * H + Math.sin(x * cfg.freq + time * cfg.sp + i * 1.7) * cfg.amp;
-        if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    finish();
+  }
+  function keyboard(event) {
+    if (event.key === 'Escape') { event.preventDefault(); finish(); }
+    if (event.key === 'Tab') { event.preventDefault(); skip.focus(); }
+  }
+  try {
+    var params = new URLSearchParams(location.search);
+    var preview = params.get('preview') === '1';
+    var replay = params.get('intro') === 'replay';
+    var frame = Number(params.get('intro-frame'));
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !('inert' in HTMLElement.prototype)) return;
+    var shown;
+    try { shown = sessionStorage.getItem('intro_poem_shown'); }
+    catch (_) { return; } // Unavailable storage: directly open the homepage.
+    if (shown && !preview && !replay) return;
+    // Reserve the session before playback, including a skip or interrupted visit.
+    if (!preview && !replay) sessionStorage.setItem('intro_poem_shown', '1');
+    var heading = document.querySelector('.hero h1');
+    var rect = heading.getBoundingClientRect();
+    var computed = getComputedStyle(heading);
+    overlay.style.setProperty('--intro-size', computed.fontSize);
+    overlay.style.setProperty('--intro-x', rect.left + 'px');
+    overlay.style.setProperty('--intro-y', rect.top + 'px');
+    overlay.style.setProperty('--intro-dx', (innerWidth / 2 - rect.left - parseFloat(computed.fontSize) * 2.08) + 'px');
+    overlay.style.setProperty('--intro-dy', (innerHeight * .42 - rect.top) + 'px');
+    // Independent escape paths are installed before focus or scroll is restricted.
+    timer = setTimeout(finish, 3100);
+    arrivalTimer = setTimeout(function() { document.body.classList.add('intro-arrived'); }, 2640);
+    alignmentTimer = setTimeout(function() {
+      var current = heading.getBoundingClientRect();
+      overlay.style.setProperty('--intro-x', current.left + 'px');
+      overlay.style.setProperty('--intro-y', current.top + 'px');
+    }, 2100);
+    window.addEventListener('error', finish);
+    window.addEventListener('unhandledrejection', finish);
+    window.addEventListener('resize', resizeIntro);
+    skip.addEventListener('click', finish);
+    document.addEventListener('keydown', keyboard);
+    Array.from(document.body.children).forEach(function(el) {
+      if (el !== overlay && !/^(SCRIPT|STYLE)$/.test(el.tagName)) {
+        roots.push({ el: el, inert: el.inert }); el.inert = true;
       }
-      ctx.strokeStyle = cfg.c;
-      ctx.lineWidth = cfg.w;
-      ctx.stroke();
-    }
-    animId = requestAnimationFrame(draw);
-  }
-
-  function finishIntro() {
-    overlay.classList.add('hidden');
-    if (overlay.contains(document.activeElement)) document.querySelector('header .logo').focus();
-    overlay.inert = true;
-    sessionStorage.setItem('intro_poem_shown', '1');
-    if (animId) { cancelAnimationFrame(animId); animId = null; }
-    setTimeout(function() { overlay.style.display = 'none'; }, 1000);
-  }
-
-  // 跳过判断
-  if (!preview && sessionStorage.getItem('intro_poem_shown')) {
-    overlay.classList.add('skip');
-    document.body.classList.add('intro-skipped');
-    return;
-  }
-  if (!preview && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    overlay.classList.add('skip');
-    document.body.classList.add('intro-skipped');
-    return;
-  }
-
-  // 回纹边框显现
-  setTimeout(function() {
-    var t = document.querySelector('.intro-meander.top');
-    var b = document.querySelector('.intro-meander.bottom');
-    if (t) t.classList.add('show');
-    if (b) b.classList.add('show');
-  }, 150);
-
-  animId = requestAnimationFrame(draw);
-
-  // 预览模式：冻结完整构图，不自动隐藏
-  if (preview) {
-    setTimeout(function() {
-      document.querySelectorAll('.intro-meander').forEach(function(m) { m.classList.add('show'); m.style.opacity = '0.55'; });
-      var bw = document.getElementById('book-wrap');
-      if (bw) { bw.style.opacity = '1'; bw.style.transform = 'translateY(0)'; bw.style.animation = 'none'; }
-      var sub = document.querySelector('.intro-sub'); if (sub) { sub.style.opacity = '1'; sub.style.animation = 'none'; }
-      var glow = document.querySelector('.intro-glow'); if (glow) { glow.style.opacity = '1'; }
-    }, 400);
-    return;
-  }
-
-  // 开场完整呈现后及时进入正文
-  setTimeout(finishIntro, 2200);
-
-  // 跳过按钮
-  var skip = document.getElementById('intro-skip');
-  if (skip) {
-    skip.addEventListener('click', function() {
-      document.body.classList.add('intro-skipped');
-      finishIntro();
     });
-  }
-
+    document.body.classList.add('intro-active');
+    overlay.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('is-playing');
+    skip.focus({ preventScroll: true });
+    if (preview || (replay && params.has('intro-frame'))) {
+      clearTimeout(timer);
+      clearTimeout(alignmentTimer);
+      clearTimeout(arrivalTimer);
+      // Development-only frozen timeline, still keyboard/click skippable.
+      var time = preview ? 2760 : Math.max(0, Math.min(2900, frame));
+      if (time >= 2640) document.body.classList.add('intro-arrived');
+      overlay.getAnimations({ subtree: true }).forEach(function(animation) { animation.pause(); animation.currentTime = time; });
+    } else {
+      overlay.addEventListener('animationend', function(event) { if (event.animationName === 'intro-release') finish(); });
+    }
+  } catch (_) { finish(); }
 })();
 
 // ============================================================
