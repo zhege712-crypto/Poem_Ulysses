@@ -617,8 +617,119 @@ footer a:hover { color: var(--paper); }
 .star-mark svg { width: 20px; height: 20px; stroke: var(--clay); fill: none; stroke-width: 1; }
 .star-mark span { font-family: var(--font-mono); font-size: 0.52rem; letter-spacing: 0.2em; color: var(--ink-faded); }
 </style>
+<style id="public-ui-design">
+/* public-ui: approved manuscript direction; inline by static-site convention. */
+html:root {--paper:#f6f3ec;--paper-dark:#eae5db;--ink:#292722;--ink-light:#5d574e;--ink-faded:#70695f;--gold:#947650;--gold-light:#d6cdbf;--clay:#984732;--clay-contrast:#984732;--ui-accent:#984732;--ui-line:#d6cdbf;--ui-muted:#70695f;--ui-ink:#292722;--ui-paper:#f6f3ec;color-scheme:light}
+html[data-theme="dark"] {--paper:#222321;--paper-dark:#2d2e2b;--ink:#f0ece3;--ink-light:#cbc5b9;--ink-faded:#b3ac9f;--gold:#c8ad83;--gold-light:#53544d;--clay:#e5a38a;--clay-contrast:#e5a38a;--ui-accent:#e5a38a;--ui-line:#53544d;--ui-muted:#b3ac9f;--ui-ink:#f0ece3;--ui-paper:#222321;color-scheme:dark}
+html[data-theme="eye-care"] {--paper:#edf1e6;--paper-dark:#dfe7d6;--ink:#303d2e;--ink-light:#53624b;--ink-faded:#596a50;--gold:#7c704f;--gold-light:#c4cdb8;--clay:#894932;--clay-contrast:#894932;--ui-accent:#894932;--ui-line:#c4cdb8;--ui-muted:#596a50;--ui-ink:#303d2e;--ui-paper:#edf1e6;color-scheme:light}
+body {background:var(--paper);color:var(--ink);font-weight:400;padding-bottom:76px}
+header {border-bottom:1px solid var(--ui-line);background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(16px);padding:12px 0}
+header .wrap {max-width:1120px;padding:0 32px;gap:28px}
+header .logo,header>a {font-family:var(--font-serif,Georgia),serif;font-size:24px;font-weight:500;letter-spacing:.06em;white-space:nowrap}
+header .logo span,header span {color:var(--ink)}
+header nav ul {gap:24px}
+header nav a {font-family:var(--font-sans,system-ui),sans-serif;letter-spacing:.02em;font-size:15px;min-height:44px}
+header nav a[href="submit.html"] {color:var(--paper);background:var(--ui-accent);padding:8px 20px;border-radius:4px}
+header nav a::after {background:var(--ui-accent)}
+:focus-visible {outline:2px solid var(--ui-accent);outline-offset:5px}
+button,input,textarea,select {font:inherit}
+button:not(:disabled),a {touch-action:manipulation}
+.side-theme {left:50%;right:auto;bottom:16px;transform:translateX(-50%);flex-direction:row;gap:4px;padding:5px;border-radius:8px;background:color-mix(in srgb,var(--paper) 92%,transparent);border-color:var(--ui-line)}
+.side-theme .line {display:none}
+.side-theme .theme-btn {width:auto;min-width:76px;height:44px;padding:0 12px;gap:7px;border-radius:4px;font:13px system-ui;color:var(--ink-light);box-shadow:none}
+.side-theme .theme-btn.active {background:var(--ink);color:var(--paper);box-shadow:none}
+.side-theme .theme-btn:hover {transform:none}
+.side-theme .theme-btn svg {stroke-width:1.5;width:17px;height:17px}
+.eyebrow,.hero-eyebrow {display:none}
+.page-head {padding:40px 0 32px;text-align:left}
+.page-head h1 {font-family:var(--font-serif,Georgia),serif;font-weight:500;font-size:clamp(36px,5vw,54px);letter-spacing:.03em;line-height:1.3;text-wrap:balance}
+.page-head .line {width:64px;margin:20px 0;background:var(--ui-accent)}
+.back-link {border:0;border-radius:0;padding:10px 0;color:var(--ink-light);font:14px system-ui;margin-top:24px;min-height:44px}
+.back-link:hover {background:transparent;color:var(--ui-accent)}
+.btn,.button,.random-btn,.view-toggle,.view-toggle button,.search-box input,.contact-list a {border-radius:5px;font-family:system-ui,sans-serif;letter-spacing:.02em}
+.btn,.button,.random-btn,.view-toggle button {min-height:44px}
+.btn-primary {background:var(--ink);color:var(--paper)}
+.btn-submit {background:transparent;color:var(--ui-accent);border-color:var(--ui-accent)}
+.hero {text-align:left;padding:150px 0 56px;position:relative}
+.hero h1 {font-size:clamp(46px,7vw,76px);font-weight:500;letter-spacing:.05em;line-height:1.2}
+.hero h1 em {color:var(--ui-accent)}
+.hero .greek-divider {margin:26px 0;width:88px;color:var(--gold)}
+.hero-desc {margin:0;max-width:570px;color:var(--ink-light);font-size:18px}
+.hero-stats {display:flex;justify-content:flex-start;gap:32px;border:0;background:transparent;backdrop-filter:none;border-radius:0;margin:32px 0 24px;padding:0}
+.hero-stats>div {padding:0;display:flex;align-items:baseline;gap:10px;background:transparent}
+.hero-stats .num {font-size:22px;color:var(--ink);font-family:var(--font-serif,Georgia),serif}
+.hero-stats .label {font:14px system-ui;color:var(--ink-light)}
+.hero-actions {justify-content:flex-start;gap:12px}
+.hero-action-note {text-align:left;color:var(--ink-light)}
+.writer-links {justify-content:flex-start}
+.recent-section {padding:32px 0 48px;border-top:1px solid var(--ui-line)}
+.recent-section h2 {font-size:28px;font-weight:500;margin-bottom:20px}
+.recent-item {padding:18px 0;border-radius:0;gap:20px;opacity:1;transform:none}
+.recent-item:hover {padding-left:0;background:transparent}
+.recent-item .ri-title {font-size:21px}
+.recent-item .ri-meta {font:13px/1.7 system-ui;color:var(--ink-light)}
+.submit-note {border-radius:0;border-width:1px 0;background:transparent;backdrop-filter:none;line-height:1.8}
+footer {background:var(--paper-dark);color:var(--ink-light);border-top:1px solid var(--ui-line);padding:32px 24px}
+footer a,footer .bsz-num {color:var(--ui-accent)}
+footer a:hover {color:var(--ink)}
+.controls {gap:16px}.search-box input {font-size:16px;min-height:48px;background:var(--paper);border-color:var(--ui-line)}
+.catalog-row {border-radius:0;min-height:72px;padding:16px 4px;border-bottom:1px solid var(--ui-line)}
+.c-date,.c-author,.leaf-meta,.branch-count,.search-hint {color:var(--ink-light);font-size:13px}
+.c-title,.leaf-title {font-size:19px}
+.series-block h2 {color:var(--ui-accent);font-size:24px;margin-top:40px}
+.branch-head {min-height:48px}.tree-leaf {min-height:48px}
+.poem-detail {padding-top:48px}.poem-title {font-size:clamp(32px,5vw,48px);font-weight:500;line-height:1.4}
+.poem-content {font-size:20px;line-height:2.15;color:var(--ink);overflow-wrap:anywhere}
+.poem-meta {font:14px/1.8 system-ui;color:var(--ink-light)}
+.random-icon {width:auto;min-height:44px;gap:8px;padding:8px 12px;border-radius:5px}
+.poem-nav a {min-height:44px;padding:12px 0;font-size:15px}.poem-nav .disabled {color:var(--ui-muted)}
+.soviet-bg,.torch-stage,.star-mark {display:none}
+.authors-grid {grid-template-columns:1fr 1fr;gap:0 40px}
+.author-card {border:0;border-bottom:1px solid var(--ui-line);border-radius:0;background:transparent;padding:28px 0;box-shadow:none;transform:none}
+.author-card:hover {background:transparent;transform:none}
+.author-card::after {display:none}
+.ac-stamp,.ah-stamp {border-radius:2px;border-color:var(--ui-line);color:var(--ui-accent)}
+.ac-name {font-family:var(--font-serif),serif;letter-spacing:.03em;font-size:28px;font-weight:500}
+.ac-tag,.ah-tag {font:13px system-ui;padding:3px 0;border:0;border-radius:0;color:var(--ink-light)}
+.ac-meta,.ah-aliases,.ah-stat .label {font:13px/1.7 system-ui;color:var(--ink-light)}
+.about-content p {font-size:18px;line-height:1.95;color:var(--ink)}
+.paper,.success,.panel {background:var(--paper-dark);backdrop-filter:none;border-radius:5px}
+.field input,.field textarea {background:var(--paper);border-radius:4px;font-size:16px}
+.field small,.metadata-note,.draft-tools small,.preview-note,.privacy {font-size:13px;line-height:1.75}
+.field label {font-size:15px}.writer-entry {gap:24px}.writer-entry-actions {flex-shrink:1}
+main {padding-bottom:100px}
+@media(max-width:640px) {
+ header {padding:10px 0}header .wrap {padding:0 20px;display:flex;flex-wrap:wrap;gap:4px;width:100%}header nav {width:100%}header nav ul {display:flex;flex-wrap:nowrap;justify-content:space-between;gap:4px;width:100%;margin:0}header nav a {font-size:14px;min-height:44px;letter-spacing:0;padding:8px 2px}header nav a[href="submit.html"] {padding:8px 10px}
+ .wrap {padding:0 22px}.hero {padding-top:156px;padding-bottom:40px}.hero h1 {font-size:46px}.hero-desc {font-size:16px}.hero-stats {gap:24px;flex-wrap:wrap}.hero-stats>div {padding:0}.hero-stats #stat-latest {font-size:20px}.hero-actions {flex-wrap:wrap}.hero-actions .btn {padding:12px 18px}
+ .recent-item {align-items:flex-start;flex-direction:column;gap:5px}.page-head {padding:28px 0}.authors-grid {grid-template-columns:1fr}.author-card {padding:24px 0}.poem-content {font-size:19px}.poem-meta {flex-wrap:wrap}.random-icon {margin-left:0}.catalog-row {grid-template-columns:76px 1fr 16px;gap:12px}.c-title {font-size:18px}.c-date,.c-author {font-size:12px}.writer-entry {align-items:flex-start;flex-direction:column}.writer-entry-actions {justify-content:flex-start}.side-theme {bottom:10px}.side-theme .theme-btn {min-width:74px}.paper {padding:24px 20px}.controls {flex-wrap:wrap}.about-content p {font-size:17px}
+}
+@media(prefers-reduced-motion:reduce) {html {scroll-behavior:auto}.recent-item,.author-card {transition:none}}
+
+/* Inspection fixes: content is visible independently of scroll effects. */
+html body .reveal,html body .reveal-up {opacity:1;transform:none;transition:none}
+html body .hero {min-height:0;justify-content:flex-start}
+html body .page-head .eyebrow {display:none}
+html body .side-theme .theme-btn span {color:inherit}
+html body header nav a[href="submit.html"] {color:var(--paper)}
+html body .back-link {background:transparent}
+html body .hero-desc {opacity:1}
+html body .view-toggle button {font-size:14px}
+html body .random-btn {font-size:14px}
+html body input::placeholder,html body textarea::placeholder {color:var(--ink-light);opacity:1}
+
+html body .side-theme .theme-btn {color:var(--ui-muted);background:transparent}
+html body .side-theme .theme-btn.active {color:var(--ui-paper);background:var(--ui-ink)}
+html body .side-theme .theme-btn svg {stroke:var(--ui-muted)}
+html body .side-theme .theme-btn.active svg {stroke:var(--ui-paper)}
+
+html body .side-theme {position:fixed;z-index:150;display:flex;align-items:center;left:50%;right:auto;bottom:16px;transform:translateX(-50%);gap:4px;padding:5px;border:1px solid var(--ui-line);border-radius:8px;backdrop-filter:blur(16px)}
+html body .side-theme .theme-btn {display:flex;align-items:center;justify-content:center;cursor:pointer;border:0;border-radius:4px}
+html body header:not(:has(.wrap)) {padding:12px max(24px,calc((100vw - 1056px)/2))}
+html body .tree-leaf .leaf-meta {font:13px/1.7 system-ui;color:var(--ink-light)}
+</style>
 </head>
 <body>
+<!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
 
 <!-- ===== 米色苏维埃背景 ===== -->
 <div class="soviet-bg">
@@ -658,15 +769,15 @@ footer a:hover { color: var(--paper); }
 <div class="side-theme" id="theme-side">
   <button class="theme-btn" data-theme="light" aria-label="日间模式" type="button">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-  </button>
+  <span>浅色</span></button>
   <div class="line"></div>
   <button class="theme-btn" data-theme="dark" aria-label="夜间模式" type="button">
     <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/></svg>
-  </button>
+  <span>深色</span></button>
   <div class="line"></div>
   <button class="theme-btn" data-theme="eye-care" aria-label="护眼模式" type="button">
     <svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
-  </button>
+  <span>护眼</span></button>
 </div>
 
 <!-- ===== 页面内容 ===== -->
