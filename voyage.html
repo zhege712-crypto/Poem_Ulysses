@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -9,13 +9,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&family=Kaiti+SC:wght@400&family=Oswald:wght@300;400&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+
+
 <script>
 // 高德地图 JS API 安全密钥（2021-12 后申请的 key 需配合使用）
 window._AMapSecurityConfig = { securityJsCode: '04c025910305edb4acc29abc295c4707' };
 </script>
-<script src="https://webapi.amap.com/maps?v=2.0&key=0fd1637fe9e1febffcc26b2bd8ccfdcc&plugin=AMap.Scale"></script>
+
 <style>
 :root {
   --paper: #F7F5F0;
@@ -742,6 +742,124 @@ nav a.active::after { width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .voyage-page *, .voyage-page *::before, .voyage-page *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* 航迹手稿：本页独立布局 */
+:root { --voyage-accent: #8f432c; }
+[data-theme="dark"] { --voyage-accent: #f17b80; }
+[data-theme="eye-care"] { --voyage-accent: #8f3e2e; }
+header .wrap { max-width: 1480px; }
+.voyage-page { max-width: 1480px; margin: auto; padding: 0 40px 80px; }
+.voyage-intro { padding: 28px 0 24px; border-bottom: 1px solid var(--gold); margin-bottom: 24px; }
+.voyage-intro h1 { font-size: clamp(30px,4vw,52px); }
+.voyage-intro p:not(.voyage-intro-note) { margin-top: 10px; font-size: 15px; }
+.voyage-intro-note { display: none; }
+.voyage-intro-actions[hidden] { display:none; }
+.voyage-layout { display:grid; grid-template-columns: minmax(0,2fr) minmax(300px,1fr); gap: 0 24px; padding:0; }
+.voyage-layout .voyage-stage { grid-column:1; grid-row:1; border-radius:0; height: clamp(430px,calc(100dvh - 310px),650px); min-height:430px; }
+.voyage-layout .log-menu { grid-column:2; grid-row:1 / 3; position:relative; width:auto; max-height:none; padding:24px; overflow:auto; background:color-mix(in srgb,var(--paper) 90%,transparent); border:1px solid var(--gold-light); border-radius:12px; }
+.log-menu.reading > .lm-head,.log-menu.reading > .log-menu-intro,.log-menu.reading > #log-list { display:none; }
+.log-menu .poem-panel { position:static; width:100%; height:100%; max-height:650px; border:0; background:transparent; border-radius:0; transform:none; box-shadow:none; }
+.log-menu .poem-panel.hidden { display:none; }
+.poem-panel .pp-head { padding:0 0 20px; }
+.poem-panel .pp-place { font-size:32px; overflow-wrap:anywhere; }
+.poem-panel .pp-meta { font:14px var(--font-sans); color:var(--ink-light); margin-top:10px; }
+.poem-panel .pp-scroll { padding:24px 0; overflow-wrap:anywhere; }
+.poem-panel .pp-log-main { font:17px/1.9 var(--font-serif); white-space:pre-wrap; }
+.poem-panel .pp-related-title { font:14px var(--font-sans); color:var(--ink-light); margin:28px 0 14px; padding-top:24px; border-top:1px solid var(--gold-light); }
+.poem-panel .pp-poem-title { font-size:24px; }
+.poem-panel .pp-poem-author { font:14px/1.7 var(--font-sans); color:var(--ink-light); }
+.poem-panel .pp-poem-body { font-size:17px; line-height:2; max-height:260px; overflow:auto; white-space:pre-wrap; }
+.poem-panel .pp-close { float:right; min-height:44px; font:14px var(--font-sans); color:var(--ink-light); }
+.poem-panel .pp-foot { padding:16px 0 0; flex-wrap:wrap; }
+.poem-panel .pp-read { font:14px var(--font-sans); background:var(--ink); color:var(--paper); min-height:44px; padding:12px 20px; border:0; }
+button { cursor:pointer; font-family:var(--font-sans); }
+button:disabled { opacity:.45; cursor:default; }
+button:focus-visible,a:focus-visible { outline:2px solid var(--voyage-accent); outline-offset:3px; }
+#station-prev,#station-next { min-height:44px; padding:8px; background:none; border:0; color:var(--voyage-accent); font-size:14px; }
+#station-next { margin-left:auto; }
+.badge-block,.legend-bar,.holo-overlay,.corner-frame,.diag-band { display:none !important; }
+.mode-switch { position:absolute; top:16px; left:16px; z-index:200; display:flex; padding:4px; background:color-mix(in srgb,var(--paper) 92%,transparent); backdrop-filter:blur(16px); border:1px solid var(--gold-light); border-radius:8px; }
+.mode-switch button,.mobile-views button { border:0; background:transparent; color:var(--ink); font-size:14px; padding:10px 18px; min-height:44px; }
+.mode-switch button[aria-pressed="true"],.mobile-views button[aria-pressed="true"] { background:var(--voyage-accent); color:var(--paper); border-radius:5px; }
+#map-status { position:absolute; z-index:201; top:82px; left:16px; right:16px; background:var(--paper); color:var(--ink); font-size:14px; }
+#map-status:empty { display:none; }
+#map-status button { padding:10px; min-height:44px; }
+.voyage-stage .zoom-widget { left:auto; right:16px; bottom:20px; display:flex; transform:none; border-radius:8px; }
+#zoom-slider,#zoom-level { display:none; }
+#fit-all { width:auto; font-size:14px; padding:0 12px; }
+.zoom-widget button { min-height:44px; min-width:44px; }
+.station-strip { grid-column:1; display:flex; overflow:auto; padding:20px 0; gap:0; }
+.station-strip button { flex:1 0 auto; background:none; border:0; border-top:1px solid var(--gold); padding:14px 16px; color:var(--ink); font-size:15px; min-height:48px; }
+.station-strip button[aria-pressed="true"] { color:var(--voyage-accent); border-top:3px solid var(--voyage-accent); padding-top:12px; }
+.log-item { border:0; border-bottom:1px solid var(--gold-light); border-radius:0; padding:18px 0; background:transparent!important; }
+.log-item .li-place { font-size:20px; }.log-item .li-date,.log-item .li-poem,.log-item .li-excerpt { font:14px/1.7 var(--font-sans); color:var(--ink-light); }
+.log-item.sel .li-place { color:var(--voyage-accent); }
+.mobile-views { display:none; }
+.map-disclaimer .md-toggle { min-height:44px; font-size:12px; }
+@media(max-width:820px) {
+.voyage-page { padding:0 16px 90px; }.voyage-intro { padding:20px 0 16px; margin-bottom:16px; }
+.voyage-intro h1 { font-size:32px; }.voyage-intro p:not(.voyage-intro-note) { font-size:14px; }
+.mobile-views { display:flex; justify-content:center; margin-bottom:16px; }
+.voyage-layout { display:block; }.voyage-layout .voyage-stage { height:calc(100dvh - 330px); min-height:340px; }
+.voyage-layout .log-menu { padding:20px; border:0; }
+.voyage-layout[data-view="map"] .log-menu:not(.reading) { display:none; }
+.voyage-layout[data-view="logs"] .voyage-stage,.voyage-layout[data-view="logs"] .station-strip { visibility:hidden; height:0; min-height:0; padding:0; overflow:hidden; }
+.voyage-layout .log-menu.reading { display:block; position:static; padding:0; }
+.log-menu .poem-panel { position:fixed; z-index:1600; inset:auto 0 0; width:100%; height:min(70dvh,600px); max-height:none; padding:20px; border-radius:16px 16px 0 0; border-top:1px solid var(--gold); background:color-mix(in srgb,var(--paper) 97%,transparent); backdrop-filter:blur(24px); }
+.log-menu.reading > #log-list,.log-menu.reading > .lm-head,.log-menu.reading > .log-menu-intro { display:block; }
+header { padding:8px 0; }header .wrap { padding:0 16px; }nav ul { gap:8px; }nav a { font:12px var(--font-sans); padding:6px; } .logo { font-size:18px; }
+.station-strip button { font-size:14px; padding-inline:12px; }
+}
+
+.voyage-layout .log-menu { top:auto; left:auto; bottom:auto; right:auto; transform:none; max-height:650px; }
+.voyage-layout .log-menu .log-item { border:0; border-bottom:1px solid var(--gold-light); border-radius:0; margin:0; padding:18px 0; box-shadow:none; }
+.voyage-layout .log-menu .log-item .li-head .li-place { font-size:20px; }
+.voyage-layout .log-menu .log-item .li-head .li-date { font:14px/1.7 var(--font-sans); color:var(--ink-light); }
+.voyage-layout .log-menu .log-item .li-excerpt { color:var(--ink-light); }
+.voyage-intro p:not(.voyage-intro-note) { max-width:65ch; }
+.voyage-pin { appearance:none; background:var(--voyage-accent); width:22px; height:22px; border:2px solid var(--paper); border-radius:50%; box-shadow:none; color:var(--ink); }
+.amap-marker-content .voyage-pin { position:relative; }
+.voyage-pin span { position:absolute; left:24px; top:-6px; white-space:nowrap; padding:2px 6px; background:color-mix(in srgb,var(--paper) 92%,transparent); font-size:14px; border-radius:3px; }
+.voyage-pin.active-pin { background:var(--voyage-accent); box-shadow:0 0 0 3px var(--paper),0 0 0 5px var(--voyage-accent); border-color:var(--paper); }
+.short-meander { width:24px; height:24px; color:var(--gold); flex-shrink:0; }
+.station-strip .trail-break { border-right:1px dashed var(--ink-light); }
+.station-strip::after { content:'在这里，停一会儿。'; font:16px/1.5 var(--font-poem); color:var(--voyage-accent); padding:12px; min-width:110px; transform:rotate(-6deg); }
+.voyage-layout .log-menu [hidden] { display:none!important; }
+#group-reset { background:none; color:var(--voyage-accent); border:1px solid var(--gold); min-height:44px; padding:8px 16px; }
+nav a::after { transition:none; }
+@media(max-width:820px) { .voyage-layout .log-menu { max-height:none; }.station-strip::after { display:none; } }
+
+.voyage-layout .log-menu { height:clamp(430px,calc(100dvh - 310px),650px); overflow:hidden; }
+.voyage-layout .log-menu:not(.reading) { overflow:auto; }
+.log-menu .poem-panel { max-height:none; height:100%; }
+.poem-panel .pp-scroll { min-height:0; }
+.poem-panel .pp-poem-body { max-height:none; overflow:visible; }
+.poem-panel .pp-head,.poem-panel .pp-foot { flex-shrink:0; }
+.station-strip button { flex:1 1 auto; padding-inline:8px; }
+.station-strip::after { min-width:100px; font-size:14px; }
+@media(max-width:820px) {
+.voyage-layout .log-menu { height:auto; backdrop-filter:none; -webkit-backdrop-filter:none; }
+.log-menu .poem-panel { left:0; right:0; bottom:0; top:auto; width:100%; height:min(70dvh,600px); }
+.voyage-stage .zoom-widget { bottom:72px; }
+.voyage-stage .map-disclaimer { bottom:16px; }
+.station-strip button { flex:1 0 auto; }
+.voyage-layout .log-menu .lm-head { display:flex; }
+}
+
+.voyage-pin { width:44px; height:44px; border:0; background:transparent; border-radius:0; position:relative; }
+.voyage-pin::before { content:''; position:absolute; left:12px; top:12px; width:20px; height:20px; border:2px solid var(--paper); border-radius:50%; background:var(--voyage-accent); box-sizing:border-box; }
+.amap-marker-content .voyage-pin { transform:translate(-50%,-50%); }
+.voyage-pin span { left:38px; top:8px; }
+.voyage-pin.active-pin { background:transparent; box-shadow:none; }
+.voyage-pin.active-pin::before { outline:2px solid var(--voyage-accent); outline-offset:3px; }
+.station-strip { overflow-x:auto; min-width:0; }
+.station-strip button { min-width:0; flex:1 1 0; white-space:nowrap; }
+.station-strip::after { flex:0 0 100px; }
+@media(max-width:820px) { .station-strip button { flex:1 0 auto; } .log-menu .poem-panel { padding-bottom:70px; } }
+
+.station-strip { overflow-y:hidden; }
+.station-strip::after { transform:none; }
+@media(max-width:820px) { .side-theme { position:absolute; top:4px; right:12px; bottom:auto; left:auto; transform:none; flex-direction:row; padding:0; z-index:1001; } .side-theme .line { display:none; } }
 </style>
 </head>
 <body>
@@ -766,8 +884,8 @@ nav a.active::after { width: 100%; }
   <section class="voyage-intro" aria-labelledby="voyage-heading">
     <div>
       <h1 id="voyage-heading">诗从这里经过。</h1>
-      <p>沿着记录，读一读诗曾经停留的地方。选择一站，地图会找到它；地图上的漂点也能带你回到文字。</p>
-      <div class="voyage-intro-actions">
+      <p>沿着记录，读一读诗曾经停留的地方。选择一站，让地点与文字相遇。</p>
+      <div class="voyage-intro-actions" hidden>
         <a class="voyage-primary-link" href="#log-menu">从第一站读起 <span aria-hidden="true">↗</span></a>
         <a class="voyage-text-link" href="#stage">查看地图</a>
       </div>
@@ -775,18 +893,18 @@ nav a.active::after { width: 100%; }
     <p class="voyage-intro-note"><strong id="intro-count">—</strong><span>条漂流记录<br>组成这段航迹</span></p>
   </section>
 
-  <div class="voyage-layout">
+  <div class="mobile-views" aria-label="浏览视图"><button id="view-map" aria-pressed="true">地图</button><button id="view-logs" aria-pressed="false">日志</button></div><div class="voyage-layout" data-view="map">
     <aside class="log-menu" id="log-menu" aria-label="漂流日志">
       <div class="lm-head">
         <h2 class="lh-cn">沿途日志</h2>
-        <span class="lh-line"></span>
+        <span class="lh-line"></span><svg class="short-meander" aria-hidden="true" viewBox="0 0 30 30"><path d="M1 1h28v28H9V9h12v12h-5v-5" fill="none" stroke="currentColor"/></svg>
       </div>
       <p class="log-menu-intro">依照记录顺序，选一站开始阅读。</p>
       <div id="log-list" aria-live="polite"><p class="hint">日志加载中…</p></div>
     </aside>
 
 <div class="voyage-stage" id="stage" aria-label="漂流地点地图">
-  <div id="globe"></div>
+  <div class="mode-switch"><button id="mode-map" aria-pressed="true">地点地图</button><button id="mode-globe" aria-pressed="false">地球总览</button></div><div id="map-status" role="status"></div><div id="globe"></div>
   <div id="map"></div>
 
   <div class="holo-overlay holo-grid" id="holo-grid"></div>
@@ -818,14 +936,14 @@ nav a.active::after { width: 100%; }
 
   <div class="poem-panel hidden" id="poem-panel" role="region" aria-label="漂流日志详情" aria-hidden="true" inert>
     <div class="pp-head">
-      <div class="pp-eyebrow">Voyage Log</div>
+      <button class="pp-close" id="pp-close" type="button">关闭</button>
       <h2 class="pp-place" id="pp-place" tabindex="-1">—</h2>
       <div class="pp-meta" id="pp-meta">—</div>
     </div>
     <div class="pp-scroll" id="pp-scroll"></div>
     <div class="pp-foot">
-      <a class="pp-read" id="pp-read" href="#" target="_blank" rel="noopener noreferrer">去阅读</a>
-      <button class="pp-close" id="pp-close" type="button">✕ 关闭</button>
+      <a class="pp-read" id="pp-read" href="#" target="_blank" rel="noopener noreferrer">阅读全文</a>
+      <button id="station-prev" type="button">上一站</button><button id="station-next" type="button">下一站</button>
     </div>
   </div>
 
@@ -833,7 +951,7 @@ nav a.active::after { width: 100%; }
     <button type="button" id="zoom-in" aria-label="放大">+</button>
     <button type="button" id="zoom-out" aria-label="缩小">−</button>
     <input type="range" id="zoom-slider" class="zw-slider" min="1" max="10" step="0.1" value="1" aria-label="无极缩放">
-    <div class="zw-level" id="zoom-level">GLOBE</div>
+    <div class="zw-level" id="zoom-level">MAP</div><button id="fit-all" type="button">查看全部</button>
   </div>
 
   <div class="map-disclaimer" id="map-disclaimer">
@@ -928,35 +1046,14 @@ nav a.active::after { width: 100%; }
 
   // —— 模式：globe（全球·球体） / map（局部·平面） ——
   var MODE_GLOBE = 'globe', MODE_MAP = 'map';
-  var mode = MODE_GLOBE;
+  var mode = MODE_MAP;
   var globeLevel = 1;        // 连续缩放级 1..10
   var GLOBE_MAX = 10;
 
   // ===== 高德平面地图（国界符合一个中国原则） =====
   var map = null;
   var trailPolylines = [];
-  try {
-    if (window.AMap && typeof AMap.Map === 'function') map = new AMap.Map('map', {
-      zoom: 7,
-      center: [104.5, 35.5],
-      viewMode: '2D',
-      zoomEnable: true,
-      dragEnable: true,
-      keyboardEnable: false,
-      doubleClickZoom: false,
-      scrollWheel: false,
-      resizeEnable: true
-    });
-  } catch (e) {
-    map = null;
-  }
-  function onMapZoomChange() {
-    if (!map) return;
-    var z = map.getZoom();
-    if (z < 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
-  }
-  if (map) map.on('zoomend', onMapZoomChange);
-
+  mapEl.style.display = 'block'; globeEl.style.display = 'none';
   // ===== d3 球体地球 =====
   var svg, projection, path, graticule, globeLayer, bgLayer, landLayer, trailLayer, pinLayer;
   var center = [104.5, 35.5];
@@ -1058,7 +1155,9 @@ nav a.active::after { width: 100%; }
   function drawGlobePins() {
     if (!projection) return;
     pinLayer.selectAll('.globe-pin').remove();
-    logs.forEach(function(lg) {
+    logs.filter(hasCoords).forEach(function(lg) {
+      if (logs.find(function(l) { return l.lng === lg.lng && l.lat === lg.lat; }) !== lg) return;
+      if (d3.geoDistance([lg.lng, lg.lat], center) > Math.PI / 2) return;
       var pt = projection([lg.lng, lg.lat]);
       if (!pt) return;
       var g = pinLayer.append('g')
@@ -1069,9 +1168,9 @@ nav a.active::after { width: 100%; }
       g.append('circle').attr('class', 'pin-dot').attr('r', 4.5);
       g.attr('tabindex', 0).attr('role', 'button').attr('aria-label', '查看' + lg.place + '的漂流日志');
       g.on('click', function() {
-        selectLog(lg.id, true);
+        var group = logs.filter(function(l) { return l.lng === lg.lng && l.lat === lg.lat; }); if (group.length > 1) showGroup(group); else selectLog(lg.id, true);
       }).on('keydown', function(event) {
-        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectLog(lg.id, true); }
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); var group = logs.filter(function(l) { return l.lng === lg.lng && l.lat === lg.lat; }); if (group.length > 1) showGroup(group); else selectLog(lg.id, true); }
       });
     });
   }
@@ -1106,6 +1205,7 @@ nav a.active::after { width: 100%; }
     var segs = [];
     var cur = [];
     seq.forEach(function(lg) {
+      if (!hasCoords(lg)) { if (cur.length) segs.push(cur); cur = []; return; }
       cur.push(lg);
       if (lg.link === false) { segs.push(cur); cur = []; }
     });
@@ -1120,9 +1220,9 @@ nav a.active::after { width: 100%; }
     return Date.now() - lastSwitchAt >= SWITCH_COOLDOWN;
   }
   function switchToMap(c) {
-    if (!map) return;
+    if (!map) { showMapFallback(); return; }
     if (mode === MODE_MAP) return;
-    if (!canSwitch()) return;
+
     lastSwitchAt = Date.now();
     mode = MODE_MAP;
     globeEl.style.display = 'none';
@@ -1132,8 +1232,8 @@ nav a.active::after { width: 100%; }
     holoScan.classList.remove('show');
     goldScan.classList.add('show');
     if (map) {
-      var lng = c.lng || c[0], lat = c.lat || c[1];
-      map.setZoomAndCenter(Math.max(map.getZoom(), 6), [lng, lat]);
+
+      map.resize();
     }
     zoomLevel.textContent = 'MAP';
     if (zoomSlider) { zoomSlider.value = 10; zoomSlider.style.setProperty('--fill', '100%'); }
@@ -1141,10 +1241,10 @@ nav a.active::after { width: 100%; }
   function switchToGlobe(c) {
     if (!svg) return;
     if (mode === MODE_GLOBE) return;
-    if (!canSwitch()) return;
+
     lastSwitchAt = Date.now();
     mode = MODE_GLOBE;
-    globeLevel = 5;   // 远离切换阈值，避免临界点来回跳
+    globeLevel = 1;   // 远离切换阈值，避免临界点来回跳
     mapEl.style.display = 'none';
     globeEl.style.display = 'block';
     holoGrid.classList.add('show');
@@ -1176,12 +1276,7 @@ nav a.active::after { width: 100%; }
   }
   function zoomGlobeTo(level) {
     globeLevel = Math.max(1, Math.min(GLOBE_MAX, level));
-    if (globeLevel >= GLOBE_MAX) {
-      globeLevel = GLOBE_MAX - 0.6;
-      switchToMap({ lng: center[0], lat: center[1] });
-    } else {
-      drawGlobe();
-    }
+    drawGlobe();
     syncSlider();
   }
   function zoomGlobeBy(delta) {
@@ -1196,8 +1291,7 @@ nav a.active::after { width: 100%; }
       zoomGlobeBy(-1);
     } else if (map) {
       var z = map.getZoom();
-      if (z <= 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
-      else map.zoomOut();
+      map.zoomOut();
     }
   });
   // 滑杆无极缩放（拖动连续）
@@ -1227,8 +1321,7 @@ nav a.active::after { width: 100%; }
     if (e.deltaY < 0) {
       map.setZoom(Math.min(z + 1, 14));
     } else {
-      if (z <= 5) switchToGlobe({ lng: map.getCenter().lng, lat: map.getCenter().lat });
-      else map.setZoom(z - 1);
+      map.setZoom(z - 1);
     }
   }, { passive: false });
 
@@ -1275,10 +1368,10 @@ nav a.active::after { width: 100%; }
     var poemById = {};
     poems.forEach(function(p) { poemById[p.id] = p; });
     logList.innerHTML = '';
-    if (!seq.length) { logList.innerHTML = '<p class="hint">还没有漂流记录。以后写下的地点会出现在这里。</p>'; return; }
+    if (!seq.length) { logList.innerHTML = '<p class="hint">还没有漂流记录。</p><a href="directory.html">去目录读诗</a>'; return; }
     seq.forEach(function(lg, index) {
       var poem = lg.poemId ? poemById[lg.poemId] : null;
-      var rawExcerpt = String(poem && poem.content ? poem.content : (lg.text || '这一站的文字仍待写下。')).replace(/\s+/g, ' ').trim();
+      var rawExcerpt = String(lg.text || '此日志暂无文字。').replace(/\s+/g, ' ').trim();
       var excerptChars = Array.from(rawExcerpt);
       var excerpt = excerptChars.slice(0, 72).join('') + (excerptChars.length > 72 ? '…' : '');
       var div = document.createElement('button');
@@ -1289,14 +1382,12 @@ nav a.active::after { width: 100%; }
       div.innerHTML =
         '<span class="li-head">' +
           '<span class="li-index">' + String(index + 1).padStart(2, '0') + '</span>' +
-          '<span class="li-place">' + escapeHtml(lg.place) + '</span>' +
-          '<span class="li-date">' + (lg.date ? fmtDate(lg.date) : '') + '</span>' +
+          '<span class="li-place">' + escapeHtml(lg.place || '无名之地') + '</span>' +
+          '<span class="li-date">' + escapeHtml(lg.date ? fmtDate(lg.date) : '') + '</span>' +
         '</span>' +
         (poem ? '<span class="li-poem">关联诗歌 · 《' + escapeHtml(poem.title) + '》</span>' : '') +
         '<span class="li-excerpt">' + escapeHtml(excerpt) + '</span>';
-      div.addEventListener('click', function() {
-        selectLog(lg.id, true);
-      });
+      div.addEventListener('click', function() { selectLog(lg.id, true); });
       logList.appendChild(div);
     });
   }
@@ -1305,42 +1396,47 @@ nav a.active::after { width: 100%; }
   function selectLog(id, fromGlobe) {
     currentLog = logById[id];
     if (!currentLog) return;
-    renderPoemPanel(currentLog);
+    groupReset.click(); renderPoemPanel(currentLog); syncSelection();
     // 高亮
-    if (mode === MODE_GLOBE && projection) {
+    if (hasCoords(currentLog) && mode === MODE_GLOBE && projection) {
       center = [currentLog.lng, currentLog.lat];
       projection.rotate([-center[0], -center[1]]);
       renderGlobe();
     } else {
       Object.keys(markers).forEach(function(mid) {
-        var el = markers[mid].getContent && markers[mid].getContent().querySelector ? markers[mid].getContent().querySelector('.voyage-pin') : null;
-        if (el) el.classList.toggle('active-pin', mid === id);
+        var el = markers[mid].getContent && markers[mid].getContent().querySelector ? markers[mid].getContent() : null;
+        if (el) el.classList.toggle('active-pin', logs.some(function(l) { return l.id === id && markers[l.id] === markers[mid]; }));
       });
-      if (map) {
+      if (map && hasCoords(currentLog)) {
         var g = wgs84ToGcj02(currentLog.lng, currentLog.lat);
-        map.setZoomAndCenter(Math.max(map.getZoom(), 9), g);
+        map.setZoomAndCenter(map.getZoom(), g);
       }
     }
     logList.querySelectorAll('[data-logid]').forEach(function(node) {
+      node.hidden = false;
       var selected = node.getAttribute('data-logid') === id;
       node.classList.toggle('sel', selected);
       node.setAttribute('aria-pressed', selected ? 'true' : 'false');
     });
   }
 
+  var closingFromHistory = false;
+  window.addEventListener('popstate', function() { if (!poemPanel.classList.contains('hidden')) { closingFromHistory = true; ppClose.click(); closingFromHistory = false; } });
   function renderPoemPanel(lg) {
-    poemPanel.classList.remove('hidden');
+    if (poemPanel.classList.contains('hidden')) history.pushState({ voyageDetail: true }, '', location.href);
+    poemPanel.classList.remove('hidden'); document.getElementById('log-menu').classList.add('reading');
     poemPanel.inert = false;
     poemPanel.setAttribute('aria-hidden', 'false');
     ppPlace.textContent = lg.place || '无名之地';
     var metaParts = [];
     if (lg.date) metaParts.push(fmtDate(lg.date));
-    if (lg.authorId) metaParts.push('作者 ' + lg.authorId);
+    if (lg.authorId) { var author = authors.find(function(a) { return a.id === lg.authorId || a.name === lg.authorId || (a.aliases || []).includes(lg.authorId); }); metaParts.push(author ? author.name : lg.authorId); }
+    if (!hasCoords(lg)) metaParts.push('暂未定位');
     ppMeta.textContent = metaParts.join(' · ');
 
     var poem = null;
     if (lg.poemId) poems.forEach(function(p) { if (p.id === lg.poemId) poem = p; });
-    if (poem) ppRead.href = 'read.html?id=' + lg.poemId;
+    if (poem) ppRead.href = 'read.html?id=' + encodeURIComponent(lg.poemId);
     else ppRead.href = '#';
 
     var html = '';
@@ -1355,10 +1451,10 @@ nav a.active::after { width: 100%; }
       html += '<div class="pp-related-title">关联诗歌</div>';
       html += '<div class="pp-poem-title">' + escapeHtml(poem.title) + '</div>';
       html += '<div class="pp-poem-author">' + escapeHtml(poem.author || '') + ' · ' + escapeHtml(poem.series || '') + '</div>';
-      html += '<div class="pp-poem-body">' + escapeHtml(poem.content || '') + '</div>';
+      html += '<div class="pp-poem-body">' + escapeHtml(String(poem.content || '').split('\n').slice(0,8).join('\n')) + '</div>';
     } else if (lg.poemId) {
       html += '<div class="pp-related-title">关联诗歌</div>';
-      html += '<div class="pp-poem-author">该诗暂未收录</div>';
+      html += '<div class="pp-poem-author">关联诗歌暂时不可用，可稍后重试</div>';
     }
     if (poem && poem.images && poem.images.length) {
       html += '<div class="pp-images">';
@@ -1381,18 +1477,11 @@ nav a.active::after { width: 100%; }
   }
 
   ppClose.addEventListener('click', function() {
+    if (!closingFromHistory && !poemPanel.classList.contains('hidden') && history.state && history.state.voyageDetail) { history.back(); return; }
     var previousId = currentLog && currentLog.id;
-    poemPanel.classList.add('hidden');
+    poemPanel.classList.add('hidden'); document.getElementById('log-menu').classList.remove('reading');
     poemPanel.inert = true;
     poemPanel.setAttribute('aria-hidden', 'true');
-    Object.keys(markers).forEach(function(mid) {
-      var content = markers[mid].getContent ? markers[mid].getContent() : null;
-      var el = content && content.querySelector ? content.querySelector('.voyage-pin') : null;
-      if (el) el.classList.remove('active-pin');
-    });
-    logList.querySelectorAll('[data-logid]').forEach(function(node) { node.classList.remove('sel'); node.setAttribute('aria-pressed', 'false'); });
-    currentLog = null;
-    if (mode === MODE_GLOBE && projection) renderGlobe();
     var previousCard = previousId && Array.from(logList.querySelectorAll('[data-logid]')).find(function(node) { return node.getAttribute('data-logid') === previousId; });
     if (previousCard) previousCard.focus({ preventScroll: true });
   });
@@ -1443,31 +1532,6 @@ nav a.active::after { width: 100%; }
     return d.innerHTML;
   }
 
-  // ===== 启动动画 =====
-  function triggerBoot() {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (sessionStorage.getItem('voyage_boot_played') === '1') return;
-    sessionStorage.setItem('voyage_boot_played', '1');
-    stage.classList.add('boot');
-    // 漂点按行迹顺序逐个点亮
-    var seq = trailSequence();
-    seq.forEach(function(lg, i) {
-      pinLayer.selectAll('.globe-pin[data-id="' + lg.id + '"]')
-        .style('animation-delay', (0.3 + i * 0.12) + 's');
-    });
-    // 行迹描线动画
-    trailLayer.selectAll('.trail-arc').each(function() {
-      var len = this.getTotalLength ? this.getTotalLength() : 400;
-      this.setAttribute('stroke-dasharray', len);
-      this.setAttribute('stroke-dashoffset', len);
-    });
-    setTimeout(function() { stage.classList.remove('boot'); }, 3800);
-    // boot 结束后重绘球体，确保尺寸正确
-    setTimeout(function() {
-      if (mode === MODE_GLOBE) drawGlobe();
-    }, 3950);
-  }
-
   // ===== 数据加载 =====
   function cacheBust() { return '?t=' + Date.now(); }
   function loadLand() {
@@ -1485,22 +1549,46 @@ nav a.active::after { width: 100%; }
     });
   }
   function showMapFallback() {
-    if (map) {
-      switchToMap({ lng: center[0], lat: center[1] });
-      if (typeof map.resize === 'function') map.resize();
-      return;
-    }
-    globeEl.innerHTML = '<p class="map-fallback">地图暂时无法加载。沿途日志仍可正常阅读，请从左侧或上方选择一站。</p>';
-    document.getElementById('zoom-widget').hidden = true;
-    document.getElementById('legend-bar').hidden = true;
+    document.getElementById('map-status').innerHTML = '地图暂时无法加载，沿途日志仍可阅读。 <button id="retry-map">重试地图</button>';
+    document.getElementById('retry-map').onclick = function() { var saved = currentLog; initializeMap().then(function() { if (saved) selectLog(saved.id); }).catch(showMapFallback); };
   }
+  function hasCoords(lg) { return typeof lg.lng === 'number' && typeof lg.lat === 'number' && Number.isFinite(lg.lng) && Number.isFinite(lg.lat) && Math.abs(lg.lng) <= 180 && Math.abs(lg.lat) <= 90; }
+  var aside = document.getElementById('log-menu'); aside.appendChild(poemPanel);
+  var groupReset = document.createElement('button'); groupReset.id = 'group-reset'; groupReset.textContent = '查看所有日志'; groupReset.hidden = true; logList.before(groupReset); groupReset.onclick = function() { logList.querySelectorAll('[data-logid]').forEach(function(n) { n.hidden = false; }); groupReset.hidden = true; aside.querySelector('.log-menu-intro').textContent = '依照记录顺序，选一站开始阅读。'; };
+  var sequence = document.createElement('div'); sequence.className = 'station-strip'; sequence.setAttribute('aria-label', '航迹顺序'); stage.after(sequence);
+  function syncSelection() {
+    sequence.querySelectorAll('button').forEach(function(b) { b.setAttribute('aria-pressed', String(currentLog && b.dataset.id === currentLog.id)); });
+    var i = logs.indexOf(currentLog);
+    document.getElementById('station-prev').disabled = i <= 0 || logs[i - 1].link === false;
+    document.getElementById('station-next').disabled = i < 0 || i === logs.length - 1 || currentLog.link === false;
+  }
+  document.getElementById('station-prev').onclick = function() { var i = logs.indexOf(currentLog); if (i > 0 && logs[i-1].link !== false) selectLog(logs[i-1].id); };
+  document.getElementById('station-next').onclick = function() { var i = logs.indexOf(currentLog); if (i >= 0 && i < logs.length-1 && currentLog.link !== false) selectLog(logs[i+1].id); };
+  function fitAll() { if (mode === MODE_MAP && map && Object.keys(markers).length) map.setFitView(Array.from(new Set(Object.values(markers))), false, [90,60,80,60]); else if (projection) { globeLevel = 1; center = [104.5,35.5]; drawGlobe(); } }
+  document.getElementById('fit-all').onclick = fitAll;
+  ['map','globe'].forEach(function(value) { document.getElementById('mode-'+value).onclick = function() {
+    if (value === 'map') switchToMap(center); else { if (!svg) { initializeGlobe().then(function() { switchToGlobe(); updateModes(); }).catch(showMapFallback); return; } switchToGlobe(); }
+    updateModes();
+  }; });
+  function showGroup(group) {
+    if (!poemPanel.classList.contains('hidden')) { closingFromHistory = true; ppClose.click(); closingFromHistory = false; if (history.state && history.state.voyageDetail) history.replaceState(null,'',location.href); }
+    document.getElementById('view-logs').click(); logList.querySelectorAll('[data-logid]').forEach(function(n) { n.hidden = !group.some(function(l) { return l.id === n.dataset.logid; }); }); aside.querySelector('.log-menu-intro').textContent = '此地点有 ' + group.length + ' 条记录，请选择。'; groupReset.hidden = false;
+  }
+  var viewScroll = { map: 0, logs: 0 };
+  ['map','logs'].forEach(function(value) { document.getElementById('view-'+value).onclick = function() {
+    var layout = document.querySelector('.voyage-layout'); var previous = layout.dataset.view; viewScroll[previous] = window.scrollY; layout.dataset.view = value; requestAnimationFrame(function() { window.scrollTo(0,viewScroll[value]); });
+    ['map','logs'].forEach(function(v) { document.getElementById('view-'+v).setAttribute('aria-pressed', String(value === v)); });
+    if (map) map.resize(); if (mode === MODE_GLOBE && svg) drawGlobe();
+  }; });
   var loads = [
     fetch('data/logs.json' + cacheBust()).then(function(r) { if (!r.ok) throw new Error('logs'); return r.json(); }),
-    fetch('data/poems.json' + cacheBust()).then(function(r) { if (!r.ok) throw new Error('poems'); return r.json(); }),
-    fetch('data/authors.json' + cacheBust()).then(function(r) { if (!r.ok) throw new Error('authors'); return r.json(); })
+    fetch('data/poems.json' + cacheBust()).then(function(r) { if (!r.ok) throw new Error('poems'); return r.json(); }).catch(function() { return []; }),
+    fetch('data/authors.json' + cacheBust()).then(function(r) { if (!r.ok) throw new Error('authors'); return r.json(); }).catch(function() { return []; })
   ];
   Promise.all(loads).then(function(results) {
+    if (!Array.isArray(results[0])) throw new Error('logs format');
     logs = results[0]; poems = results[1]; authors = results[2];
+    logs.forEach(function(lg, i) { var b = document.createElement('button'); b.textContent = String(i+1).padStart(2,'0') + ' · ' + (lg.place || '无名之地'); b.dataset.id = lg.id; b.setAttribute('aria-pressed','false'); b.onclick = function() { selectLog(lg.id); }; sequence.appendChild(b); if (lg.link === false) b.classList.add('trail-break'); });
     logs.forEach(function(lg) { logById[lg.id] = lg; });
     renderLogMenu();
     document.getElementById('intro-count').textContent = logs.length;
@@ -1508,18 +1596,57 @@ nav a.active::after { width: 100%; }
       '<span class="stat-chip">漂点 <b>' + logs.length + '</b></span>' +
       '<span class="stat-chip">诗 <b>' + poems.length + '</b></span>' +
       '<span class="stat-chip">作者 <b>' + authors.length + '</b></span>';
+    initializeMap().catch(showMapFallback);
+    initializeGlobe().catch(function() { document.getElementById('mode-globe').textContent = '重试地球总览'; });
+  }).catch(function(e) {
+    logList.innerHTML = '<p class="hint">日志读取失败。</p><button onclick="location.reload()">重试读取</button><a href="directory.html">返回目录</a>';
+    statsBar.innerHTML = '<span class="stat-chip">数据加载失败</span>';
+    showMapFallback();
+  });
+
+
+  function updateModes() { ['map','globe'].forEach(function(v) { document.getElementById('mode-'+v).setAttribute('aria-pressed', String(mode === v)); }); }
+  var libraryLoads = {};
+  function loadScript(url, ready) {
+    if (ready()) return Promise.resolve();
+    if (libraryLoads[url]) return libraryLoads[url];
+    libraryLoads[url] = new Promise(function(resolve,reject) { var script = document.createElement('script'); var timer = setTimeout(function() { delete libraryLoads[url]; reject(new Error('library timeout')); },12000); script.src = url; script.onload = function() { clearTimeout(timer); ready() ? resolve() : reject(new Error('library unavailable')); }; script.onerror = function() { clearTimeout(timer); delete libraryLoads[url]; reject(new Error('library failed')); }; document.head.appendChild(script); }); return libraryLoads[url];
+  }
+  function initializeGlobe() { return Promise.all([loadScript('https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js',function() { return !!window.d3; }),loadScript('https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js',function() { return !!window.topojson; })]).then(loadLand).then(function() { drawGlobe(); }); }
+  function initializeMap() { document.getElementById('map-status').textContent = '地图加载中…日志已可阅读。'; return loadScript('https://webapi.amap.com/maps?v=2.0&key=0fd1637fe9e1febffcc26b2bd8ccfdcc&plugin=AMap.Scale',function() { return !!window.AMap; }).then(function() {
+    if (map) map.destroy(); markers = {}; trailPolylines = [];
+  try {
+    if (window.AMap && typeof AMap.Map === 'function') map = new AMap.Map('map', {
+      zoom: 7,
+      center: [104.5, 35.5],
+      viewMode: '2D',
+      zoomEnable: true,
+      dragEnable: true,
+      keyboardEnable: false,
+      doubleClickZoom: false,
+      scrollWheel: false,
+      resizeEnable: true
+    });
+  } catch (e) {
+    map = null;
+  }
     // 高德漂点（平面地图）
-    if (map && window.AMap && typeof AMap.Marker === 'function') logs.forEach(function(lg) {
+    if (map && window.AMap && typeof AMap.Marker === 'function') logs.filter(hasCoords).forEach(function(lg) {
       var g = wgs84ToGcj02(lg.lng, lg.lat);
+      if (logs.find(function(l) { return l.lng === lg.lng && l.lat === lg.lat; }) !== lg) return;
+      var group = logs.filter(function(l) { return l.lng === lg.lng && l.lat === lg.lat; });
+      var markerButton = document.createElement('button'); markerButton.type = 'button'; markerButton.className = 'voyage-pin'; markerButton.setAttribute('aria-label', '查看' + lg.place + (group.length > 1 ? '的' + group.length + '条记录' : '的日志'));
+      markerButton.innerHTML = '<span>' + escapeHtml(lg.place || '无名之地') + (group.length > 1 ? ' · ' + group.length : '') + '</span>';
+      function chooseGroup() { if (group.length === 1) selectLog(lg.id); else showGroup(group); }
+      markerButton.onclick = chooseGroup;
       var marker = new AMap.Marker({
         position: g,
-        content: '<div class="voyage-pin' + (lg.poemId ? '' : ' dim') + '" data-log="' + lg.id + '"></div>',
+        content: markerButton,
         offset: new AMap.Pixel(0, 0),
         zIndex: 100
       });
-      marker.on('click', function() { selectLog(lg.id, false); });
       if (map) map.add(marker);
-      markers[lg.id] = marker;
+      group.forEach(function(l) { markers[l.id] = marker; });
     });
     // 平面行迹（分段，link:false 断开）
     trailPolylines.forEach(function(p) { if (map) map.remove(p); });
@@ -1541,16 +1668,14 @@ nav a.active::after { width: 100%; }
       trailPolylines.push(poly);
     });
 
-    if (window.d3 && window.topojson) {
-      loadLand().then(function() { drawGlobe(); triggerBoot(); }).catch(showMapFallback);
-    } else {
-      showMapFallback();
-    }
-  }).catch(function(e) {
-    logList.innerHTML = '<p class="hint">日志暂时无法加载，请稍后刷新重试。</p>';
-    statsBar.innerHTML = '<span class="stat-chip">数据加载失败</span>';
-    showMapFallback();
-  });
+
+    if (!map) throw new Error('map unavailable');
+    var ready = false;
+    map.on('complete',function() { ready = true; fitAll(); document.getElementById('map-status').textContent = ''; });
+    map.on('error',showMapFallback);
+    setTimeout(function() { if (!ready) showMapFallback(); },12000);
+    requestAnimationFrame(function() { fitAll(); });
+  }); }
 
   // 窗口尺寸变化重绘
   var resizeTimer = null;
