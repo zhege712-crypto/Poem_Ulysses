@@ -942,12 +942,12 @@ Promise.all([
     } else {
       document.documentElement.setAttribute('data-theme', theme);
     }
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (_) {}
     btns.forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
     });
   }
-  var saved = localStorage.getItem('theme');
+  var saved; try { saved = localStorage.getItem('theme'); } catch (_) {}
   var initial;
   if (saved && (saved === 'light' || saved === 'dark' || saved === 'eye-care')) {
     initial = saved;

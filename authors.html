@@ -1130,12 +1130,12 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
       } else {
         document.documentElement.setAttribute('data-theme', theme);
       }
-      localStorage.setItem('theme', theme);
+      try { localStorage.setItem('theme', theme); } catch (_) {}
       btns.forEach(function(btn) {
         btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
       });
     }
-    var saved = localStorage.getItem('theme');
+    var saved; try { saved = localStorage.getItem('theme'); } catch (_) {}
     var initial;
     var tq = new URLSearchParams(window.location.search).get('theme');
     if (tq && (tq === 'light' || tq === 'dark' || tq === 'eye-care')) {

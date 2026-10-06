@@ -60,7 +60,7 @@ body header, body .page-content { opacity: 1; animation: none; }
 .intro-arc path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw 1.4s ease-out forwards; }
 .intro-glass { position: absolute; width: 18vw; height: 24vh; top: 28%; left: 34%; background: color-mix(in srgb, var(--ink) 8%, transparent); animation: intro-geometry 3s both; }
 .intro-glass.second { left: 58%; top: 44%; width: 22vw; height: 20vh; background: color-mix(in srgb, var(--clay) 9%, transparent); }
-.intro-title { position: absolute; left: var(--intro-x); top: var(--intro-y); font-family: var(--font-serif); font-size: var(--intro-size); font-weight: 400; letter-spacing: .04em; line-height: 1.15; white-space: nowrap; transform: translate(var(--intro-dx), var(--intro-dy)); animation: intro-home 3s both; }
+.intro-title { position: absolute; left: var(--intro-x); top: var(--intro-y); font-family: var(--font-serif); font-size: var(--intro-size); font-weight: var(--intro-weight, 400); letter-spacing: var(--intro-spacing, .04em); line-height: var(--intro-line-height, 1.15); white-space: nowrap; transform: translate(var(--intro-dx), var(--intro-dy)); animation: intro-home 3s both; }
 .intro-title span { display: inline-block; opacity: 0; animation: intro-letter 3s both; --letter-y: -34px; }
 .intro-title span:nth-child(2) { --letter-y: -12px; animation-delay: 50ms; }
 .intro-title span:nth-child(3) { --letter-y: 12px; animation-delay: 100ms; }
@@ -866,6 +866,9 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
     var rect = heading.getBoundingClientRect();
     var computed = getComputedStyle(heading);
     overlay.style.setProperty('--intro-size', computed.fontSize);
+    overlay.style.setProperty('--intro-weight', computed.fontWeight);
+    overlay.style.setProperty('--intro-spacing', computed.letterSpacing);
+    overlay.style.setProperty('--intro-line-height', computed.lineHeight);
     overlay.style.setProperty('--intro-x', rect.left + 'px');
     overlay.style.setProperty('--intro-y', rect.top + 'px');
     overlay.style.setProperty('--intro-dx', (innerWidth / 2 - rect.left - parseFloat(computed.fontSize) * 2.08) + 'px');
@@ -1047,13 +1050,13 @@ document.getElementById('random-btn').addEventListener('click', function(e) {
     } else {
       document.documentElement.setAttribute('data-theme', theme);
     }
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (_) {}
     btns.forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
     });
   }
 
-  var saved = localStorage.getItem('theme');
+  var saved; try { saved = localStorage.getItem('theme'); } catch (_) {}
   var initial;
   if (saved && (saved === 'light' || saved === 'dark' || saved === 'eye-care')) {
     initial = saved;

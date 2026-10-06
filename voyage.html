@@ -544,6 +544,8 @@ nav a.active::after { width: 100%; }
 /* ===== 灯箱 ===== */
 .lightbox { position: fixed; inset: 0; z-index: 3000; background: rgba(20, 18, 16, 0.92); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.35s; }
 .lightbox.show { opacity: 1; pointer-events: auto; }
+.lightbox-close { position:absolute; top:max(20px,env(safe-area-inset-top)); right:max(20px,env(safe-area-inset-right)); min-height:44px; padding:10px 20px; border:1px solid var(--gold-light); border-radius:999px; background:var(--paper); color:var(--ink); font:14px var(--font-sans); cursor:pointer; }
+.lightbox-close:focus-visible { outline:3px solid var(--voyage-accent); outline-offset:4px; }
 .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; box-shadow: 0 10px 60px rgba(0,0,0,0.5); }
 
 /* ===== 启动动画 ===== */
@@ -978,12 +980,12 @@ nav a::after { transition:none; }
   </button>
 </div>
 
-<div class="lightbox" id="lightbox"><img id="lightbox-img" alt=""></div>
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="作品配图" aria-hidden="true" inert><button id="lightbox-close" class="lightbox-close" type="button">关闭配图</button><img id="lightbox-img" alt="作品配图"></div>
 
 <script>
 // ===== 主题 =====
 (function() {
-  var saved = localStorage.getItem('theme');
+  var saved; try { saved = localStorage.getItem('theme'); } catch (_) {}
   var hour = new Date().getHours();
   var initial = (saved && ['light','dark','eye-care'].indexOf(saved) !== -1) ? saved : ((hour >= 19 || hour < 6) ? 'dark' : 'light');
   var style = document.createElement('style');
@@ -1005,7 +1007,7 @@ nav a::after { transition:none; }
   function applyTheme(theme) {
     if (theme === 'light') document.documentElement.removeAttribute('data-theme');
     else document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (_) {}
     btns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-theme') === theme); });
     if (typeof window.__redrawForTheme === 'function') window.__redrawForTheme();
   }
@@ -1039,6 +1041,15 @@ nav a::after { transition:none; }
   var goldScan = document.getElementById('gold-scan');
   var lightbox = document.getElementById('lightbox');
   var lightboxImg = document.getElementById('lightbox-img');
+  var lightboxClose = document.getElementById('lightbox-close');
+  var lightboxTrigger;
+  function closeLightbox() {
+    if (!lightbox.classList.contains('show')) return;
+    lightbox.classList.remove('show');
+    lightbox.setAttribute('aria-hidden', 'true');
+    lightbox.inert = true;
+    if (lightboxTrigger && lightboxTrigger.isConnected) lightboxTrigger.focus({ preventScroll:true });
+  }
 
   var logs = [], poems = [], authors = [], markers = {}, logById = {};
   var currentLog = null;
@@ -1466,10 +1477,22 @@ nav a::after { transition:none; }
     ppScroll.innerHTML = html;
     ppScroll.scrollTop = 0;
     if (window.matchMedia('(max-width: 700px)').matches) ppPlace.focus({ preventScroll: true });
-    ppScroll.querySelectorAll('.pp-images img').forEach(function(img) {
-      img.addEventListener('click', function() {
+    ppScroll.querySelectorAll('.pp-images img').forEach(function(img, index) {
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', '查看作品配图 ' + (index + 1));
+      img.setAttribute('aria-haspopup', 'dialog');
+      function openImage() {
+        lightboxTrigger = img;
         lightboxImg.src = img.getAttribute('data-src');
+        lightbox.inert = false;
+        lightbox.setAttribute('aria-hidden', 'false');
         lightbox.classList.add('show');
+        lightboxClose.focus({ preventScroll:true });
+      }
+      img.addEventListener('click', openImage);
+      img.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); openImage(); }
       });
     });
     // 「去阅读」按钮显隐
@@ -1486,9 +1509,15 @@ nav a::after { transition:none; }
     if (previousCard) previousCard.focus({ preventScroll: true });
   });
   document.addEventListener('keydown', function(event) {
+    if (lightbox.classList.contains('show')) {
+      if (event.key === 'Escape') { event.preventDefault(); closeLightbox(); }
+      if (event.key === 'Tab') { event.preventDefault(); lightboxClose.focus(); }
+      return;
+    }
     if (event.key === 'Escape' && !poemPanel.classList.contains('hidden')) ppClose.click();
   });
-  lightbox.addEventListener('click', function() { lightbox.classList.remove('show'); });
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', function(event) { if (event.target === lightbox) closeLightbox(); });
 
   // WGS84 → GCJ02（高德火星坐标，前端漂点对齐用）
   function wgs84ToGcj02(lng, lat) {

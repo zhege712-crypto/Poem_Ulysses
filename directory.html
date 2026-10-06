@@ -933,7 +933,8 @@ function renderCatalog(poems) {
 }
 
 // ===== 树状图 =====
-var viewMode = localStorage.getItem('catalog_view') === 'tree' ? 'tree' : 'list';
+var viewMode = 'list';
+try { if (localStorage.getItem('catalog_view') === 'tree') viewMode = 'tree'; } catch (_) {}
 var collapsed = Object.create(null);
 try { collapsed = Object.assign(Object.create(null), JSON.parse(localStorage.getItem('catalog_collapsed') || '{}')); } catch(e) { collapsed = Object.create(null); }
 
@@ -993,7 +994,7 @@ listEl.addEventListener('click', function(e) {
   var key = branch.getAttribute('data-key');
   branch.classList.toggle('collapsed');
   if (branch.classList.contains('collapsed')) { collapsed[key] = true; } else { delete collapsed[key]; }
-  localStorage.setItem('catalog_collapsed', JSON.stringify(collapsed));
+  try { localStorage.setItem('catalog_collapsed', JSON.stringify(collapsed)); } catch (_) {}
 });
 
 // ===== 视图切换 =====
@@ -1003,7 +1004,7 @@ listEl.addEventListener('click', function(e) {
     btn.classList.toggle('active', btn.getAttribute('data-view') === viewMode);
     btn.addEventListener('click', function() {
       viewMode = this.getAttribute('data-view');
-      localStorage.setItem('catalog_view', viewMode);
+      try { localStorage.setItem('catalog_view', viewMode); } catch (_) {}
       toggleBtns.forEach(function(b) { b.classList.toggle('active', b === btn); });
       doSearch(document.getElementById('search-input').value);
     });
@@ -1089,13 +1090,13 @@ fetch(dataUrl)
     } else {
       document.documentElement.setAttribute('data-theme', theme);
     }
-    localStorage.setItem('theme', theme);
+    try { localStorage.setItem('theme', theme); } catch (_) {}
     btns.forEach(function(btn) {
       btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
     });
   }
 
-  var saved = localStorage.getItem('theme');
+  var saved; try { saved = localStorage.getItem('theme'); } catch (_) {}
   var initial;
   if (saved && (saved === 'light' || saved === 'dark' || saved === 'eye-care')) {
     initial = saved;
