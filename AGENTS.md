@@ -6,6 +6,8 @@
 
 Design context lives in `PRODUCT.md` (product truth) and `DESIGN.md` (design system + tokens, with machine-readable YAML frontmatter). Re-run the detector after UI changes: `node C:\Users\10141\.agents\skills\impeccable\scripts\detect.mjs --json <targets>`.
 
+The accepted public redesign is recorded in `docs/design/release-2026-10-06.md`, with page-specific records in `docs/design/public-ui.md`, `docs/design/voyage.md`, and `docs/design/intro.md`. These records describe the current public pages; older public intro/Animus descriptions in `DESIGN.md` are historical. Worker workspaces retain their existing design and security conventions.
+
 ## No toolchain
 
 - There is **no `package.json`, no bundler, no build step**. The `.opencode/.gitignore` explicitly ignores `package.json`, `package-lock.json`, and `bun.lock` — never add these.
@@ -50,6 +52,7 @@ Not all `poems.json` `author` strings are in `authors.json`; unlisted names rend
 | File | Purpose | Key query params |
 |---|---|---|
 | `index.html` | Homepage with intro animation, stats, recent poems | `?preview=1` freezes intro animation frame |
+| `voyage.html` | Regional map and synchronized travel log/poem reading; explicit optional globe | — |
 | `directory.html` | Catalog with list/tree views and search | — |
 | `read.html` | Poem reader with prev/next nav, lightbox, comments | `?id=<poem id>` (required) |
 | `authors.html` | Author card wall ("同志们"), alias-merged with poems | — |
@@ -93,4 +96,5 @@ Uses Giscus (GitHub Discussions integration) on `read.html`. Theme changes on th
 ## Preview/debug
 
 - `index.html?preview=1` — freeze the intro animation at its final frame (for screenshots/design review).
+- `index.html?intro=replay` — replay the three-second constructivist opening; `&intro-frame=1600` freezes a development frame. Reduced-motion and unsupported storage skip the opening. The intro title follows the actual homepage typography.
 - Screenshot reference images are in `_preview_shots/`. These are not production assets.
