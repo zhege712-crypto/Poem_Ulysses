@@ -192,6 +192,52 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
  html body .ah-stat:last-child {grid-column:1/-1}
  html body .ah-stat:last-child .num {font-size:16px;line-height:1.7;white-space:nowrap}
 }
+
+/* 2026-10-06: static art refinement; shared type and glass language. */
+html {--ui-heading-tracking:.025em;--ui-art-rust:#984732}
+html[data-theme="dark"] {--ui-art-rust:#a96047}
+html[data-theme="eye-care"] {--ui-art-rust:#894932}
+html body header .wrap {max-width:1280px}
+html body header:not(:has(.wrap)) {padding-inline:max(24px,calc((100vw - 1216px)/2))}
+html body .page-head h1 {letter-spacing:var(--ui-heading-tracking)}
+html body .page-head p {font-size:16px;line-height:1.85;max-width:48ch;color:var(--ink-light)}
+html body .series-block h2 {font-family:var(--font-serif),serif;font-size:26px;font-weight:500;line-height:1.5;letter-spacing:.02em}
+html body .catalog-row {padding-block:20px}
+html body .catalog-row .c-title {font-size:20px;line-height:1.65}
+html body .about-content h2 {margin-top:40px;margin-bottom:16px}
+html body .recent-section h2 {display:flex;align-items:center;gap:28px;font-size:32px;line-height:1.4;margin-bottom:12px}
+html body .recent-section h2::after {content:"";height:1px;flex:1;background:var(--ui-line)}
+html body .recent-item {min-height:78px;padding:20px 0;gap:24px}
+html body .recent-item .ri-title {font-size:24px;line-height:1.5}
+html body .recent-item .ri-meta {font-size:14px;line-height:1.8}
+html body .hero-action-note {font-size:14px;line-height:1.8}
+html body .side-theme {box-shadow:0 8px 24px color-mix(in srgb,var(--ui-ink) 8%,transparent)}
+@media(max-width:640px) {
+ html body .page-head p {font-size:15px}
+ html body .series-block h2 {font-size:24px}
+ html body .catalog-row .c-title {font-size:18px}
+ html body .catalog-row {padding-block:16px}
+ html body .recent-section h2 {font-size:26px;gap:20px}
+ html body .recent-item {min-height:80px;gap:6px;padding-block:18px}
+ html body .recent-item .ri-title {font-size:21px}
+ html body .recent-item .ri-meta {font-size:13px}
+}
+
+/* First-pass repairs: retain larger user fonts and stable intro geometry. */
+html {scrollbar-gutter:stable}
+html body .side-theme .theme-btn,html body .side-theme .theme-btn.active {min-width:86px;flex-shrink:0}
+html body .side-theme .theme-btn span {white-space:nowrap}
+html body .side-theme .theme-btn svg {flex-shrink:0}
+html body .catalog-row {grid-template-columns:128px minmax(0,1fr) 20px}
+html body .work-row {grid-template-columns:128px minmax(0,1fr) auto}
+html body .recent-item {margin-inline:0}
+@media(max-width:640px) {
+ html body .side-theme .theme-btn,html body .side-theme .theme-btn.active {min-width:86px;padding-inline:10px}
+ html body .catalog-row {grid-template-columns:128px minmax(0,1fr) 16px}
+ html body .work-row {grid-template-columns:128px minmax(0,1fr)}
+ html body .recent-item {display:flex;flex-direction:column;align-items:flex-start}
+ html body .recent-item .ri-title,html body .recent-item .ri-meta {max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
 </style>
 <script>try{var t=localStorage.getItem('theme');if(t==='dark'||t==='eye-care')document.documentElement.setAttribute('data-theme',t)}catch(_){}</script></head><body>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. --><main><nav><a href="index.html">回到诗集</a> · <a href="submit.html">普通投稿</a> · <a href="partners.html">合作伙伴工作台</a></nav><h1>投稿与合作账号隐私说明</h1><p>诗歌漂流由网站维护者管理。以下说明我们为投稿、审核和合作账号所处理的信息；如需查询、更正或删除私人资料，请联系 <a href="mailto:zhege712@gmail.com">zhege712@gmail.com</a>。最后更新：2026 年 10 月 3 日。</p>

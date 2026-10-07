@@ -60,7 +60,7 @@ body header, body .page-content { opacity: 1; animation: none; }
 .intro-arc path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: intro-draw 1.4s ease-out forwards; }
 .intro-glass { position: absolute; width: 18vw; height: 24vh; top: 28%; left: 34%; background: color-mix(in srgb, var(--ink) 8%, transparent); animation: intro-geometry 3s both; }
 .intro-glass.second { left: 58%; top: 44%; width: 22vw; height: 20vh; background: color-mix(in srgb, var(--clay) 9%, transparent); }
-.intro-title { position: absolute; left: var(--intro-x); top: var(--intro-y); font-family: var(--font-serif); font-size: var(--intro-size); font-weight: var(--intro-weight, 400); letter-spacing: var(--intro-spacing, .04em); line-height: var(--intro-line-height, 1.15); white-space: nowrap; transform: translate(var(--intro-dx), var(--intro-dy)); animation: intro-home 3s both; }
+.intro-title { position: absolute; left: var(--intro-x); top: var(--intro-y); font-family: var(--intro-family, var(--font-serif)); font-size: var(--intro-size); font-weight: var(--intro-weight, 400); letter-spacing: var(--intro-spacing, .04em); line-height: var(--intro-line-height, 1.15); white-space: nowrap; transform: translate(var(--intro-dx), var(--intro-dy)); animation: intro-home 3s both; }
 .intro-title span { display: inline-block; opacity: 0; animation: intro-letter 3s both; --letter-y: -34px; }
 .intro-title span:nth-child(2) { --letter-y: -12px; animation-delay: 50ms; }
 .intro-title span:nth-child(3) { --letter-y: 12px; animation-delay: 100ms; }
@@ -705,6 +705,102 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
  html body .ah-stat:last-child {grid-column:1/-1}
  html body .ah-stat:last-child .num {font-size:16px;line-height:1.7;white-space:nowrap}
 }
+
+/* 2026-10-06: static art refinement; shared type and glass language. */
+html {--ui-heading-tracking:.025em;--ui-art-rust:#984732}
+html[data-theme="dark"] {--ui-art-rust:#a96047}
+html[data-theme="eye-care"] {--ui-art-rust:#894932}
+html body header .wrap {max-width:1280px}
+html body header:not(:has(.wrap)) {padding-inline:max(24px,calc((100vw - 1216px)/2))}
+html body .page-head h1 {letter-spacing:var(--ui-heading-tracking)}
+html body .page-head p {font-size:16px;line-height:1.85;max-width:48ch;color:var(--ink-light)}
+html body .series-block h2 {font-family:var(--font-serif),serif;font-size:26px;font-weight:500;line-height:1.5;letter-spacing:.02em}
+html body .catalog-row {padding-block:20px}
+html body .catalog-row .c-title {font-size:20px;line-height:1.65}
+html body .about-content h2 {margin-top:40px;margin-bottom:16px}
+html body .recent-section h2 {display:flex;align-items:center;gap:28px;font-size:32px;line-height:1.4;margin-bottom:12px}
+html body .recent-section h2::after {content:"";height:1px;flex:1;background:var(--ui-line)}
+html body .recent-item {min-height:78px;padding:20px 0;gap:24px}
+html body .recent-item .ri-title {font-size:24px;line-height:1.5}
+html body .recent-item .ri-meta {font-size:14px;line-height:1.8}
+html body .hero-action-note {font-size:14px;line-height:1.8}
+html body .side-theme {box-shadow:0 8px 24px color-mix(in srgb,var(--ui-ink) 8%,transparent)}
+@media(max-width:640px) {
+ html body .page-head p {font-size:15px}
+ html body .series-block h2 {font-size:24px}
+ html body .catalog-row .c-title {font-size:18px}
+ html body .catalog-row {padding-block:16px}
+ html body .recent-section h2 {font-size:26px;gap:20px}
+ html body .recent-item {min-height:80px;gap:6px;padding-block:18px}
+ html body .recent-item .ri-title {font-size:21px}
+ html body .recent-item .ri-meta {font-size:13px}
+}
+
+/* Homepage art: one relief, native static geometry, real HTML copy. */
+html body .page-content>.wrap {max-width:1280px;padding-inline:32px}
+html body .hero {display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:40px;align-items:center;padding:132px 0 48px}
+.hero-copy {min-width:0;position:relative;z-index:1}
+html body .hero h1 {font-size:clamp(64px,7vw,96px);font-weight:500;letter-spacing:.025em;line-height:1.2;white-space:nowrap}
+html body .hero h1 span,.intro-title span:nth-child(3) {color:var(--ink)!important}
+html body .hero .greek-divider {width:112px;height:12px;margin:24px 0;opacity:1}
+html body .hero-desc {font-family:var(--font-serif),serif;font-size:24px;font-weight:400;line-height:1.55;max-width:42ch;color:var(--ink)}
+html body .hero-stats {gap:28px;margin:24px 0;flex-wrap:wrap}
+html body .hero-stats>div:hover {background:transparent}
+html body .hero-stats .num {font-size:24px;line-height:1.5;letter-spacing:0}
+html body .hero-stats .label {font-size:13px;letter-spacing:.02em}
+html body .hero-actions {gap:12px;flex-wrap:wrap}
+html body .hero-actions .btn {padding:12px 24px;font-size:15px}
+html body .hero-action-note {margin-top:18px}
+html body .writer-links {margin-top:10px;gap:8px 24px}
+.hero-art {position:relative;aspect-ratio:1/1;min-width:0;isolation:isolate;pointer-events:none}
+.hero-art-band {position:absolute;inset:0 20% 0 14%;background:var(--ui-art-rust);clip-path:polygon(73% 0,100% 0,28% 100%,0 100%);opacity:.93;z-index:-2}
+.hero-art img {position:absolute;width:78%;height:auto;aspect-ratio:1;left:0;top:10%;filter:contrast(.9) saturate(.65);z-index:-1}
+.hero-art-arc {position:absolute;inset:3% 0 0 0;width:100%;height:94%;color:var(--gold)}
+.hero-art-glass {position:absolute;right:0;bottom:10%;width:40%;height:38%;background:color-mix(in srgb,var(--paper) 42%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid color-mix(in srgb,var(--paper) 65%,transparent)}
+.hero-art-note {position:absolute;right:1%;top:9%;font-family:var(--font-kai),serif;font-size:24px;line-height:1.5;letter-spacing:.06em;transform:rotate(-10deg);color:var(--ink)}
+.hero-art-note::after {content:"";display:block;margin-top:5px;height:1px;background:currentColor;transform:rotate(-4deg)}
+html[data-theme="dark"] .hero-art img {filter:brightness(.64) contrast(.88) saturate(.5)}
+html[data-theme="eye-care"] .hero-art img {filter:brightness(.94) contrast(.86) saturate(.45)}
+html body .recent-section {padding:32px 0 40px}
+html body .submit-note {margin-top:12px;padding:24px 0;gap:20px;font-size:15px}
+@media(min-width:641px) and (max-width:1000px) {
+ html body .hero {gap:24px;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+ html body .hero h1 {font-size:clamp(52px,7vw,70px)}
+ html body .hero-desc {font-size:21px}
+ .hero-art-note {font-size:20px;right:0}
+}
+@media(max-width:640px) {
+ html body .page-content>.wrap {padding-inline:22px}
+ html body .hero {grid-template-columns:minmax(0,1fr);gap:22px;padding-top:142px;padding-bottom:28px}
+ html body .hero h1 {font-size:clamp(44px,12.5vw,60px);letter-spacing:.025em}
+ html body .hero .greek-divider {width:88px;height:10px;margin:20px 0}
+ html body .hero-desc {font-size:21px;line-height:1.55}
+ html body .hero-stats {gap:18px;margin:20px 0}
+ html body .hero-stats .num,html body .hero-stats #stat-latest {font-size:20px}
+ html body .hero-stats>div {gap:7px}
+ html body .hero-actions {gap:10px}
+ html body .hero-actions .btn {padding:11px 17px;font-size:14px}
+ html body .writer-links {gap:2px 18px}
+ .hero-art {width:min(100%,280px);justify-self:center}
+ .hero-art-note {font-size:18px;right:-4px;top:8%}
+ html body .submit-note {display:flex;align-items:flex-start;font-size:14px;gap:14px}
+}
+
+/* First-pass repairs: retain larger user fonts and stable intro geometry. */
+html {scrollbar-gutter:stable}
+html body .side-theme .theme-btn,html body .side-theme .theme-btn.active {min-width:86px;flex-shrink:0}
+html body .side-theme .theme-btn span {white-space:nowrap}
+html body .side-theme .theme-btn svg {flex-shrink:0}
+html body .catalog-row {grid-template-columns:128px minmax(0,1fr) 20px}
+html body .work-row {grid-template-columns:128px minmax(0,1fr) auto}
+html body .recent-item {margin-inline:0}
+@media(max-width:640px) {
+ html body .side-theme .theme-btn,html body .side-theme .theme-btn.active {min-width:86px;padding-inline:10px}
+ html body .catalog-row {grid-template-columns:128px minmax(0,1fr) 16px}
+ html body .work-row {grid-template-columns:128px minmax(0,1fr)}
+ html body .recent-item {display:flex;flex-direction:column;align-items:flex-start}
+ html body .recent-item .ri-title,html body .recent-item .ri-meta {max-width:100%;white-space:normal;overflow-wrap:anywhere}
+}
 </style>
 </head>
 <body>
@@ -760,6 +856,7 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
 <div class="page-content">
   <div class="wrap">
     <section class="hero">
+      <div class="hero-copy">
       <div class="hero-eyebrow">Poem's Ulysses</div>
       <h1>诗歌<span style="color:var(--gold);">漂</span>流</h1>
       <svg class="greek-divider" viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5 H8 V0 H16 V10 H24 V0 H32 V10 H40 V0 H48 V10 H56 V0 H64 V10 H72 V0 H80 V10 H88 V0 H100"/></svg>
@@ -781,6 +878,15 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
         <a href="partners.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5zM15 3v4h4M9 11h6M9 15h6"/></svg>我的诗稿 / 申请合作</a>
         <a href="https://poem-submissions-review.zhege712-872.workers.dev/partner-security"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/></svg>账号安全</a>
       </nav>
+
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-art-band"></div>
+        <img src="assets/art/greek-relief.png" alt="" width="1254" height="1254" fetchpriority="high" decoding="async">
+        <svg class="hero-art-arc" viewBox="0 0 500 500" fill="none"><path d="M240 12 A245 245 0 0 1 395 460" stroke="currentColor" stroke-width="1.5"/></svg>
+        <div class="hero-art-glass"></div>
+        <p class="hero-art-note">起源于一份激情</p>
+      </div>
     </section>
 
     <section class="recent-section">
@@ -863,23 +969,27 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
     // Reserve the session before playback, including a skip or interrupted visit.
     if (!preview && !replay) sessionStorage.setItem('intro_poem_shown', '1');
     var heading = document.querySelector('.hero h1');
+    function syncIntroHeading() {
+      var rect = heading.getBoundingClientRect();
+      var computed = getComputedStyle(heading);
+      overlay.style.setProperty('--intro-family', computed.fontFamily);
+      overlay.style.setProperty('--intro-size', computed.fontSize);
+      overlay.style.setProperty('--intro-weight', computed.fontWeight);
+      overlay.style.setProperty('--intro-spacing', computed.letterSpacing);
+      overlay.style.setProperty('--intro-line-height', computed.lineHeight);
+      overlay.style.setProperty('--intro-x', rect.left + 'px');
+      overlay.style.setProperty('--intro-y', rect.top + 'px');
+    }
+    syncIntroHeading();
     var rect = heading.getBoundingClientRect();
     var computed = getComputedStyle(heading);
-    overlay.style.setProperty('--intro-size', computed.fontSize);
-    overlay.style.setProperty('--intro-weight', computed.fontWeight);
-    overlay.style.setProperty('--intro-spacing', computed.letterSpacing);
-    overlay.style.setProperty('--intro-line-height', computed.lineHeight);
-    overlay.style.setProperty('--intro-x', rect.left + 'px');
-    overlay.style.setProperty('--intro-y', rect.top + 'px');
     overlay.style.setProperty('--intro-dx', (innerWidth / 2 - rect.left - parseFloat(computed.fontSize) * 2.08) + 'px');
     overlay.style.setProperty('--intro-dy', (innerHeight * .42 - rect.top) + 'px');
     // Independent escape paths are installed before focus or scroll is restricted.
     timer = setTimeout(finish, 3100);
     arrivalTimer = setTimeout(function() { document.body.classList.add('intro-arrived'); }, 2640);
     alignmentTimer = setTimeout(function() {
-      var current = heading.getBoundingClientRect();
-      overlay.style.setProperty('--intro-x', current.left + 'px');
-      overlay.style.setProperty('--intro-y', current.top + 'px');
+      syncIntroHeading();
     }, 2100);
     window.addEventListener('error', finish);
     window.addEventListener('unhandledrejection', finish);
@@ -895,6 +1005,11 @@ html body .catalog-row .c-date,html body .catalog-row .c-author {min-width:0;max
     overlay.setAttribute('aria-hidden', 'false');
     overlay.classList.add('is-playing');
     skip.focus({ preventScroll: true });
+    // Scroll locking and late web fonts must use the same final title metrics.
+    syncIntroHeading();
+    if (document.fonts) document.fonts.ready.then(function() {
+      if (!finished) syncIntroHeading();
+    }, finish);
     if (preview || (replay && params.has('intro-frame'))) {
       clearTimeout(timer);
       clearTimeout(alignmentTimer);
