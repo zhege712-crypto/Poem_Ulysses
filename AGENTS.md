@@ -8,7 +8,7 @@ Design context lives in `PRODUCT.md` (product truth) and `DESIGN.md` (design sys
 
 The accepted public redesign is recorded in `docs/design/release-2026-10-06.md`, with page-specific records in `docs/design/public-ui.md`, `docs/design/voyage.md`, and `docs/design/intro.md`. These records describe the current public pages; older public intro/Animus descriptions in `DESIGN.md` are historical. Worker workspaces retain their existing design and security conventions.
 
-The subsequent static art extension is recorded in `docs/design/art-2026-10-07.md` and `docs/design/public-art-2026-10-06.md`: one decorative Greek relief on the homepage, sourced copy only, paper/ink/rust geometry, rounded glass controls, and restrained inner pages. This extension preserves the existing interactions; its work branch is local until explicitly published.
+The subsequent static art extension is recorded in `docs/design/art-2026-10-07.md` and `docs/design/public-art-2026-10-06.md`: one decorative Greek relief on the homepage, sourced copy only, paper/ink/rust geometry, rounded glass controls, and restrained inner pages. This extension preserves the existing interactions. The user-authorized combined release with optional writing information is recorded in `docs/releases/2026-10-08.md`.
 
 ## No toolchain
 
