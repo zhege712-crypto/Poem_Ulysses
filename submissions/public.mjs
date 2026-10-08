@@ -1,3 +1,4 @@
+import { writing } from './writing.mjs';
 import { securityRate, burstRate, submissionsPaused } from './security.mjs';
 const JSON_HEADERS = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 
@@ -72,6 +73,8 @@ async function submit(request, env, headers) {
   try { body = await readBody(request); }
   catch (error) { return json({ error: error.message }, 400, headers); }
   if (clean(body.website)) return json({ ok: true }, 200, headers);
+  let writingValue;
+  try { writingValue = writing.normalize(body.writing); } catch (error) { return json({error:error.message,field:error.field},400,headers); }
   const title = clean(body.title);
   const author = clean(body.author);
   const content = clean(body.content).replace(/\r\n?/g, '\n');
@@ -100,8 +103,8 @@ async function submit(request, env, headers) {
     const token = receiptToken();
     const id = crypto.randomUUID();
     const timestamp = now.toISOString();
-    await env.DB.prepare('INSERT INTO submissions (id, receipt_hash, consent_version, consent_at, title, author, content, contact, date, series, subseries, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
-      .bind(id, await sha256(token), 'v1', timestamp, title, author, content, contact, date, series, subseries, timestamp, timestamp).run();
+    await env.DB.prepare('INSERT INTO submissions (id, receipt_hash, consent_version, consent_at, title, author, content, contact, date, series, subseries, writing, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      .bind(id, await sha256(token), 'v1', timestamp, title, author, content, contact, date, series, subseries, JSON.stringify(writingValue), timestamp, timestamp).run();
     statusPage.hash = token;
     return json({ ok: true, id, statusUrl: statusPage.href }, 201, headers);
   } catch {
@@ -126,7 +129,7 @@ async function withdraw(request, env, headers) {
   if (!row) return json({ error: '查询链接无效或稿件已删除' }, 404, headers);
   if (!['submitted', 'reviewing'].includes(row.status)) return json({ error: '这篇稿件当前无法撤回' }, 409, headers);
   const now = new Date().toISOString();
-  const result = await env.DB.prepare("UPDATE submissions SET status = 'withdrawn', contact = '', content = '', updated_at = ?, decided_at = ? WHERE id = ? AND status IN ('submitted', 'reviewing')")
+  const result = await env.DB.prepare("UPDATE submissions SET status = 'withdrawn', contact = '', content = '', writing = '{}', updated_at = ?, decided_at = ? WHERE id = ? AND status IN ('submitted', 'reviewing')")
     .bind(now, now, row.id).run();
   if (!result.meta?.changes) return json({ error: '状态已变化，请刷新后重试' }, 409, headers);
   return json({ ok: true }, 200, headers);
@@ -159,6 +162,6 @@ export default {
     await env.DB.prepare("UPDATE submissions SET status = 'reviewing', publishing_at = '' WHERE status = 'publishing' AND publishing_at < ?").bind(publishingCutoff).run();
     await env.DB.prepare("DELETE FROM submissions WHERE status IN ('declined', 'withdrawn') AND decided_at < ?").bind(decidedCutoff).run();
     await env.DB.prepare("DELETE FROM submissions WHERE status IN ('submitted', 'reviewing') AND created_at < ?").bind(pendingCutoff).run();
-    await env.DB.prepare("UPDATE submissions SET contact = '', content = '', private_note = '' WHERE status = 'published' AND decided_at < ? AND (contact != '' OR content != '' OR private_note != '')").bind(decidedCutoff).run();
+    await env.DB.prepare("UPDATE submissions SET contact = '', content = '', private_note = '', writing = '{}' WHERE status = 'published' AND decided_at < ? AND (contact != '' OR content != '' OR private_note != '' OR writing != '{}')").bind(decidedCutoff).run();
   }
 };

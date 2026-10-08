@@ -328,6 +328,11 @@ html body .recent-item {margin-inline:0}
         <div class="field wide"><label for="subseries">子分类</label><input id="subseries" name="subseries" maxlength="60" autocomplete="off" placeholder="例如：现代诗" aria-describedby="subseries-error"><small class="field-error" id="subseries-error" hidden></small></div>
       </div></fieldset>
       <div class="field"><label for="content">诗的正文 *</label><textarea id="content" name="content" maxlength="12000" required spellcheck="false" aria-describedby="content-count content-error"></textarea><small class="count" id="content-count">0 / 12000 字</small><small class="field-error" id="content-error" hidden></small></div>
+      <!-- Writing information extension: THESIS optional context stays out of the ordinary submission path.
+      OWN-WORLD inherited paper, ink, rust and rounded inputs. STORY fill only what is known and choose visibility.
+      FIRST VIEWPORT unchanged; collapsed native disclosure follows the poem body. FORM Operate, incumbent extension.
+      FINISH independent review and task-specific design record; no global visual-system replacement. -->
+      <div id="writing-host"></div>
       <div class="field"><label for="contact">联系方式（选填）</label><input id="contact" name="contact" maxlength="120" autocomplete="email"><small>只用于联系你处理这篇投稿，不会随作品公开。</small></div>
       <div class="honey" aria-hidden="true"><label for="website">网站</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
       <div id="turnstile-slot" aria-label="防刷验证"></div><div class="verification-help"><button id="retry-verification" type="button" hidden>重试验证</button></div>
@@ -348,32 +353,38 @@ html body .recent-item {margin-inline:0}
 </div>
 <footer>© 2026 诗歌漂流<div class="footer-links"><a href="about.html">关于诗歌漂流</a><a href="privacy.html">隐私说明</a><a href="https://poem-submissions-review.zhege712-872.workers.dev/security">维护者账号安全</a></div></footer>
 <script src="submission-config.js"></script>
+<script src="writing-info.js"></script>
+<script src="writing-form.js"></script>
 <script>
 (function(){
   var $=function(id){return document.getElementById(id)};
   var cfg=window.POEM_SUBMISSIONS||{};
   var widgetId=null,widgetScript=null,turnstileReady=false,sending=false,emailPrepared=false,loadTimer=null,verifyTimer=null;
+  var writingFeedback=false;
+  var writingForm=PoemWritingForm($('writing-host'),null,function(value){saveDraft();invalidateEmailDraft();if(writingFeedback){try{PoemWriting.normalize(value);setFeedback('')}catch(_){}}});
+  $('preview-content').after(writingForm.preview);
   var draftKey='poem_submission_draft_v1',draftFields=['title','author','content','date','series','subseries'];
-  function setFeedback(message,error){$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
+  function setFeedback(message,error,fromWriting){writingFeedback=fromWriting===true;$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
   function preview(){var content=$('content').value;$('preview-title').textContent=$('title').value.trim()||'未题';$('preview-author').textContent=$('author').value.trim()||'你的笔名';$('preview-meta').textContent=[$('date').value,$('series').value.trim(),$('subseries').value.trim()].filter(Boolean).join(' · ');$('preview-content').textContent=content||'在左侧写下诗行，预览会出现在这里。';$('content-count').textContent=content.length+' / 12000 字'}
   function invalidateEmailDraft(){emailPrepared=false;$('mail-copy-text').hidden=true;$('mail-copy-text').value='';$('mail-feedback').textContent='内容已修改。请重新复制稿件，再打开邮箱发送。'}
   function fieldError(id,message){var field=$(id),error=$(id+'-error');error.textContent=message;error.hidden=!message;if(message)field.setAttribute('aria-invalid','true');else field.removeAttribute('aria-invalid')}
-  function saveDraft(){if(!$('save-draft').checked)return;try{sessionStorage.setItem(draftKey,JSON.stringify(Object.fromEntries(draftFields.map(function(id){return [id,$(id).value]}))));$('clear-draft').hidden=false}catch(_){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='浏览器未能暂存草稿；请先在别处备份正文。'}}
+  function saveDraft(){if(!$('save-draft').checked)return;try{sessionStorage.setItem(draftKey,JSON.stringify(Object.assign(Object.fromEntries(draftFields.map(function(id){return [id,$(id).value]})),{writing:writingForm.raw()})));$('clear-draft').hidden=false}catch(_){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='浏览器未能暂存草稿；请先在别处备份正文。'}}
   function removeDraft(){try{sessionStorage.removeItem(draftKey)}catch(_){}$('clear-draft').hidden=true}
-  try{var draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(draft&&typeof draft==='object'&&['title','author','content'].every(function(id){return typeof draft[id]==='string'})){draftFields.forEach(function(id){if(typeof draft[id]==='string')$(id).value=draft[id]});$('save-draft').checked=true;$('clear-draft').hidden=false;$('draft-note').textContent='已恢复此标签页暂存的草稿；联系方式不会暂存。';preview()}}catch(_){removeDraft()}
+  try{var draft=JSON.parse(sessionStorage.getItem(draftKey)||'null');if(draft&&typeof draft==='object'&&['title','author','content'].every(function(id){return typeof draft[id]==='string'})){draftFields.forEach(function(id){if(typeof draft[id]==='string')$(id).value=draft[id]});writingForm.set(draft.writing);$('save-draft').checked=true;$('clear-draft').hidden=false;$('draft-note').textContent='已恢复此标签页暂存的草稿；联系方式不会暂存。';preview()}}catch(_){removeDraft()}
   draftFields.forEach(function(id){$(id).addEventListener('input',function(){preview();fieldError(id,'');saveDraft();invalidateEmailDraft()})});
   $('contact').addEventListener('input',invalidateEmailDraft);
   fetch('data/poems.json?t='+Date.now()).then(function(r){if(!r.ok)throw new Error();return r.json()}).then(function(poems){if(!Array.isArray(poems))return;Array.from(new Set(poems.map(function(p){return p.series}).filter(function(s){return typeof s==='string'&&s.trim()}))).forEach(function(s){var option=document.createElement('option');option.value=s;$('series-options').appendChild(option)})}).catch(function(){/* 合集可自由填写，不依赖选项加载。 */});
   $('save-draft').addEventListener('change',function(){if(this.checked){saveDraft();$('draft-note').textContent='草稿仅留在此标签页：诗题、笔名、正文及作品信息。联系方式不会暂存。'}else{removeDraft();$('draft-note').textContent='已停止暂存；当前输入仍留在页面上。'}});
   $('clear-draft').addEventListener('click',function(){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='暂存已清除；当前输入仍留在页面上。'});
   $('consent').addEventListener('change',function(){invalidateEmailDraft();if(this.checked){$('consent-error').hidden=true;this.removeAttribute('aria-invalid')}});
-  function validate(){var first=null;[['title','请填写诗题。'],['author','请填写发表笔名。'],['content','请写下至少 2 个字的正文。']].forEach(function(item){var id=item[0],invalid=id==='content'?$(id).value.trim().length<2:!$(id).value.trim();fieldError(id,invalid?item[1]:'');if(invalid&&!first)first=$(id)});[['date',$('date').validity.badInput||!$('date').checkValidity(),'请填写有效的作品日期。'],['series',$('series').value.trim().length>60||/[\u0000-\u001f<>]/.test($('series').value),'合集最多 60 字，请使用普通文字。'],['subseries',$('subseries').value.trim().length>60||/[\u0000-\u001f<>]/.test($('subseries').value),'子分类最多 60 字，请使用普通文字。']].forEach(function(item){fieldError(item[0],item[1]?item[2]:'');if(item[1]&&!first)first=$(item[0])});var consentMissing=!$('consent').checked;$('consent-error').textContent=consentMissing?'请先确认作品与公开展示说明。':'';$('consent-error').hidden=!consentMissing;if(consentMissing){$('consent').setAttribute('aria-invalid','true');if(!first)first=$('consent')}else $('consent').removeAttribute('aria-invalid');if(first){first.focus();setFeedback('请根据标出的提示补全投稿信息。',true);return false}return true}
+  function validate(){try{writingForm.read()}catch(e){setFeedback(e.message,true,true);return false}var first=null;[['title','请填写诗题。'],['author','请填写发表笔名。'],['content','请写下至少 2 个字的正文。']].forEach(function(item){var id=item[0],invalid=id==='content'?$(id).value.trim().length<2:!$(id).value.trim();fieldError(id,invalid?item[1]:'');if(invalid&&!first)first=$(id)});[['date',$('date').validity.badInput||!$('date').checkValidity(),'请填写有效的作品日期。'],['series',$('series').value.trim().length>60||/[\u0000-\u001f<>]/.test($('series').value),'合集最多 60 字，请使用普通文字。'],['subseries',$('subseries').value.trim().length>60||/[\u0000-\u001f<>]/.test($('subseries').value),'子分类最多 60 字，请使用普通文字。']].forEach(function(item){fieldError(item[0],item[1]?item[2]:'');if(item[1]&&!first)first=$(item[0])});var consentMissing=!$('consent').checked;$('consent-error').textContent=consentMissing?'请先确认作品与公开展示说明。':'';$('consent-error').hidden=!consentMissing;if(consentMissing){$('consent').setAttribute('aria-invalid','true');if(!first)first=$('consent')}else $('consent').removeAttribute('aria-invalid');if(first){first.focus();setFeedback('请根据标出的提示补全投稿信息。',true);return false}return true}
   var savedTheme;try{savedTheme=localStorage.getItem('theme')}catch(_){}var theme=['light','dark','eye-care'].includes(savedTheme)?savedTheme:'light';
   function applyTheme(value){document.documentElement.setAttribute('data-theme',value);try{localStorage.setItem('theme',value)}catch(_){}document.querySelectorAll('#theme-side button').forEach(function(b){b.classList.toggle('active',b.dataset.theme===value)})}
   applyTheme(theme);document.getElementById('theme-side').addEventListener('click',function(e){var b=e.target.closest('button[data-theme]');if(b)applyTheme(b.dataset.theme)});
   $('copy-email').addEventListener('click',async function(){
     if(!validate())return;
     var content=['诗题：'+$('title').value.trim(),'发表笔名：'+$('author').value.trim()];
+    var writingValue=writingForm.read(),writingText=PoemWriting.text(writingValue);if(writingText)content.push('写作信息：'+writingText,'写作信息公开许可：'+(writingValue.public?'同意审核后公开':'不公开，仅供审核处理'));
     [['date','作品日期'],['series','合集'],['subseries','子分类']].forEach(function(item){if($(item[0]).value.trim())content.push(item[1]+'：'+$(item[0]).value.trim())});
     content.push('','正文：',$('content').value.trim());
     if($('contact').value.trim())content.push('','其他联系方式：'+$('contact').value.trim());
@@ -406,7 +417,7 @@ html body .recent-item {margin-inline:0}
     sending=true;$('submit-button').disabled=true;$('submit-button').textContent='正在送出…';setFeedback('');
     var controller=new AbortController(),requestTimer=setTimeout(function(){controller.abort()},25000);
     try{
-      var response=await fetch(apiBase+'/api/submissions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,date:$('date').value,series:$('series').value.trim(),subseries:$('subseries').value.trim(),contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
+      var response=await fetch(apiBase+'/api/submissions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,date:$('date').value,series:$('series').value.trim(),subseries:$('subseries').value.trim(),writing:writingForm.read(),contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
       var result=await response.json().catch(function(){throw new Error('投稿服务返回异常，请稍后再试')});if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
       removeDraft();$('save-draft').checked=false;$('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
     }catch(error){var message=error.name==='AbortError'?'连接超时，无法确认是否收到稿件。请勿立即重复提交；可通过邮件备用通道说明刚才可能已提交。':error instanceof TypeError?'无法连接投稿服务，请检查网络；也可以使用下方邮件投稿。':error.message;setFeedback(message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;$('retry-verification').hidden=false;if(window.turnstile&&widgetId!==null)window.turnstile.reset(widgetId)}

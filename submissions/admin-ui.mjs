@@ -1,3 +1,4 @@
+import { WRITING_SCRIPT } from './writing-ui.mjs';
 export const ADMIN_HTML = String.raw`﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -494,6 +495,7 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
           <label>子分类</label>
           <input type="text" id="pe-subseries" placeholder="例如：现代诗" list="subseries-list">
           <datalist id="subseries-list"></datalist>
+          <div id="writing-host"></div>
           <label>正文</label>
           <textarea id="pe-content"></textarea>
           <label>配图</label>
@@ -611,6 +613,7 @@ button.danger:hover { background: var(--clay); color: var(--paper); }
 </div>
 
 <script>
+${WRITING_SCRIPT}
 // ===== 通用 =====
 function setStatus(el, text, type) {
   el.textContent = text;
@@ -879,6 +882,7 @@ function openPoemEdit(p, fromTab, scrollId) {
 }
 
 function showPoemEditView(p) {
+  editingPoemSnapshot = p ? JSON.stringify(p) : null;
   document.querySelectorAll('.edit-form').forEach(function(f) { f.style.display = 'none'; });
   document.querySelectorAll('.view .view-head').forEach(function(h) { h.style.display = 'none'; });
   var edit = document.getElementById('poem-edit');
@@ -891,6 +895,7 @@ function showPoemEditView(p) {
   document.getElementById('pe-date').value = p ? (p.date || '') : '';
   document.getElementById('pe-author').value = p ? (p.author || '') : '';
   document.getElementById('pe-series').value = p ? (p.series || '') : '';
+  writingForm.set(p && p.writing);
   document.getElementById('pe-subseries').value = p ? (p.subseries || '') : '';
   document.getElementById('pe-content').value = p ? (p.content || '') : '';
   // 图片管理
@@ -918,6 +923,8 @@ function showPoemEditView(p) {
 
 document.getElementById('poem-edit-back').addEventListener('click', function() { goBack(); });
 document.getElementById('pe-cancel').addEventListener('click', function() { goBack(); });
+var editingPoemSnapshot=null;
+var writingForm=PoemWritingForm(document.getElementById('writing-host'));document.getElementById('writing-host').append(writingForm.preview);
 document.getElementById('poem-new-btn').addEventListener('click', function() { openPoemEdit(null, 'poems'); });
 
 document.getElementById('pe-save').addEventListener('click', async function() {
@@ -937,11 +944,13 @@ document.getElementById('pe-save').addEventListener('click', async function() {
     if (id) {
       poem = data.find(function(x) { return x.id === id; });
       if (!poem) throw new Error('未找到原诗');
+      if(JSON.stringify(poem)!==editingPoemSnapshot)throw new Error('这篇作品已有新版本，请保留当前输入，重新打开作品后核对。');
     } else {
       id = String(Date.now());
       poem = { id: id, images: [] };
       data.push(poem);
     }
+    poem.writing = writingForm.read();
     poem.title = title;
     poem.date = date;
     poem.author = document.getElementById('pe-author').value.trim() || '匿名';

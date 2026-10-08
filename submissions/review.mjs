@@ -1,3 +1,4 @@
+import { writing, storedWriting, hydrateWriting, projectWriting, cleanupWriting } from './writing.mjs';
 import { REVIEW_HTML } from './review-ui.mjs';
 import { PUBLISHED_HTML } from './published-ui.mjs';
 import { ADMIN_HTML } from './admin-ui.mjs';
@@ -55,10 +56,13 @@ async function readGitHubJson(env, path) {
   const response = await github(env, path);
   if (!response.ok) throw new Error('读取 ' + path + ' 失败（' + response.status + '）');
   const file = await response.json();
-  return { sha: file.sha, data: JSON.parse(decodeBase64(file.content)) };
+  const data = JSON.parse(decodeBase64(file.content));
+  if (path === 'data/poems.json') await hydrateWriting(env, data);
+  return { sha: file.sha, data };
 }
 
 async function writeGitHubJson(env, path, data, sha, message) {
+  if (path === 'data/poems.json') data = await projectWriting(env, data);
   const response = await github(env, path, {
     method: 'PUT',
     body: JSON.stringify({ message, content: encodeBase64(JSON.stringify(data, null, 2) + '\n'), sha })
@@ -75,8 +79,8 @@ function validImagePath(value) {
 function validId(value) { return typeof value === 'string' && /^[\p{L}\p{N}_.-]{1,100}$/u.test(value); }
 // Work dates describe the poem; these server-owned timestamps describe publication and edits.
 function stampPoem(row, previous, now = new Date().toISOString()) {
-  const keys = ['title', 'author', 'date', 'series', 'subseries', 'content', 'images'];
-  const changed = !previous || keys.some(key => JSON.stringify(row[key] ?? (key === 'images' ? [] : '')) !== JSON.stringify(previous[key] ?? (key === 'images' ? [] : '')));
+  const keys = ['title', 'author', 'date', 'series', 'subseries', 'content', 'images', 'writing'];
+  const changed = !previous || keys.some(key => JSON.stringify(key === 'writing' ? storedWriting(row.writing) : row[key] ?? (key === 'images' ? [] : '')) !== JSON.stringify(key === 'writing' ? storedWriting(previous.writing) : previous[key] ?? (key === 'images' ? [] : '')));
   if (!previous) row.publishedAt = now;
   if (changed) row.updatedAt = now;
   return row;
@@ -96,6 +100,7 @@ function validateAdminData(kind, incoming, current) {
       const content = typeof item.content === 'string' ? item.content.replace(/\r\n?/g, '\n') : '';
       if (!title || title.length > 80 || !author || author.length > 40 || !date || !validDate(date) || !series || series.length > 60 || subseries.length > 60 || content.trim().length < 2 || content.length > 12000 || !Array.isArray(item.images) || item.images.length > 20 || item.images.some(x => !validImagePath(x))) return null;
       const row = { ...old, id: item.id, title, author, date, series, content, images: item.images };
+      if (item.writing !== undefined) row.writing = writing.normalize(item.writing);
       if (subseries) row.subseries = subseries; else delete row.subseries;
       output.push(stampPoem(row, previous.get(item.id)));
     } else if (kind === 'authors') {
@@ -173,6 +178,7 @@ async function savePublishedPoem(request, env, id) {
   Object.assign(poem, { title, author, date, series, content, images });
   if (subseries) poem.subseries = subseries;
   else delete poem.subseries;
+  if (body.writing !== undefined) poem.writing = writing.normalize(body.writing);
   stampPoem(poem, previous);
   if (!await writeGitHubJson(env, 'data/poems.json', data, sha, '修改已发表诗歌: ' + title)) return editorError('诗歌数据同时被修改，请刷新后重试', 409);
   let warning = '';
@@ -272,6 +278,7 @@ async function writePoem(env, row) {
       ...(row.subseries ? { subseries: row.subseries } : {}),
       author: row.author,
       images: [],
+      writing: storedWriting(row.writing),
       sourceSubmissionId: row.id,
       publishedAt: now,
       updatedAt: now
@@ -291,7 +298,7 @@ async function listSubmissions(env, status) {
 }
 
 async function getSubmission(env, id) {
-  return env.DB.prepare('SELECT id, title, author, content, date, contact, series, subseries, author_id, status, public_note, private_note, poem_id, published_url, created_at, updated_at FROM submissions WHERE id = ?').bind(id).first();
+  return env.DB.prepare('SELECT id, title, author, content, date, contact, series, subseries, writing, author_id, status, public_note, private_note, poem_id, published_url, created_at, updated_at FROM submissions WHERE id = ?').bind(id).first();
 }
 
 async function saveSubmission(request, env, id) {
@@ -309,11 +316,12 @@ async function saveSubmission(request, env, id) {
   const subseries = clean(body.subseries);
   const authorId = clean(body.authorId);
   const privateNote = clean(body.privateNote);
+  const writingValue = body.writing === undefined ? storedWriting(current.writing) : writing.normalize(body.writing);
   const parsedDate = new Date(date + 'T00:00:00Z');
   if (!title || title.length > 80 || !author || author.length > 40 || content.length < 2 || content.length > 12000 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date || series.length > 60 || subseries.length > 60 || authorId.length > 100 || privateNote.length > 500) return editorError('请检查标题、笔名、正文、日期和分类长度');
   const now = new Date(Math.max(Date.now(),Date.parse(current.updated_at)+1)).toISOString();
-  const result = await env.DB.prepare("UPDATE submissions SET title = ?, author = ?, content = ?, date = ?, series = ?, subseries = ?, author_id = ?, private_note = ?, status = 'reviewing', updated_at = ? WHERE id = ? AND updated_at = ? AND status IN ('submitted', 'reviewing')")
-    .bind(title, author, content, date, series, subseries, authorId, privateNote, now, id, current.updated_at).run();
+  const result = await env.DB.prepare("UPDATE submissions SET title = ?, author = ?, content = ?, date = ?, series = ?, subseries = ?, author_id = ?, private_note = ?, writing = ?, status = 'reviewing', updated_at = ? WHERE id = ? AND updated_at = ? AND status IN ('submitted', 'reviewing')")
+    .bind(title, author, content, date, series, subseries, authorId, privateNote, JSON.stringify(writingValue), now, id, current.updated_at).run();
   if (!result.meta?.changes) return editorError('稿件状态已变化，请刷新后重试', 409);
   return json({ ok: true, updatedAt: now });
 }
@@ -396,7 +404,7 @@ export default {
       });
     } catch { return editorError('服务暂时不可用，请保留输入并稍后重试',503); }
   },
-  async scheduled(event,env) { await cleanupPartnerData(env); await cleanupSecurity(env); }
+  async scheduled(event,env) { await cleanupPartnerData(env); await cleanupSecurity(env); const file = await readGitHubJson(env, 'data/poems.json'); await cleanupWriting(env,file.data); }
 };
 
 async function reviewerRoutes(request,env,auth,ops) {
@@ -421,7 +429,7 @@ async function reviewerRoutes(request,env,auth,ops) {
       if (request.method !== 'GET' && request.method !== 'PUT') return editorError('未找到', 404);
       if (request.method === 'PUT' && (request.headers.get('x-requested-with') !== 'poem-review' || request.headers.get('Origin') !== url.origin)) return editorError('请求来源无效', 403);
       try { return await adminFile(request, env, adminMatch[1]); }
-      catch (error) { return editorError(error.message || '管理操作失败', 502); }
+      catch (error) { return editorError(error.message || '管理操作失败', error.status || 502); }
     }
     const publishedMatch = url.pathname.match(/^\/api\/published-poems\/([^/]+)$/);
     if (request.method === 'GET' && publishedMatch) {
@@ -438,7 +446,7 @@ async function reviewerRoutes(request,env,auth,ops) {
         const authorMatch = url.pathname.match(/^\/api\/author-profiles\/([^/]+)$/);
         if (request.method === 'PUT' && authorMatch) return await saveAuthorProfile(request, env, decodeURIComponent(authorMatch[1]));
         if (request.method === 'PUT' && publishedMatch) return await savePublishedPoem(request, env, decodeURIComponent(publishedMatch[1]));
-      } catch (error) { return editorError(error.message || '操作失败', 502); }
+      } catch (error) { return editorError(error.message || '操作失败', error.status || 502); }
       return editorError('未找到', 404);
     }
     if (request.method === 'GET' && url.pathname === '/api/submissions') {

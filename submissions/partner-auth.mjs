@@ -87,8 +87,8 @@ export async function cleanupPartnerData(env) {
     env.DB.prepare("DELETE FROM partner_revision_history WHERE revision_id IN (SELECT id FROM partner_revisions WHERE status IN ('published','declined','withdrawn') AND decided_at<?)").bind(cutoff),
     env.DB.prepare("UPDATE partner_revisions SET data='',base_data='' WHERE status IN ('published','declined','withdrawn') AND decided_at<?").bind(cutoff),
     env.DB.prepare("DELETE FROM partner_work_history WHERE work_id IN (SELECT w.id FROM partner_works w JOIN submissions s ON s.id=w.submission_id WHERE s.status IN ('published','declined','withdrawn') AND s.decided_at<?)").bind(cutoff),
-    env.DB.prepare("UPDATE partner_works SET content='' WHERE submission_id IN (SELECT id FROM submissions WHERE status IN ('published','declined','withdrawn') AND decided_at<?)").bind(cutoff),
+    env.DB.prepare("UPDATE partner_works SET content='',writing='{}' WHERE submission_id IN (SELECT id FROM submissions WHERE status IN ('published','declined','withdrawn') AND decided_at<?)").bind(cutoff),
     env.DB.prepare('DELETE FROM partner_work_history WHERE work_id IN (SELECT id FROM partner_works WHERE submission_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM submissions WHERE submissions.id=partner_works.submission_id))'),
-    env.DB.prepare("UPDATE partner_works SET content='' WHERE submission_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM submissions WHERE submissions.id=partner_works.submission_id)")
+    env.DB.prepare("UPDATE partner_works SET content='',writing='{}' WHERE submission_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM submissions WHERE submissions.id=partner_works.submission_id)")
   ]);
 }

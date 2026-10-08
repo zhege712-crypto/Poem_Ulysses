@@ -1,3 +1,4 @@
+import { WRITING_SCRIPT } from './writing-ui.mjs';
 export const REVIEW_HTML = String.raw`<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -24,7 +25,7 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
       <div class="grid"><div class="field"><label for="title">标题</label><input id="title" maxlength="80"></div><div class="field"><label for="author">发表笔名</label><input id="author" maxlength="40"></div></div>
       <div class="field"><label for="content">正文</label><textarea id="content" maxlength="12000"></textarea></div>
       <div class="grid"><div class="field"><label for="date">作品日期</label><input id="date" type="date" required></div><div class="field"><label for="series">系列</label><input id="series" list="series-options" maxlength="60"><datalist id="series-options"></datalist></div></div>
-      <div class="field"><label for="subseries">子系列（选填）</label><input id="subseries" maxlength="60"></div>
+      <div id="writing-host"></div><div class="field"><label for="subseries">子系列（选填）</label><input id="subseries" maxlength="60"></div>
       <div class="field"><label for="author-id">作者资料</label><select id="author-id"><option value="">按笔名自动匹配；若无匹配则新建作者</option></select></div>
       <p class="hint">选择已有作者会把当前笔名加入其别名；请确认投稿人确实使用该身份。</p>
       <div class="contact" id="contact"></div>
@@ -38,9 +39,11 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
   </div>
 </main>
 <script>
+${WRITING_SCRIPT}
 (function(){
   var current=null, status='submitted', options={series:[],authors:[]};
   var $=function(id){return document.getElementById(id)};
+  var writingForm=PoemWritingForm($('writing-host'));$('preview-content').after(writingForm.preview);
   var fields=['title','author','content','date','series','subseries','author-id','private-note'];
   async function api(path,method,data){
     var init={method:method||'GET',credentials:'same-origin',headers:{}};
@@ -77,17 +80,17 @@ export const REVIEW_HTML = String.raw`<!DOCTYPE html>
     try{
       var result=await api('/api/submissions/'+id);current=result.submission;
       $('editor').hidden=false;$('detail-heading').textContent=current.title;$('detail-meta').textContent='投稿于 '+new Date(current.created_at).toLocaleString('zh-CN')+' · '+current.status;
-      ['title','author','content','series','subseries','private-note'].forEach(function(key){$(key).value=current[key]||''});$('date').value=current.date||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'});
+      ['title','author','content','series','subseries','private-note'].forEach(function(key){$(key).value=current[key]||''});writingForm.set(current.writing);$('date').value=current.date||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Shanghai'});
       $('author-id').value=current.author_id||'';$('public-note').value=current.public_note||'';
       $('contact').textContent=current.contact?'投稿人联系方式：'+current.contact:'投稿人未留联系方式';
       var editable=['submitted','reviewing'].includes(current.status);
-      fields.forEach(function(key){$(key).disabled=!editable});$('public-note').disabled=!editable;
+      writingForm.disable(!editable);fields.forEach(function(key){$(key).disabled=!editable});$('public-note').disabled=!editable;
       ['save','publish','decline'].forEach(function(key){$(key).hidden=!editable});
       $('published-link').hidden=!current.published_url;if(current.published_url)$('published-link').href=current.published_url;
       feedback('');preview();await loadList();
     }catch(e){feedback(e.message,true)}
   }
-  function values(){return {expectedUpdatedAt:current.updated_at,title:$('title').value,author:$('author').value,content:$('content').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,authorId:$('author-id').value,privateNote:$('private-note').value}}
+  function values(){return {writing:writingForm.read(),expectedUpdatedAt:current.updated_at,title:$('title').value,author:$('author').value,content:$('content').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,authorId:$('author-id').value,privateNote:$('private-note').value}}
   async function save(){if(!current)throw new Error('请先选择稿件');await api('/api/submissions/'+current.id,'PUT',values());feedback('修改已保存');await open(current.id)}
   $('save').addEventListener('click',async function(){busy(true);try{await save()}catch(e){feedback(e.message,true)}finally{busy(false)}});
   $('publish').addEventListener('click',async function(){

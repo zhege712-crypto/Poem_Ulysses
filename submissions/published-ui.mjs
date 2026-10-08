@@ -1,3 +1,4 @@
+import { WRITING_SCRIPT } from './writing-ui.mjs';
 export const PUBLISHED_HTML = String.raw`<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -18,8 +19,8 @@ export const PUBLISHED_HTML = String.raw`<!doctype html>
     <section class="editor" id="editor" hidden>
       <h2 id="editor-heading">作品</h2><p class="sub" id="poem-id"></p>
       <div class="grid"><div class="field"><label for="title">标题</label><input id="title" maxlength="80"></div><div class="field"><label for="author">发表笔名</label><input id="author" maxlength="40"></div></div>
-      <div class="grid"><div class="field"><label for="date">发表日期</label><input id="date" maxlength="40" placeholder="例如 2026-09-30"></div><div class="field"><label for="series">系列</label><input id="series" maxlength="60"></div></div>
-      <div class="field"><label for="subseries">子系列（选填）</label><input id="subseries" maxlength="60"></div>
+      <div class="grid"><div class="field"><label for="date">作品日期</label><input id="date" maxlength="40" placeholder="例如 2026-09-30"></div><div class="field"><label for="series">系列</label><input id="series" maxlength="60"></div></div>
+      <div id="writing-host"></div><div class="field"><label for="subseries">子系列（选填）</label><input id="subseries" maxlength="60"></div>
       <div class="field"><label for="content">正文</label><textarea id="content" maxlength="12000"></textarea></div>
       <h3>配图</h3><div id="images" class="images"></div>
       <div class="field"><label for="image-files">添加配图（JPEG、PNG、WebP、GIF；每张不超过 3 MB）</label><input id="image-files" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple></div>
@@ -40,8 +41,10 @@ export const PUBLISHED_HTML = String.raw`<!doctype html>
   </div>
 </main>
 <script>
+${WRITING_SCRIPT}
 (function(){
   var $=function(id){return document.getElementById(id)};
+  var writingForm=PoemWritingForm($('writing-host'));$('writing-host').append(writingForm.preview);
   var rows=[],current=null,images=[];
   async function api(path,method,body){
     var init={method:method||'GET',credentials:'same-origin',headers:{}};
@@ -83,7 +86,7 @@ export const PUBLISHED_HTML = String.raw`<!doctype html>
   async function open(id){
     try{
       current=await api('/api/published-poems/'+encodeURIComponent(id));images=(current.poem.images||[]).slice();
-      var poem=current.poem;$('editor').hidden=false;$('editor-heading').textContent=poem.title||'未题';$('poem-id').textContent='作品编号 '+poem.id;
+      var poem=current.poem;writingForm.set(poem.writing);$('editor').hidden=false;$('editor-heading').textContent=poem.title||'未题';$('poem-id').textContent='作品编号 '+poem.id;
       ['title','author','date','series','subseries','content'].forEach(function(key){$(key).value=poem[key]||''});
       $('published-link').href=new URL('read.html?id='+encodeURIComponent(poem.id),current.publicSiteUrl).href;
       var profile=current.profile;$('profile-name').value=profile?.name||poem.author||'';
@@ -93,7 +96,7 @@ export const PUBLISHED_HTML = String.raw`<!doctype html>
       $('image-files').value='';renderImages();renderList();feedback('poem-feedback','');feedback('profile-feedback','');
     }catch(error){feedback('poem-feedback',error.message,true)}
   }
-  function poemValues(){return {sha:current.sha,title:$('title').value,author:$('author').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,content:$('content').value,images:images.slice()}}
+  function poemValues(){return {writing:writingForm.read(),sha:current.sha,title:$('title').value,author:$('author').value,date:$('date').value,series:$('series').value,subseries:$('subseries').value,content:$('content').value,images:images.slice()}}
   function profileValues(){return {sha:current.authorsSha,name:$('profile-name').value,aliases:$('profile-aliases').value.split(/\r?\n|、|,/).map(function(x){return x.trim()}).filter(Boolean),bio:$('profile-bio').value,tags:$('profile-tags').value.split(/\r?\n|、|,/).map(function(x){return x.trim()}).filter(Boolean),link:$('profile-link').value}}
   $('search').addEventListener('input',renderList);
   $('refresh').addEventListener('click',function(){loadList().catch(function(e){$('poem-list').textContent=e.message})});

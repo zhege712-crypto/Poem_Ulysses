@@ -1,4 +1,5 @@
 name = "poem-submissions-review"
+keep_names = false # Shared browser functions must remain self-contained when serialized.
 main = "review.mjs"
 compatibility_date = "2026-09-01"
 

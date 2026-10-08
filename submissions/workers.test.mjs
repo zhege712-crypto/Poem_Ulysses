@@ -10,6 +10,7 @@ function fixture({ turnstileValid = true, failPoemOnce = false, oauthEmail = 'ow
   sqlite.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
   sqlite.exec(readFileSync(new URL('./partners-schema.sql', import.meta.url), 'utf8'));
   sqlite.exec(readFileSync(new URL('./security-schema.sql', import.meta.url), 'utf8'));
+  sqlite.exec(readFileSync(new URL('./writing-schema.sql', import.meta.url), 'utf8'));
   const DB = {
     prepare(sql) {
       const statement = sqlite.prepare(sql);
@@ -304,4 +305,32 @@ test('GitHub login accepts only a verified reviewer email and signs a short sess
     const callback = new Request('https://review.example/auth/callback?code=validCode123&state=' + state, { headers: { 'CF-Connecting-IP':'192.0.2.1', Cookie: '__Host-poem_oauth_state=' + state } });
     assert.equal((await reviewWorker.fetch(callback, unverified.env, {})).status, 403);
   } finally { unverified.close(); }
+});
+
+test('anonymous private writing persists through review and publication, never through receipt or public JSON', async () => {
+  const f=fixture();try {
+    const writing={start:'1999',end:'2000-02',place:'隔离测试私有地点',public:false};
+    const receipt=await (await publicWorker.fetch(publicRequest('/api/submissions','POST',{...draft,writing}),f.env)).json();
+    const detail=await (await reviewWorker.fetch(reviewRequest('/api/submissions/'+receipt.id),f.env,reviewer)).json();
+    assert.deepEqual(JSON.parse(detail.submission.writing),writing);
+    const token=receipt.statusUrl.split('#')[1];
+    const status=await (await publicWorker.fetch(publicRequest('/api/status','GET',null,{Authorization:'Bearer '+token}),f.env)).text();
+    assert.ok(!status.includes('writing'));assert.ok(!status.includes(writing.place));
+    assert.equal((await reviewWorker.fetch(reviewRequest('/api/submissions/'+receipt.id+'/publish','POST'),f.env,reviewer)).status,200);
+    assert.ok(!JSON.stringify(f.files).includes(writing.place));assert.ok(!f.files['data/poems.json'][0].writing);
+    const poem=await (await reviewWorker.fetch(reviewRequest('/api/published-poems/'+f.files['data/poems.json'][0].id),f.env,reviewer)).json();assert.deepEqual(poem.poem.writing,writing);
+    f.sqlite.prepare("UPDATE submissions SET decided_at='2000-01-01' WHERE id=?").run(receipt.id);await publicWorker.scheduled({},f.env);
+    assert.equal(f.sqlite.prepare('SELECT writing FROM submissions WHERE id=?').get(receipt.id).writing,'{}');
+    assert.equal(f.sqlite.prepare('SELECT count(*) AS n FROM poem_writing').get().n,1);
+  }finally{f.close();}
+});
+
+test('anonymous writing validation rejects bad formats and explicit inversion without saving, and withdrawal clears it',async()=>{
+  const f=fixture();try{
+    for(const writing of [{start:'2026-02-30'},{start:'2027',end:'2026'},{place:'<script>'},{public:'yes'}])assert.equal((await publicWorker.fetch(publicRequest('/api/submissions','POST',{...draft,writing}),f.env)).status,400);
+    assert.equal(f.sqlite.prepare('SELECT count(*) AS n FROM submissions').get().n,0);
+    const r=await publicWorker.fetch(publicRequest('/api/submissions','POST',{...draft,writing:{start:'2026-12',end:'2026',place:'隔离地点'}}),f.env);assert.equal(r.status,201);const receipt=await r.json();
+    assert.equal((await publicWorker.fetch(publicRequest('/api/withdraw','POST',{}, {Authorization:'Bearer '+receipt.statusUrl.split('#')[1]}),f.env)).status,200);
+    assert.equal(f.sqlite.prepare('SELECT writing FROM submissions').get().writing,'{}');
+  }finally{f.close();}
 });

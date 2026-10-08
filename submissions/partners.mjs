@@ -1,3 +1,4 @@
+import { writing, storedWriting } from './writing.mjs';
 import { partnerJson as json, partnerIdentity, partnerConfigured, samePartnerOrigin, digest, randomToken } from './partner-auth.mjs';
 import { partnerPage } from './partner-ui.mjs';
 import { privateRate, rateReply, audited, sessionRoutes, submissionsPaused } from './security.mjs';
@@ -16,7 +17,7 @@ async function body(request) {
 }
 function stamp(previous = '') { return new Date(Math.max(Date.now(),(Date.parse(previous)||0)+1)).toISOString(); }
 function publicPerson(person) { return {id:person.id,email:person.email,status:person.status,authorId:person.author_id,desiredName:person.desired_name,applicationNote:person.application_note,reviewerNote:person.reviewer_note,updatedAt:person.updated_at}; }
-function editable(poem) { return {title:poem.title||'',author:poem.author||'',content:poem.content||'',date:poem.date||'',series:poem.series||'',subseries:poem.subseries||'',images:poem.images||[]}; }
+function editable(poem) { return {title:poem.title||'',author:poem.author||'',content:poem.content||'',date:poem.date||'',series:poem.series||'',subseries:poem.subseries||'',images:poem.images||[],...(writing.text(storedWriting(poem.writing))||storedWriting(poem.writing).public?{writing:storedWriting(poem.writing)}:{})}; }
 async function fingerprint(poem) { return digest(JSON.stringify(editable(poem))); }
 function fields(value, {draft=false,published=false}={}) {
   for (const key of ['title','content','date','series','subseries']) if (value[key]!==undefined && typeof value[key]!=='string') fail('作品信息格式错误');
@@ -25,7 +26,7 @@ function fields(value, {draft=false,published=false}={}) {
   if (!draft && (!title || content.trim().length<2)) fail('请填写诗题和至少 2 个字的正文');
   if (!published && date) { const d=new Date(date+'T00:00:00Z'); if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(d.getTime()) || d.toISOString().slice(0,10)!==date) fail('请填写有效的作品日期'); }
   if (published && (!date || !series)) fail('已发表作品需要保留日期和合集');
-  return {title,content,date,series,subseries};
+  return {title,content,date,series,subseries,writing:storedWriting(value.writing)};
 }
 async function audit(env,actor,action,target) { await env.DB.prepare('INSERT INTO partner_audit (id,actor,action,target,created_at) VALUES (?,?,?,?,?)').bind(crypto.randomUUID(),actor,action,target,new Date().toISOString()).run(); }
 async function profile(env,ops,person) { const file=await ops.readGitHubJson(env,'data/authors.json'); const author=file.data.find(a=>a.id===person.author_id); if (!author) fail('作者资料已变更，请联系维护者',409); return {file,author}; }
@@ -41,7 +42,7 @@ async function ownedPoem(env,ops,person,id) {
 async function ownWork(env,person,id) {
   const work=await env.DB.prepare('SELECT * FROM partner_works WHERE id=? AND partner_id=?').bind(id,person.id).first();
   if (!work) fail('稿件不存在',404);
-  const submission=work.submission_id?await env.DB.prepare('SELECT title,author,content,date,series,subseries,status,public_note,published_url,updated_at FROM submissions WHERE id=?').bind(work.submission_id).first():null;
+  const submission=work.submission_id?await env.DB.prepare('SELECT title,author,content,date,series,subseries,writing,status,public_note,published_url,updated_at FROM submissions WHERE id=?').bind(work.submission_id).first():null;
   return {work,submission};
 }
 async function ownOpenRevision(env,person,poemId) { return env.DB.prepare("SELECT * FROM partner_revisions WHERE partner_id=? AND poem_id=? AND status IN ('draft','submitted','publishing')").bind(person.id,poemId).first(); }
@@ -99,13 +100,13 @@ export async function partnerRoutes(request, env, ops) {
       const count=await env.DB.prepare('SELECT count(*) AS count FROM partner_works WHERE partner_id=? AND submission_id IS NULL').bind(person.id).first();
       if (count.count>=100) fail('未提交草稿已达 100 篇，请先整理已有草稿',409);
       const id=crypto.randomUUID(),now=stamp();
-      await env.DB.prepare('INSERT INTO partner_works (id,partner_id,title,content,date,series,subseries,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?)').bind(id,person.id,data.title,data.content,data.date,data.series,data.subseries,now,now).run();
+      await env.DB.prepare('INSERT INTO partner_works (id,partner_id,title,content,date,series,subseries,writing,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(id,person.id,data.title,data.content,data.date,data.series,data.subseries,JSON.stringify(data.writing),now,now).run();
       return json({ok:true,id},201);
     }
     const workMatch=url.pathname.match(/^\/api\/partners\/works\/([^/]+)(?:\/(submit|history|withdraw))?$/);
     if (workMatch) {
       const [,id,action]=workMatch,{work,submission}=await ownWork(env,person,id);
-      if (request.method==='GET' && !action) return json({work:{...work,...(submission?{title:submission.title,content:submission.content,date:submission.date,series:submission.series,subseries:submission.subseries}:{}),status:submission?.status||(work.submission_id?'missing':'draft'),submissionUpdatedAt:submission?.updated_at||'',note:submission?.public_note||''}});
+      if (request.method==='GET' && !action) return json({work:{...work,...(submission?{title:submission.title,content:submission.content,date:submission.date,series:submission.series,subseries:submission.subseries,writing:submission.writing}:{}),status:submission?.status||(work.submission_id?'missing':'draft'),submissionUpdatedAt:submission?.updated_at||'',note:submission?.public_note||''}});
       if (request.method==='GET' && action==='history') return json({versions:(await env.DB.prepare('SELECT version,data,created_at FROM partner_work_history WHERE work_id=? ORDER BY version DESC LIMIT 10').bind(id).all()).results.map(r=>({...r,data:JSON.parse(r.data)}))});
       if (request.method==='DELETE' && !action) {
         const data=await body(request);
@@ -118,13 +119,13 @@ export async function partnerRoutes(request, env, ops) {
       const data=await body(request);
       if (data.version!==work.version || (submission && data.submissionUpdatedAt!==submission.updated_at)) fail('稿件已有新版本，请先备份当前输入，再刷新核对',409);
       if (request.method==='PUT' && !action) {
-        const values=fields(data,{draft:!work.submission_id});
+        const values=fields({...data,writing:data.writing===undefined?(submission?.writing??work.writing):data.writing},{draft:!work.submission_id});
         const now=stamp(submission?.updated_at||work.updated_at);
         const gate="id=? AND partner_id=? AND version=? AND (submission_id IS NULL OR EXISTS (SELECT 1 FROM submissions s WHERE s.id=partner_works.submission_id AND s.updated_at=? AND s.status IN ('submitted','reviewing')))";
         const params=[id,person.id,work.version,submission?.updated_at||''];
         const current=submission?fields(submission):fields(work,{draft:true});
-        const statements=[env.DB.prepare('INSERT INTO partner_work_history (work_id,version,data,created_at) SELECT id,version,?,? FROM partner_works WHERE '+gate).bind(JSON.stringify(current),now,...params),env.DB.prepare('UPDATE partner_works SET title=?,content=?,date=?,series=?,subseries=?,version=version+1,updated_at=? WHERE '+gate).bind(values.title,values.content,values.date,values.series,values.subseries,now,...params)];
-        if (submission) statements.push(env.DB.prepare("UPDATE submissions SET title=?,content=?,date=?,series=?,subseries=?,status='submitted',updated_at=? WHERE id=? AND updated_at=? AND status IN ('submitted','reviewing') AND EXISTS (SELECT 1 FROM partner_works w WHERE w.id=? AND w.version=? AND w.updated_at=?)").bind(values.title,values.content,values.date,values.series,values.subseries,now,work.submission_id,submission.updated_at,id,work.version+1,now));
+        const statements=[env.DB.prepare('INSERT INTO partner_work_history (work_id,version,data,created_at) SELECT id,version,?,? FROM partner_works WHERE '+gate).bind(JSON.stringify(current),now,...params),env.DB.prepare('UPDATE partner_works SET title=?,content=?,date=?,series=?,subseries=?,writing=?,version=version+1,updated_at=? WHERE '+gate).bind(values.title,values.content,values.date,values.series,values.subseries,JSON.stringify(values.writing),now,...params)];
+        if (submission) statements.push(env.DB.prepare("UPDATE submissions SET title=?,content=?,date=?,series=?,subseries=?,writing=?,status='submitted',updated_at=? WHERE id=? AND updated_at=? AND status IN ('submitted','reviewing') AND EXISTS (SELECT 1 FROM partner_works w WHERE w.id=? AND w.version=? AND w.updated_at=?)").bind(values.title,values.content,values.date,values.series,values.subseries,JSON.stringify(values.writing),now,work.submission_id,submission.updated_at,id,work.version+1,now));
         statements.push(env.DB.prepare('DELETE FROM partner_work_history WHERE work_id=? AND version<?').bind(id,work.version-9));
         const results=await env.DB.batch(statements);
         if (!results[1].meta?.changes) fail('稿件状态已变化，请刷新核对',409);
@@ -136,7 +137,7 @@ export async function partnerRoutes(request, env, ops) {
         if (data.consent!==true) fail('请确认有权投稿并同意审核后公开发表');
         const values=fields(work),{author}=await profile(env,ops,person),sid=crypto.randomUUID(),now=stamp(work.updated_at);
         const results=await env.DB.batch([
-          env.DB.prepare("INSERT INTO submissions (id,receipt_hash,consent_version,consent_at,title,author,content,date,series,subseries,author_id,created_at,updated_at) SELECT ?,?,'partner-v1',?,?,?,?,?,?,?,?,?,? FROM partner_works WHERE id=? AND partner_id=? AND version=? AND submission_id IS NULL").bind(sid,await digest(randomToken()),now,values.title,author.name,values.content,values.date,values.series,values.subseries,person.author_id,now,now,id,person.id,work.version),
+          env.DB.prepare("INSERT INTO submissions (id,receipt_hash,consent_version,consent_at,title,author,content,date,series,subseries,writing,author_id,created_at,updated_at) SELECT ?,?,'partner-v1',?,?,?,?,?,?,?,?,?,?,? FROM partner_works WHERE id=? AND partner_id=? AND version=? AND submission_id IS NULL").bind(sid,await digest(randomToken()),now,values.title,author.name,values.content,values.date,values.series,values.subseries,JSON.stringify(values.writing),person.author_id,now,now,id,person.id,work.version),
           env.DB.prepare('UPDATE partner_works SET submission_id=?,version=version+1,updated_at=? WHERE id=? AND partner_id=? AND version=? AND submission_id IS NULL AND EXISTS (SELECT 1 FROM submissions WHERE id=?)').bind(sid,now,id,person.id,work.version,sid)
         ]);
         if (!results[1].meta?.changes) fail('稿件版本已变化，请刷新核对',409);
@@ -145,9 +146,9 @@ export async function partnerRoutes(request, env, ops) {
       if (request.method==='POST' && action==='withdraw') {
         if (!submission) fail('尚未提交的草稿无需撤回');
         const now=stamp(submission.updated_at);
-        const result=await env.DB.prepare("UPDATE submissions SET status='withdrawn',content='',contact='',decided_at=?,updated_at=? WHERE id=? AND updated_at=? AND status IN ('submitted','reviewing')").bind(now,now,work.submission_id,submission.updated_at).run();
+        const result=await env.DB.prepare("UPDATE submissions SET status='withdrawn',content='',contact='',writing='{}',decided_at=?,updated_at=? WHERE id=? AND updated_at=? AND status IN ('submitted','reviewing')").bind(now,now,work.submission_id,submission.updated_at).run();
         if (!result.meta?.changes) fail('稿件状态已变化，请刷新核对',409);
-        await env.DB.batch([env.DB.prepare("UPDATE partner_works SET content='' WHERE id=?").bind(id),env.DB.prepare('DELETE FROM partner_work_history WHERE work_id=?').bind(id)]);
+        await env.DB.batch([env.DB.prepare("UPDATE partner_works SET content='',writing='{}' WHERE id=?").bind(id),env.DB.prepare('DELETE FROM partner_work_history WHERE work_id=?').bind(id)]);
         return json({ok:true});
       }
       fail('未找到',404);
@@ -180,7 +181,7 @@ export async function partnerRoutes(request, env, ops) {
         return json({ok:true});
       }
       if (request.method==='PUT' && action==='revision') {
-        const values=fields(data,{published:true}),note=clean(data.note),status=data.submit===true?'submitted':'draft';
+        const values=fields({...data,writing:data.writing===undefined?(revision?JSON.parse(revision.data).writing:poem.writing):data.writing},{published:true}),note=clean(data.note),status=data.submit===true?'submitted':'draft';
         if (note.length>300) fail('修改说明最多 300 字');
         if (data.baseHash!==baseHash || (revision && revision.base_hash!==baseHash)) fail('已发表作品有新版本，请先备份当前输入，再更新对照版本',409);
         const now=stamp(revision?.updated_at),serialized=JSON.stringify(values);
@@ -275,7 +276,7 @@ async function approveRevision(request,env,ops,id,actor) {
     let written=false;
     for (let attempt=0;attempt<3;attempt++) {
       const {file,poem}=await ownedPoem(env,ops,person,revision.poem_id);
-      if (poem.lastPartnerRevisionId===id && Object.keys(proposal).every(key=>(poem[key]||'')===proposal[key])) { written=true;break; }
+      if (poem.lastPartnerRevisionId===id && Object.keys(proposal).every(key=>JSON.stringify(key==='writing'?storedWriting(poem.writing):(poem[key]||''))===JSON.stringify(proposal[key]))) { written=true;break; }
       if (await fingerprint(poem)!==revision.base_hash) fail('公开作品在申请之后已有变化，请让作者更新对照版本后重送修订',409);
       const currentMember=await env.DB.prepare("SELECT id FROM partners WHERE id=? AND status='active' AND author_id=?").bind(person.id,person.author_id).first();
       if (!currentMember) fail('合作权限已变化，请刷新',409);

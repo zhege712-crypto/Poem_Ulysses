@@ -30,7 +30,11 @@ subseries — string (optional)
 author    — string
 images    — string[] (paths relative to repo root, e.g. "images/1784094796315-wanchunqiuqibyeno.jpeg")
 publishedAt / updatedAt — optional server-owned ISO timestamps for new publications / changed poems
+writing — optional public-only {start?, end?, place?}; dates retain YYYY / YYYY-MM / YYYY-MM-DD precision
+writingRevision — optional opaque pointer to an immutable private D1 snapshot; never resolves through a public API
 ```
+
+Optional writing information is documented in `docs/writing-info.md` and `docs/design/writing-info-2026-10-08.md`. Full values and the visibility choice belong to the protected D1 layer, not the public repository. All server poem writes must keep the `projectWriting` boundary; do not write hydrated private metadata into JSON or Git history. Apply `submissions/writing-schema.sql` once before deploying the review Worker, then the public Worker, then static pages. Preserve the review config's `keep_names = false` because browser form functions are embedded into nonce-protected HTML. Use `writing-preview.mjs` only as an isolated localhost fixture, never as a production entry point.
 
 Poems are ordered by series then date (not by array position). All pages that consume this data follow that ordering convention: sort by series occurrence order, then `getDateWeight` (constant weights per year/month/day part) descending, then `localeCompare` ascending. Copy this exact comparator from `read.html`; do not "improve" it.
 

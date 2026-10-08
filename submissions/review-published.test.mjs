@@ -47,7 +47,7 @@ function fixture() {
     assert.ok(Object.hasOwn(files, path));
     return Response.json({ sha: String(versions[path]), content: Buffer.from(JSON.stringify(files[path])).toString('base64') });
   };
-  const sql=new DatabaseSync(':memory:');for(const name of ['schema.sql','partners-schema.sql','security-schema.sql'])sql.exec(readFileSync(new URL(name,import.meta.url),'utf8'));
+  const sql=new DatabaseSync(':memory:');for(const name of ['schema.sql','partners-schema.sql','security-schema.sql','writing-schema.sql'])sql.exec(readFileSync(new URL(name,import.meta.url),'utf8'));
   const DB={prepare(query){const stmt=sql.prepare(query);let values=[];return{bind(...args){values=args;return this},async first(){return stmt.get(...values)||null},async all(){return{results:stmt.all(...values)}},async run(){return{meta:{changes:Number(stmt.run(...values).changes)}}}}}};
   const env = { DB, SESSION_SECRET:'test-rate-secret', REVIEW_AUTH: 'access', REVIEWER_EMAILS: 'owner@example.com', GITHUB_OWNER: 'owner', GITHUB_REPO: 'poems', GITHUB_TOKEN: 'server-only-token', PUBLIC_SITE_URL: 'https://poems.example/Poem_Ulysses/' };
   return { files, versions, uploaded, env, close() { globalThis.fetch = previousFetch; sql.close(); } };
