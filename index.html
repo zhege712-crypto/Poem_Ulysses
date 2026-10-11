@@ -808,6 +808,30 @@ html body .recent-item {margin-inline:0}
  html body .recent-item .ri-title,html body .recent-item .ri-meta {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
 </style>
+<style id="poem-pick-design">
+/* Local to the homepage pick: paper unfolds over the existing art, without a modal. */
+html {--theme-pick-paper:var(--paper);--theme-pick-ink:var(--ink);--theme-pick-muted:var(--ink-light);--theme-pick-line:var(--ui-line);--theme-pick-accent:var(--ui-accent)}
+.poem-pick-slot {position:relative}
+.poem-pick-slip {position:absolute;inset-inline-start:calc(100% + 40px);bottom:-12px;width:min(30vw,380px);padding:26px 28px;background:var(--theme-pick-paper);color:var(--theme-pick-ink);border:1px solid var(--theme-pick-line);transform:rotate(-3deg);transform-origin:0 100%;pointer-events:none;animation:poem-pick-unfold 320ms cubic-bezier(.16,1,.3,1) both}
+.poem-pick-slip[hidden],.poem-pick-status[hidden] {display:none}
+.poem-pick-slip::before {content:"";display:block;width:36px;height:1px;background:var(--theme-pick-accent);margin-bottom:18px}
+.poem-pick-title {font:500 clamp(22px,2.2vw,30px)/1.5 var(--font-serif),serif;overflow-wrap:anywhere}
+.poem-pick-author {margin-top:8px;font:14px/1.8 var(--font-sans),sans-serif;color:var(--theme-pick-muted);overflow-wrap:anywhere}
+.poem-pick-author:empty {display:none}
+.poem-pick-status {margin-top:10px;font:14px/1.8 var(--font-sans),sans-serif;color:var(--theme-pick-muted)}
+.poem-pick-status[data-state="error"] {color:var(--theme-pick-accent)}
+.poem-pick-status[data-state="selected"] {position:absolute;width:1px;height:1px;padding:0;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+html body #random-btn:disabled {cursor:wait;transform:none;opacity:.7}
+@keyframes poem-pick-unfold {from {clip-path:inset(0 0 100% 0);transform:rotate(-8deg)}to {clip-path:inset(0);transform:rotate(-3deg)}}
+@media(min-width:641px) and (max-width:1000px) {.poem-pick-slip {inset-inline-start:calc(100% + 24px);padding:20px}}
+@media(max-width:640px) {
+ .poem-pick-slip {position:relative;inset-inline-start:auto;bottom:auto;width:100%;margin-top:12px;padding:16px 20px;transform:none;animation-name:poem-pick-unfold-mobile}
+ .poem-pick-slip::before {margin-bottom:10px}
+ .poem-pick-title {font-size:22px}
+ @keyframes poem-pick-unfold-mobile {from {clip-path:inset(0 0 100% 0)}to {clip-path:inset(0)}}
+}
+@media(prefers-reduced-motion:reduce) {.poem-pick-slip {animation:none;transform:none}}
+</style>
 </head>
 <body>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
@@ -874,11 +898,18 @@ html body .recent-item {margin-inline:0}
       <div class="hero-actions">
         <a class="btn btn-primary" href="directory.html">浏览目录</a>
         <a class="btn btn-submit" href="submit.html">我要投稿</a>
-        <a class="btn btn-gold" id="random-btn" href="#" style="cursor:pointer;">
-          <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="1"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg>
-          随机一首
-        </a>
+        <button class="btn btn-gold" id="random-btn" type="button" aria-describedby="poem-pick-status">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="1"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg>
+          <span id="poem-pick-label">随机一首</span>
+        </button>
       </div>
+      <div class="poem-pick-slot">
+        <div class="poem-pick-slip" id="poem-pick-slip" aria-hidden="true" hidden>
+          <p class="poem-pick-title" id="poem-pick-title"></p>
+          <p class="poem-pick-author" id="poem-pick-author"></p>
+        </div>
+      </div>
+      <p class="poem-pick-status" id="poem-pick-status" role="status" aria-live="polite" aria-atomic="true" hidden></p>
       <p class="hero-action-note">站内直接投稿，无需 GitHub 账号。</p>
       <nav class="writer-links" aria-label="合作账号入口">
         <a href="partners.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5zM15 3v4h4M9 11h6M9 15h6"/></svg>我的诗稿 / 申请合作</a>
@@ -1126,16 +1157,115 @@ fetch(dataUrl)
 // ============================================================
 // 随机阅读
 // ============================================================
-document.getElementById('random-btn').addEventListener('click', function(e) {
-  e.preventDefault();
-  fetch(dataUrl)
-    .then(function(r) { return r.json(); })
-    .then(function(poems) {
-      if (!poems.length) return;
+(function() {
+  var button = document.getElementById('random-btn');
+  var label = document.getElementById('poem-pick-label');
+  var status = document.getElementById('poem-pick-status');
+  var slip = document.getElementById('poem-pick-slip');
+  var motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  // Adjust only these three timings; the destination always uses the one selected record.
+  var revealDuration = 500;
+  var slowDelay = 1500;
+  var requestTimeout = 8000;
+  var busy = false, attempt = 0, controller, slowTimer, timeoutTimer, jumpTimer, destination;
+
+  function clearTimers() {
+    clearTimeout(slowTimer);
+    clearTimeout(timeoutTimer);
+    clearTimeout(jumpTimer);
+  }
+  function feedback(message, state) {
+    status.textContent = message;
+    status.dataset.state = state;
+    status.hidden = false;
+  }
+  function reset() {
+    attempt++;
+    clearTimers();
+    if (controller) controller.abort();
+    controller = null;
+    destination = null;
+    busy = false;
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    label.textContent = '随机一首';
+    slip.hidden = true;
+    status.hidden = true;
+    status.textContent = '';
+  }
+  function enterPoem() {
+    if (!destination) return;
+    clearTimers();
+    window.location.assign(destination);
+  }
+  button.addEventListener('click', async function() {
+    if (busy) return;
+    busy = true;
+    var currentAttempt = ++attempt;
+    var timedOut = false;
+    var restoreFocus = document.activeElement === button;
+    button.disabled = true;
+    button.setAttribute('aria-busy', 'true');
+    label.textContent = '随机一首';
+    slip.hidden = true;
+    feedback('正在读取诗集…', 'loading');
+    controller = new AbortController();
+    slowTimer = setTimeout(function() {
+      feedback('读取较慢，正在等待诗集…', 'loading');
+    }, slowDelay);
+    timeoutTimer = setTimeout(function() {
+      timedOut = true;
+      controller.abort();
+    }, requestTimeout);
+    try {
+      var response = await fetch('data/poems.json?t=' + Date.now(), {signal:controller.signal});
+      if (!response.ok) throw new Error('load');
+      var poems = await response.json();
+      if (currentAttempt !== attempt) return;
+      clearTimers();
+      controller = null;
+      if (!Array.isArray(poems)) throw new Error('load');
+      if (!poems.length) throw new Error('empty');
+      var ids = new Set();
+      if (!poems.every(function(p) {
+        if (!p || typeof p.id !== 'string' || !p.id.trim() || ids.has(p.id) ||
+            typeof p.title !== 'string' || !p.title.trim() || typeof p.content !== 'string' ||
+            (p.author != null && typeof p.author !== 'string')) return false;
+        ids.add(p.id);
+        return true;
+      })) throw new Error('load');
       var pick = poems[Math.floor(Math.random() * poems.length)];
-      window.location.href = 'read.html?id=' + encodeURIComponent(pick.id);
-    });
-});
+      destination = 'read.html?id=' + encodeURIComponent(pick.id);
+      if (motion.matches) {
+        enterPoem();
+        return;
+      }
+      document.getElementById('poem-pick-title').textContent = pick.title;
+      document.getElementById('poem-pick-author').textContent = pick.author || '';
+      feedback(pick.title + (pick.author ? ' · ' + pick.author : ''), 'selected');
+      // Announce the metadata once; the visual duplicate stays outside the accessibility tree.
+      slip.hidden = false;
+      jumpTimer = setTimeout(enterPoem, revealDuration);
+    } catch (error) {
+      if (currentAttempt !== attempt) return;
+      clearTimers();
+      controller = null;
+      busy = false;
+      destination = null;
+      button.disabled = false;
+      button.removeAttribute('aria-busy');
+      label.textContent = '重试拾诗';
+      feedback(timedOut ? '读取超时，请重试。' : error.message === 'empty' ? '诗集暂时没有作品，请稍后重试。' : '诗集读取失败，请重试。', 'error');
+      if (restoreFocus && document.activeElement === document.body) button.focus({preventScroll:true});
+    }
+  });
+  function motionChanged() { if (motion.matches && destination) enterPoem(); }
+  if (motion.addEventListener) motion.addEventListener('change', motionChanged);
+  else if (motion.addListener) motion.addListener(motionChanged);
+  // Cancel an abandoned pick and restore the entry when coming back through the browser cache.
+  window.addEventListener('pagehide', reset);
+  window.addEventListener('pageshow', function(e) { if (e.persisted) reset(); });
+})();
 
 // ============================================================
 // 导航滚动
