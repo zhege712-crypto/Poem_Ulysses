@@ -1,0 +1,548 @@
+[
+  {
+    "label": "desktop-light-active",
+    "artStyle": "--hero-depth-x: 0.8000; --hero-depth-y: 0.4980;",
+    "focus": "诗歌漂流\n    \n    \n    航迹成诗\n  \n  跳过开场\n\n\n\n\n  \n    诗歌漂流\n    \n     ",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 4.8, 2.988)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, -2.4, -1.494)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "light",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "desktop-outside-art",
+    "artStyle": "",
+    "focus": "诗歌漂流\n    \n    \n    航迹成诗\n  \n  跳过开场\n\n\n\n\n  \n    诗歌漂流\n    \n     ",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 0.00263499, 0.00164028)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, -2.5198e-06, -1.56858e-06)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "light",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "desktop-dark-edge",
+    "artStyle": "--hero-depth-x: 0.7062; --hero-depth-y: 0.7080;",
+    "focus": "诗歌漂流\n    \n    \n    航迹成诗\n  \n  跳过开场\n\n\n\n\n  \n    诗歌漂流\n    \n     ",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 1.88555, 1.89036)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, -1.05807, -1.06077)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "dark",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "desktop-eye-care-reset",
+    "artStyle": "",
+    "focus": "护眼模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 2.3578, 2.36381)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, -1.06483, -1.06754)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "eye-care",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "desktop-keyboard-next-control",
+    "artStyle": "",
+    "focus": "我要投稿",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "eye-care",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "mobile-light",
+    "artStyle": "",
+    "focus": "日间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "light",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "mobile-dark",
+    "artStyle": "",
+    "focus": "夜间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "dark",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "mobile-pointer-over-art-stays-static",
+    "artStyle": "",
+    "focus": "诗歌漂流\n    \n    \n    航迹成诗\n  \n  跳过开场\n\n\n\n\n  \n    诗歌漂流\n    \n     ",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "dark",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "mobile-eye-care",
+    "artStyle": "",
+    "focus": "护眼模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "eye-care",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "desktop-confirm-reset",
+    "artStyle": "",
+    "focus": "日间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "light",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "confirmation-desktop-dark",
+    "artStyle": "",
+    "focus": "夜间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "matrix(1, 0, 0, 1, 0, 0)"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "dark",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  {
+    "label": "confirmation-mobile-dark",
+    "artStyle": "",
+    "focus": "夜间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "dark",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "confirmation-mobile-eye-care",
+    "artStyle": "",
+    "focus": "护眼模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "eye-care",
+    "viewport": [
+      390,
+      844
+    ]
+  },
+  {
+    "label": "confirmation-mobile-light",
+    "artStyle": "",
+    "focus": "日间模式",
+    "overflow": false,
+    "parts": [
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-glass",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-arc",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art img",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-band",
+        "transform": "none"
+      },
+      {
+        "pointerEvents": "none",
+        "selector": ".hero-art-note",
+        "transform": "matrix(0.984808, -0.173648, 0.173648, 0.984808, 0, 0)"
+      }
+    ],
+    "recent": 6,
+    "theme": "light",
+    "viewport": [
+      390,
+      844
+    ]
+  }
+]

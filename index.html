@@ -759,6 +759,12 @@ html body .writer-links {margin-top:10px;gap:8px 24px}
 .hero-art-glass {position:absolute;right:0;bottom:10%;width:40%;height:38%;background:color-mix(in srgb,var(--paper) 42%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid color-mix(in srgb,var(--paper) 65%,transparent)}
 .hero-art-note {position:absolute;right:1%;top:9%;font-family:var(--font-kai),serif;font-size:24px;line-height:1.5;letter-spacing:.06em;transform:rotate(-10deg);color:var(--ink)}
 .hero-art-note::after {content:"";display:block;margin-top:5px;height:1px;background:currentColor;transform:rotate(-4deg)}
+/* Pointer depth: edit these two distances to tune the paper/glass separation. */
+.hero-art {--hero-depth-x:0;--hero-depth-y:0;--hero-glass-travel:6px;--hero-line-travel:3px}
+@media (hover:hover) and (pointer:fine) and (min-width:641px) and (prefers-reduced-motion:no-preference) {
+ .hero-art-glass {transform:translate(calc(var(--hero-depth-x) * var(--hero-glass-travel)),calc(var(--hero-depth-y) * var(--hero-glass-travel)));transition:transform 280ms var(--ui-ease)}
+ .hero-art-arc {transform:translate(calc(var(--hero-depth-x) * var(--hero-line-travel) * -1),calc(var(--hero-depth-y) * var(--hero-line-travel) * -1));transition:transform 240ms var(--ui-ease)}
+}
 html[data-theme="dark"] .hero-art img {filter:brightness(.64) contrast(.88) saturate(.5)}
 html[data-theme="eye-care"] .hero-art img {filter:brightness(.94) contrast(.86) saturate(.45)}
 html body .recent-section {padding:32px 0 40px}
@@ -1227,6 +1233,69 @@ document.getElementById('random-btn').addEventListener('click', function(e) {
 })();
 </script>
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<script id="hero-art-depth">
+(function () {
+  var art = document.querySelector('.hero-art');
+  var hero = art && art.closest('.hero');
+  if (!hero || !window.matchMedia || !window.PointerEvent) return;
+  var allowed = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 641px) and (prefers-reduced-motion: no-preference)');
+  var bounds = null;
+  var frame = 0;
+  var x = 0;
+  var y = 0;
+
+  function reset() {
+    if (frame) cancelAnimationFrame(frame);
+    frame = 0;
+    x = y = 0;
+    art.style.removeProperty('--hero-depth-x');
+    art.style.removeProperty('--hero-depth-y');
+  }
+
+  function measure() {
+    bounds = art.getBoundingClientRect();
+  }
+
+  function invalidate() {
+    reset();
+    bounds = null;
+  }
+
+  function move(event) {
+    if (!allowed.matches || event.pointerType !== 'mouse' || document.hidden || document.body.classList.contains('intro-active')) return;
+    if (!bounds) measure();
+    if (!bounds.width || !bounds.height || event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+      reset();
+      return;
+    }
+    x = (event.clientX - bounds.left) / bounds.width * 2 - 1;
+    y = (event.clientY - bounds.top) / bounds.height * 2 - 1;
+    // Bound the total distance, including diagonal movement, to the CSS travel.
+    var length = Math.max(1, Math.hypot(x, y));
+    x /= length;
+    y /= length;
+    if (!frame) frame = requestAnimationFrame(function () {
+      frame = 0;
+      art.style.setProperty('--hero-depth-x', x.toFixed(4));
+      art.style.setProperty('--hero-depth-y', y.toFixed(4));
+    });
+  }
+
+  // The decorative art stays pointer-events:none; its existing section receives events.
+  hero.addEventListener('pointerenter', function (event) {
+    if (allowed.matches && event.pointerType === 'mouse') measure();
+  });
+  hero.addEventListener('pointermove', move, {passive: true});
+  hero.addEventListener('pointerleave', invalidate);
+  hero.addEventListener('pointercancel', invalidate);
+  window.addEventListener('blur', invalidate);
+  window.addEventListener('resize', invalidate, {passive: true});
+  window.addEventListener('scroll', invalidate, {passive: true});
+  document.addEventListener('visibilitychange', invalidate);
+  if (allowed.addEventListener) allowed.addEventListener('change', invalidate);
+  else allowed.addListener(invalidate);
+})();
+</script>
 <script id="public-ui-motion">
 (function(){
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)');

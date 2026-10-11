@@ -1,0 +1,19 @@
+{
+  "inlineScripts": 4,
+  "existingScriptsUnchanged": 3,
+  "checks": [
+    "120 moves batch into one frame with one bounds read",
+    "Diagonal glass distance stays <=6px",
+    "Idle has no frames or repeated writes",
+    "Outside art resets without repeated layout reads",
+    "hero:pointerleave cancels pending movement and resets",
+    "hero:pointercancel cancels pending movement and resets",
+    "win:blur cancels pending movement and resets",
+    "win:resize cancels pending movement and resets",
+    "win:scroll cancels pending movement and resets",
+    "doc:visibilitychange cancels pending movement and resets",
+    "Live static preference resets and blocks further movement",
+    "Reduced motion / coarse pointer / mobile media keeps static without reads",
+    "Touch and pen do not animate"
+  ]
+}
