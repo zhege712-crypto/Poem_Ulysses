@@ -794,6 +794,44 @@ html body .recent-item {margin-inline:0}
  html body .recent-item .ri-title,html body .recent-item .ri-meta {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
 </style>
+<style id="catalog-preview-style">
+/* Local tuning: material, measure and type; interaction timing is below. */
+html {
+  --theme-preview-paper: color-mix(in srgb, var(--paper) 92%, transparent);
+  --theme-preview-line: var(--gold-light);
+  --theme-preview-ink: var(--ink);
+  --catalog-preview-width: 340px;
+}
+.catalog-preview {
+  position: fixed;
+  z-index: 140;
+  width: var(--catalog-preview-width);
+  padding: 14px 20px;
+  border: 1px solid var(--theme-preview-line);
+  border-radius: 12px;
+  background: var(--theme-preview-paper);
+  color: var(--theme-preview-ink);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font: 18px/1.8 'Kaiti SC', STKaiti, KaiTi, 'Noto Serif SC', serif;
+  letter-spacing: .02em;
+  animation: catalog-preview-appear 150ms var(--ui-ease);
+}
+.catalog-preview[hidden] { display: none; }
+.catalog-preview p {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.catalog-preview p:empty { display: none; }
+@keyframes catalog-preview-appear { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 820px) { .catalog-preview { display: none; } }
+@media (prefers-reduced-motion: reduce) { .catalog-preview { animation: none; } }
+</style>
 </head>
 <body>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
@@ -933,12 +971,223 @@ var listEl = document.getElementById('catalog-list');
 var hintEl = document.getElementById('search-hint');
 var dataUrl = 'data/poems.json?t=' + Date.now();
 
+// One reusable sheet; poem text never enters HTML or data attributes.
+var catalogPreview = (function() {
+  var HOVER_DELAY = 340;
+  var FOCUS_DELAY = 180;
+  var LEAVE_DELAY = 120;
+  var GAP = 12;
+  var desktop = window.matchMedia('(min-width: 821px)');
+  var mouse = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
+  var openings = new Map();
+  var sheet = document.createElement('div');
+  sheet.id = 'catalog-poem-preview';
+  sheet.className = 'catalog-preview';
+  sheet.setAttribute('role', 'tooltip');
+  sheet.hidden = true;
+  var lines = [document.createElement('p'), document.createElement('p')];
+  lines.forEach(function(line) { sheet.appendChild(line); });
+  document.body.appendChild(sheet);
+  var hovered = null, focused = null, active = null, dismissed = null;
+  var overSheet = false, timer = null;
+  var linkSelector = 'a[data-preview-id]';
+  var titleSelector = '.catalog-title, .leaf-title';
+
+  function clearTimer() { clearTimeout(timer); timer = null; }
+  function hide() {
+    clearTimer();
+    if (active) {
+      var link = active.closest(linkSelector);
+      var ids = (link.getAttribute('aria-describedby') || '').split(/\s+/).filter(function(id) {
+        return id && id !== sheet.id;
+      });
+      if (ids.length) link.setAttribute('aria-describedby', ids.join(' '));
+      else link.removeAttribute('aria-describedby');
+    }
+    active = null;
+    overSheet = false;
+    sheet.hidden = true;
+  }
+  function reset() {
+    hide();
+    hovered = focused = dismissed = null;
+  }
+  function viewportChanged() {
+    var link = document.activeElement;
+    var suppressed = dismissed;
+    reset();
+    if (link && link.matches(linkSelector + ':focus-visible') && listEl.contains(link)) {
+      focused = link.querySelector(titleSelector);
+      dismissed = suppressed;
+      queue(focused, FOCUS_DELAY);
+    }
+  }
+  function titleFor(target) {
+    if (!(target instanceof Element)) return null;
+    var title = target.closest(titleSelector);
+    return title && listEl.contains(title) ? title : null;
+  }
+  function textRect(element) {
+    var range = document.createRange();
+    range.selectNodeContents(element);
+    return range.getBoundingClientRect();
+  }
+  function available(title) {
+    return desktop.matches && title && title.isConnected &&
+      !title.closest('[inert]') && title.getClientRects().length &&
+      openings.has(title.closest(linkSelector).getAttribute('data-preview-id'));
+  }
+
+  // Fit into existing whitespace. Protect text and controls, including adjacent rows.
+  // If a dense/zoomed viewport has no free rectangle, keep the direct link usable.
+  function place(title) {
+    var viewport = window.visualViewport;
+    var leftEdge = (viewport ? viewport.offsetLeft : 0) + GAP;
+    var topEdge = (viewport ? viewport.offsetTop : 0) + GAP;
+    var rightEdge = leftEdge + (viewport ? viewport.width : document.documentElement.clientWidth) - GAP * 2;
+    var bottomEdge = topEdge + (viewport ? viewport.height : window.innerHeight) - GAP * 2;
+    var anchor = textRect(title);
+    if (anchor.bottom < topEdge || anchor.top > bottomEdge) return false;
+    var obstacles = [];
+    document.querySelectorAll('header, .controls, .side-theme, footer, #back-link, .page-head h1, .series-block h2, .subseries-head, .branch-head, .catalog-title, .leaf-title, .c-date, .c-arrow, .leaf-meta').forEach(function(el) {
+      if (el.closest('[inert]') || !el.getClientRects().length) return;
+      var rect = el.matches(titleSelector) ? textRect(el) : el.getBoundingClientRect();
+      if (!rect.width || !rect.height || rect.bottom < topEdge || rect.top > bottomEdge) return;
+      obstacles.push(rect);
+      if (el.tagName === 'HEADER') topEdge = Math.max(topEdge, rect.bottom + GAP);
+    });
+    var widths = [parseFloat(getComputedStyle(sheet).getPropertyValue('--catalog-preview-width')) || 340, 260];
+    for (var size = 0; size < widths.length; size++) {
+      sheet.style.width = Math.min(widths[size], rightEdge - leftEdge) + 'px';
+      var width = sheet.offsetWidth, height = sheet.offsetHeight;
+      if (height > bottomEdge - topEdge) continue;
+      var centerY = (anchor.top + anchor.bottom - height) / 2;
+      var catalog = listEl.getBoundingClientRect();
+      var xs = [anchor.right + GAP * 2, catalog.right - width - 44, catalog.right + GAP, anchor.left - width - GAP * 2];
+      var ys = [centerY, anchor.bottom + GAP, anchor.top - height - GAP, topEdge, bottomEdge - height];
+      obstacles.forEach(function(rect) {
+        xs.push(rect.right + GAP, rect.left - width - GAP);
+        ys.push(rect.bottom + GAP, rect.top - height - GAP);
+      });
+      xs = Array.from(new Set(xs.map(function(x) { return Math.max(leftEdge, Math.min(x, rightEdge - width)); })));
+      ys = Array.from(new Set(ys.map(function(y) { return Math.max(topEdge, Math.min(y, bottomEdge - height)); })));
+      var best = null;
+      xs.forEach(function(x) {
+        ys.forEach(function(y) {
+          if (obstacles.some(function(rect) {
+            return x < rect.right + GAP && x + width > rect.left - GAP &&
+              y < rect.bottom + GAP && y + height > rect.top - GAP;
+          })) return;
+          var score = Math.abs(y - centerY) * 2 + Math.abs(x - anchor.right - GAP * 2);
+          if (!best || score < best.score) best = {x: x, y: y, score: score};
+        });
+      });
+      if (best) {
+        sheet.style.left = best.x + 'px';
+        sheet.style.top = best.y + 'px';
+        return true;
+      }
+    }
+    return false;
+  }
+  function show(title) {
+    if (!available(title) || dismissed === title) return;
+    var link = title.closest(linkSelector);
+    var opening = openings.get(link.getAttribute('data-preview-id'));
+    lines.forEach(function(line, index) { line.textContent = opening[index] || ''; });
+    sheet.style.visibility = 'hidden';
+    sheet.hidden = false;
+    var fits = place(title);
+    sheet.style.visibility = '';
+    if (!fits) { hide(); return; }
+    active = title;
+    var ids = (link.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+    if (ids.indexOf(sheet.id) === -1) ids.push(sheet.id);
+    link.setAttribute('aria-describedby', ids.join(' '));
+  }
+  function queue(title, delay) {
+    clearTimer();
+    if (active === title && !sheet.hidden) return;
+    hide();
+    if (!available(title) || dismissed === title) return;
+    timer = setTimeout(function() { show(title); }, delay);
+  }
+  function leave() {
+    clearTimer();
+    timer = setTimeout(function() {
+      if (focused) queue(focused, FOCUS_DELAY);
+      else if (!hovered && !overSheet) hide();
+    }, LEAVE_DELAY);
+  }
+  listEl.addEventListener('pointerover', function(e) {
+    if (e.pointerType !== 'mouse' || !mouse.matches) return;
+    var title = titleFor(e.target);
+    if (!title || title.contains(e.relatedTarget)) return;
+    hovered = title;
+    if (!focused) queue(title, HOVER_DELAY);
+  });
+  listEl.addEventListener('pointerout', function(e) {
+    var title = titleFor(e.target);
+    if (!title || title.contains(e.relatedTarget)) return;
+    hovered = null;
+    if (dismissed === title && focused !== title) dismissed = null;
+    leave();
+  });
+  listEl.addEventListener('focusin', function(e) {
+    var link = e.target.closest(linkSelector);
+    if (!link || !link.matches(':focus-visible')) return;
+    focused = link.querySelector(titleSelector);
+    dismissed = null;
+    queue(focused, FOCUS_DELAY);
+  });
+  listEl.addEventListener('focusout', function() {
+    focused = null;
+    dismissed = null;
+    if (hovered) queue(hovered, HOVER_DELAY);
+    else hide();
+  });
+  listEl.addEventListener('click', reset);
+  sheet.addEventListener('pointerenter', function(e) {
+    if (e.pointerType !== 'mouse') return;
+    overSheet = true;
+    clearTimer();
+  });
+  sheet.addEventListener('pointerleave', function() { overSheet = false; leave(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    dismissed = focused || hovered;
+    hide();
+  });
+  document.addEventListener('pointerdown', function(e) { if (e.pointerType === 'touch') reset(); });
+  window.addEventListener('scroll', viewportChanged, {passive: true, capture: true});
+  window.addEventListener('resize', viewportChanged, {passive: true});
+  window.addEventListener('blur', reset);
+  document.addEventListener('visibilitychange', function() { if (document.hidden) reset(); });
+  desktop.addEventListener('change', reset);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', viewportChanged);
+    window.visualViewport.addEventListener('scroll', viewportChanged);
+  }
+  if (document.fonts) document.fonts.ready.then(reset);
+  return {
+    reset: reset,
+    load: function(poems) {
+      openings.clear();
+      poems.forEach(function(poem) {
+        var opening = (typeof poem.content === 'string' ? poem.content : '').split(/\r\n|\n|\r/)
+          .filter(function(line) { return line.trim() !== ''; }).slice(0, 2);
+        if (opening.length) openings.set(encodeURIComponent(poem.id), opening);
+      });
+    }
+  };
+})();
+
 // ===== 列表渲染 =====
 function rowHtml(p) {
   var authorHtml = p.author ? '<br><span class="c-author">' + escapeHtml(p.author) + '</span>' : '';
-  return '<a class="catalog-row" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
+  return '<a class="catalog-row" data-preview-id="' + encodeURIComponent(p.id) + '" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
       '<span class="c-date">' + formatPoemDate(p.date) + authorHtml + '</span>' +
-      '<h3>' + escapeHtml(p.title) + '</h3>' +
+      '<h3><span class="catalog-title">' + escapeHtml(p.title) + '</span></h3>' +
       '<span class="c-arrow">→</span>' +
     '</a>';
 }
@@ -985,7 +1234,7 @@ var collapsed = Object.create(null);
 try { collapsed = Object.assign(Object.create(null), JSON.parse(localStorage.getItem('catalog_collapsed') || '{}')); } catch(e) { collapsed = Object.create(null); }
 
 function leafHtml(p) {
-  return '<a class="tree-leaf" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
+  return '<a class="tree-leaf" data-preview-id="' + encodeURIComponent(p.id) + '" href="read.html?id=' + encodeURIComponent(p.id) + '">' +
       '<span class="leaf-title">' + escapeHtml(p.title) + '</span>' +
       '<span class="leaf-meta">' + formatPoemDate(p.date) + (p.author ? ' · ' + escapeHtml(p.author) : '') + '</span>' +
     '</a>';
@@ -1029,6 +1278,7 @@ function renderTree(poems) {
   }).join('');
 }
 function render(poems) {
+  catalogPreview.reset();
   if (viewMode === 'tree') { renderTree(poems); } else { renderCatalog(poems); }
 }
 
@@ -1091,6 +1341,7 @@ fetch(dataUrl)
   .then(function(r) { return r.json(); })
   .then(function(poems) {
     allPoems = poems || [];
+    catalogPreview.load(allPoems);
     if (allPoems.length === 0) {
       listEl.innerHTML = '<div class="empty-state">暂时还没有诗，敬请期待。</div>';
       return;

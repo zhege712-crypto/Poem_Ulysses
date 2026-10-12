@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>目录正文预览 · 本地检查文档</title>
+<style>
+body { margin: 20px; font: 16px/1.6 system-ui; background: #f6f3ec; color: #292722; }
+button { padding: 8px 16px; font: inherit; cursor: pointer; }
+iframe { display: block; width: 100%; height: 720px; margin-top: 16px; border: 1px solid #d6cdbf; }
+pre { white-space: pre-wrap; }
+</style>
+<h1>目录正文预览 · 本地检查文档</h1>
+<p>仅在本地使用。检查读取当前 directory.html，在下方 iframe 内临时替换测试文本并恢复真实数据，不写入诗歌文件。QA_ONLY 是技术测试标记，不是作品。请用桌面宽度运行；真实键盘、手机和三主题仍需在目录页检查。</p>
+<button id="run" type="button">运行浏览器检查</button>
+<pre id="results" role="status" aria-live="polite">等待目录数据。</pre>
+<iframe id="page" src="../../directory.html" title="隔离目录检查"></iframe>
+<script>
+var frame = document.getElementById('page');
+var result = document.getElementById('results');
+var run = document.getElementById('run');
+var pause = function(ms) { return new Promise(function(resolve) { setTimeout(resolve, ms); }); };
+frame.addEventListener('load', function() { result.textContent = '目录已载入；点击运行。'; });
+run.addEventListener('click', async function() {
+  run.disabled = true;
+  var win = frame.contentWindow, doc = win.document;
+  var original = win.allPoems;
+  var mode = win.viewMode;
+  var collapsed = win.collapsed;
+  var storedCollapsed = win.localStorage.getItem('catalog_collapsed');
+  var messages = [], failed = 0;
+  var trace = [];
+  function traceEvent(e) { trace.push({event:e.type,at:Date.now(),scroll:win.scrollY}); }
+  ['scroll','resize','blur'].forEach(function(name) {win.addEventListener(name,traceEvent);});
+  doc.addEventListener('visibilitychange',traceEvent);
+  result.textContent = '正在检查；等待字体及布局稳定。';
+  function check(name, ok) { messages.push((ok ? 'PASS ' : 'FAIL ') + name); if (!ok) failed++; }
+  function sheet() { return doc.getElementById('catalog-poem-preview'); }
+  function title() { return doc.querySelector('.catalog-title, .leaf-title'); }
+  function event(el, type, pointerType) {
+    el.dispatchEvent(new win.PointerEvent(type, {bubbles: true, pointerType: pointerType || 'mouse'}));
+  }
+  async function hover(el) {
+    var rect = el.getBoundingClientRect();
+    if (rect.top < 80 || rect.bottom > win.innerHeight - 20) win.scrollTo({top: Math.max(0, win.scrollY + rect.top - 200), behavior:'instant'});
+    await pause(240);
+    var enteredAt = Date.now(); event(el, 'pointerover'); await pause(400);
+    // A deferred browser scroll legitimately cancels hover. Re-enter once after it settles.
+    if (sheet().hidden && trace.some(function(t) {return t.event === 'scroll' && t.at >= enteredAt;})) {
+      await pause(600); event(el, 'pointerout'); event(el, 'pointerover'); await pause(400);
+    }
+  }
+  function geometry() {
+    var s = sheet(), r = s.getBoundingClientRect();
+    if (s.hidden) { messages.push('诊断：薄片未显示；' + JSON.stringify({scroll:win.scrollY,hidden:doc.hidden,events:trace.slice(-6).map(function(t){return {event:t.event,age:Date.now()-t.at,scroll:t.scroll};})})); return false; }
+    var safe = r.left >= 11 && r.top >= 11 && r.right <= doc.documentElement.clientWidth - 11 && r.bottom <= win.innerHeight - 11;
+    doc.querySelectorAll('header, .controls, .side-theme, footer, #back-link, .page-head h1, .series-block h2, .subseries-head, .branch-head, .catalog-title, .leaf-title, .c-date, .c-arrow, .leaf-meta').forEach(function(el) {
+      if (el.closest('[inert]') || !el.getClientRects().length) return;
+      var b;
+      if (el.matches('.catalog-title, .leaf-title')) { var range = doc.createRange(); range.selectNodeContents(el); b = range.getBoundingClientRect(); }
+      else b = el.getBoundingClientRect();
+      if (!b.width || !b.height) return;
+      if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) { safe = false; messages.push('诊断：' + el.className + ' ' + el.textContent.slice(0,30) + ' 与薄片重叠；' + JSON.stringify({sheet:r.toJSON(),obstacle:b.toJSON()})); }
+    });
+    return safe;
+  }
+  try {
+    if (!original.length || !win.matchMedia('(min-width:821px)').matches || !win.matchMedia('(any-hover:hover) and (any-pointer:fine)').matches) throw new Error('请等待真实目录数据并使用桌面鼠标环境运行。');
+    await doc.fonts.ready; await pause(100);
+    win.viewMode = 'list'; win.render(original);
+    var actualLink = doc.querySelector('a[data-preview-id]');
+    var actual = original.find(function(p) { return actualLink.getAttribute('href') === 'read.html?id=' + encodeURIComponent(p.id); });
+    var rowBefore = [actualLink.offsetTop, actualLink.offsetLeft, actualLink.offsetWidth, actualLink.offsetHeight];
+    var htmlBefore = doc.getElementById('catalog-list').innerHTML;
+    await hover(title());
+    check('真实作品开篇与 JSON 前两个非空行一致', Array.from(sheet().children).map(function(p) {return p.textContent;}).filter(Boolean).join('\n') === actual.content.split(/\r\n|\n|\r/).filter(function(line) {return line.trim();}).slice(0,2).join('\n'));
+    check('薄片在视口内，未遮住标题、日期、箭头或控制', geometry());
+    check('列表位置与尺寸保持不变', JSON.stringify(rowBefore) === JSON.stringify([actualLink.offsetTop, actualLink.offsetLeft, actualLink.offsetWidth, actualLink.offsetHeight]));
+    event(title(), 'pointerout'); await pause(170);
+    check('离开后收起，并清除 aria-describedby', sheet().hidden && !actualLink.hasAttribute('aria-describedby'));
+    event(title(), 'pointerover'); await pause(70); event(title(), 'pointerout'); await pause(410);
+    check('短暂扫过不弹出', sheet().hidden);
+    await hover(title()); event(title(), 'pointerout'); event(sheet(), 'pointerenter'); await pause(170);
+    check('移入薄片可继续阅读', !sheet().hidden);
+    event(sheet(), 'pointerleave'); await pause(170); check('离开薄片后收起', sheet().hidden);
+    await hover(title()); doc.dispatchEvent(new win.KeyboardEvent('keydown', {key:'Escape', bubbles:true}));
+    check('Esc 立即收起', sheet().hidden);
+    event(title(), 'pointerover'); await pause(410); check('Esc 后不会原地再次弹出', sheet().hidden);
+    event(title(), 'pointerout'); await pause(170);
+    event(title(), 'pointerover', 'touch'); await pause(410); check('触屏 pointerover 不弹出', sheet().hidden);
+    await hover(title()); win.render(original); check('重绘清除旧薄片及关联', sheet().hidden && !doc.querySelector('[aria-describedby="catalog-poem-preview"]'));
+    check('重绘仍保留全部作品及原 href', doc.querySelectorAll('a[data-preview-id]').length === original.length && doc.getElementById('catalog-list').innerHTML.replace(/ class="[^"]*"/g,'') === htmlBefore.replace(/ class="[^"]*"/g,''));
+
+    var fixture = [{id:'QA_ONLY"<&%测试',title:'QA_ONLY 特殊文本',date:'',author:'',series:'QA_ONLY',content:'\r\n  \r\n  <img src=x onerror="window.__previewExecuted=1"> & "text"\r\n\r\nQA_ONLY_LINE_2\nQA_ONLY_LINE_3'},
+      {id:'QA_ONLY_EMPTY',title:'QA_ONLY 空正文',date:'',author:'',series:'QA_ONLY',content:' \r\n\t\n'},
+      {id:'QA_ONLY_LONG',title:'QA_ONLY 长行',date:'',author:'',series:'QA_ONLY',content:'QA_ONLY <&>'.repeat(150)+'\nQA_ONLY_LONG_LINE_2'},
+      {id:'QA_ONLY_ONE',title:'QA_ONLY 单行',date:'',author:'',series:'QA_ONLY',content:'QA_ONLY_SINGLE & < > "'}];
+    win.catalogPreview.load(fixture); win.render(fixture);
+    var links = Array.from(doc.querySelectorAll('a[data-preview-id]'));
+    await hover(links[0].querySelector('.catalog-title'));
+    check('空行跳过、CRLF 正确、保留前两行及缩进', sheet().children[0].textContent === fixture[0].content.split('\r\n')[2] && sheet().children[1].textContent === 'QA_ONLY_LINE_2');
+    check('HTML 字符只作文本，未生成可执行节点', !sheet().querySelector('img,script,svg') && !win.__previewExecuted);
+    check('特殊 ID 没有破坏链接属性', links[0].getAttribute('href') === 'read.html?id=' + encodeURIComponent(fixture[0].id) && links[0].getAttribute('data-preview-id') === encodeURIComponent(fixture[0].id) && !Array.from(links[0].attributes).some(function(a) {return /^on/i.test(a.name);}));
+    win.catalogPreview.reset(); await hover(links[1].querySelector('.catalog-title')); check('空正文不弹出', sheet().hidden);
+    win.catalogPreview.reset(); await hover(links[2].querySelector('.catalog-title'));
+    check('长行文本保留，折行省略且不溢出', sheet().children[0].textContent === fixture[2].content.split('\n')[0] && geometry() && sheet().children[0].scrollHeight > sheet().children[0].clientHeight);
+    win.catalogPreview.reset(); await hover(links[3].querySelector('.catalog-title')); check('单行没有虚构第二行', sheet().children[1].textContent === '');
+    win.catalogPreview.load(original); win.viewMode = 'tree'; win.collapsed = Object.create(null); win.render(original);
+    await pause(360);
+    var firstLeaf = doc.querySelector('.tree-leaf');
+    if (!firstLeaf || firstLeaf.closest('[inert]')) { var head = doc.querySelector('.tree-branch.collapsed > .branch-head'); if (head) head.click(); await pause(360); }
+    await hover(title()); check('树状动态条目显示正确薄片且不遮挡', geometry());
+    var openHead = doc.querySelector('.tree-branch:not(.collapsed) > .branch-head');
+    if (openHead) openHead.click(); await pause(360); check('折叠立即清除薄片', sheet().hidden);
+    win.catalogPreview.reset(); win.viewMode = 'list'; win.doSearch(actual.title);
+    win.scrollTo({top:0, behavior:'instant'}); await pause(360);
+    await hover(title()); check('搜索后动态条目仍显示真实正文', geometry() && sheet().children[0].textContent === actual.content.split(/\r\n|\n|\r/).filter(function(line) {return line.trim();})[0]);
+    win.doSearch('QA_ONLY_NO_MATCH'); check('空结果清除薄片', sheet().hidden && !doc.querySelector('a[data-preview-id]'));
+  } catch (error) { check(error.message, false); }
+  finally {
+    ['scroll','resize','blur'].forEach(function(name) {win.removeEventListener(name,traceEvent);});
+    doc.removeEventListener('visibilitychange',traceEvent);
+    win.collapsed = collapsed;
+    if (storedCollapsed === null) win.localStorage.removeItem('catalog_collapsed'); else win.localStorage.setItem('catalog_collapsed', storedCollapsed);
+    win.catalogPreview.reset(); win.catalogPreview.load(original); win.viewMode = mode; win.doSearch(doc.getElementById('search-input').value);
+    result.textContent = messages.join('\n') + '\n\n' + (failed ? failed + ' 项失败' : '全部通过') + '。真实数据已恢复。';
+    run.disabled = false;
+  }
+});
+</script>
+</html>

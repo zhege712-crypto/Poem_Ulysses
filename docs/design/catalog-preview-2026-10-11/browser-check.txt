@@ -1,0 +1,24 @@
+PASS 真实作品开篇与 JSON 前两个非空行一致
+PASS 薄片在视口内，未遮住标题、日期、箭头或控制
+PASS 列表位置与尺寸保持不变
+PASS 离开后收起，并清除 aria-describedby
+PASS 短暂扫过不弹出
+PASS 移入薄片可继续阅读
+PASS 离开薄片后收起
+PASS Esc 立即收起
+PASS Esc 后不会原地再次弹出
+PASS 触屏 pointerover 不弹出
+PASS 重绘清除旧薄片及关联
+PASS 重绘仍保留全部作品及原 href
+PASS 空行跳过、CRLF 正确、保留前两行及缩进
+PASS HTML 字符只作文本，未生成可执行节点
+PASS 特殊 ID 没有破坏链接属性
+PASS 空正文不弹出
+PASS 长行文本保留，折行省略且不溢出
+PASS 单行没有虚构第二行
+PASS 树状动态条目显示正确薄片且不遮挡
+PASS 折叠立即清除薄片
+PASS 搜索后动态条目仍显示真实正文
+PASS 空结果清除薄片
+
+全部通过。真实数据已恢复。
