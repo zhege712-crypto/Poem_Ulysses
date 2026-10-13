@@ -10,6 +10,8 @@ The accepted public redesign is recorded in `docs/design/release-2026-10-06.md`,
 
 The subsequent static art extension is recorded in `docs/design/art-2026-10-07.md` and `docs/design/public-art-2026-10-06.md`: one decorative Greek relief on the homepage, sourced copy only, paper/ink/rust geometry, rounded glass controls, and restrained inner pages. This extension preserves the existing interactions. The user-authorized combined release with optional writing information is recorded in `docs/releases/2026-10-08.md`.
 
+Current homepage art supersedes that historical relief: the user requested its removal, recorded in `docs/design/home-without-relief-2026-10-13.md`. The homepage now uses native paper/rust/glass geometry without a replacement image. Preserve the October 12 pointer-depth, poem-pick and catalog-preview interactions documented in `docs/releases/2026-10-12-interactions.md`.
+
 ## No toolchain
 
 - There is **no `package.json`, no bundler, no build step**. The `.opencode/.gitignore` explicitly ignores `package.json`, `package-lock.json`, and `bun.lock` — never add these.

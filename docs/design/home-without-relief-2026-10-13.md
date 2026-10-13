@@ -1,6 +1,6 @@
 # 主页移除人物浮雕 · 2026-10-13
 
-以最新远端 `origin/main` 的 `553dad6` 为基线，在独立分支 `design/home-without-relief-2026-10-13` 实现。仅修改 `index.html` 和本说明；本次供本地预览，未推送、创建 PR 或部署。
+以最新远端 `origin/main` 的 `553dad6` 为基线，在独立分支 `design/home-without-relief-2026-10-13` 实现。初次实现仅修改 `index.html` 和本说明并提供本地预览；用户随后授权推送，发布时补充 `AGENTS.md` 的现行主页记录，避免后续任务恢复历史浮雕。
 
 ## 调整
 
