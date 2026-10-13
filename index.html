@@ -736,7 +736,7 @@ html body .side-theme {box-shadow:0 8px 24px color-mix(in srgb,var(--ui-ink) 8%,
  html body .recent-item .ri-meta {font-size:13px}
 }
 
-/* Homepage art: one relief, native static geometry, real HTML copy. */
+/* Homepage art: paper, restrained native geometry, and existing transparent layers. */
 html body .page-content>.wrap {max-width:1280px;padding-inline:32px}
 html body .hero {display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:40px;align-items:center;padding:132px 0 48px}
 .hero-copy {min-width:0;position:relative;z-index:1}
@@ -752,11 +752,11 @@ html body .hero-actions {gap:12px;flex-wrap:wrap}
 html body .hero-actions .btn {padding:12px 24px;font-size:15px}
 html body .hero-action-note {margin-top:18px}
 html body .writer-links {margin-top:10px;gap:8px 24px}
-.hero-art {position:relative;aspect-ratio:1/1;min-width:0;isolation:isolate;pointer-events:none}
-.hero-art-band {position:absolute;inset:0 20% 0 14%;background:var(--ui-art-rust);clip-path:polygon(73% 0,100% 0,28% 100%,0 100%);opacity:.93;z-index:-2}
-.hero-art img {position:absolute;width:78%;height:auto;aspect-ratio:1;left:0;top:10%;filter:contrast(.9) saturate(.65);z-index:-1}
-.hero-art-arc {position:absolute;inset:3% 0 0 0;width:100%;height:94%;color:var(--gold)}
-.hero-art-glass {position:absolute;right:0;bottom:10%;width:40%;height:38%;background:color-mix(in srgb,var(--paper) 42%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid color-mix(in srgb,var(--paper) 65%,transparent)}
+.hero-art {position:relative;width:min(100%,460px);aspect-ratio:1/1;justify-self:center;min-width:0;isolation:isolate;pointer-events:none}
+.hero-art-paper {position:absolute;left:8%;top:17%;width:62%;height:66%;background:color-mix(in srgb,var(--paper-dark) 70%,transparent);transform:rotate(-7deg);z-index:-2}
+.hero-art-band {position:absolute;inset:4% 15% 5% 20%;background:var(--ui-art-rust);clip-path:polygon(73% 0,100% 0,28% 100%,0 100%);opacity:.36;z-index:-1}
+.hero-art-arc {position:absolute;inset:3% 0 0 0;width:100%;height:94%;color:var(--gold);opacity:.65}
+.hero-art-glass {position:absolute;right:3%;bottom:13%;width:43%;height:42%;background:color-mix(in srgb,var(--paper) 42%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid color-mix(in srgb,var(--paper) 65%,transparent)}
 .hero-art-note {position:absolute;right:1%;top:9%;font-family:var(--font-kai),serif;font-size:24px;line-height:1.5;letter-spacing:.06em;transform:rotate(-10deg);color:var(--ink)}
 .hero-art-note::after {content:"";display:block;margin-top:5px;height:1px;background:currentColor;transform:rotate(-4deg)}
 /* Pointer depth: edit these two distances to tune the paper/glass separation. */
@@ -765,8 +765,6 @@ html body .writer-links {margin-top:10px;gap:8px 24px}
  .hero-art-glass {transform:translate(calc(var(--hero-depth-x) * var(--hero-glass-travel)),calc(var(--hero-depth-y) * var(--hero-glass-travel)));transition:transform 280ms var(--ui-ease)}
  .hero-art-arc {transform:translate(calc(var(--hero-depth-x) * var(--hero-line-travel) * -1),calc(var(--hero-depth-y) * var(--hero-line-travel) * -1));transition:transform 240ms var(--ui-ease)}
 }
-html[data-theme="dark"] .hero-art img {filter:brightness(.64) contrast(.88) saturate(.5)}
-html[data-theme="eye-care"] .hero-art img {filter:brightness(.94) contrast(.86) saturate(.45)}
 html body .recent-section {padding:32px 0 40px}
 html body .submit-note {margin-top:12px;padding:24px 0;gap:20px;font-size:15px}
 @media(min-width:641px) and (max-width:1000px) {
@@ -787,7 +785,7 @@ html body .submit-note {margin-top:12px;padding:24px 0;gap:20px;font-size:15px}
  html body .hero-actions {gap:10px}
  html body .hero-actions .btn {padding:11px 17px;font-size:14px}
  html body .writer-links {gap:2px 18px}
- .hero-art {width:min(100%,280px);justify-self:center}
+ .hero-art {width:min(100%,240px)}
  .hero-art-note {font-size:18px;right:-4px;top:8%}
  html body .submit-note {display:flex;align-items:flex-start;font-size:14px;gap:14px}
 }
@@ -918,8 +916,8 @@ html body #random-btn:disabled {cursor:wait;transform:none;opacity:.7}
 
       </div>
       <div class="hero-art" aria-hidden="true">
+        <div class="hero-art-paper"></div>
         <div class="hero-art-band"></div>
-        <img src="assets/art/greek-relief.png" alt="" width="1254" height="1254" fetchpriority="high" decoding="async">
         <svg class="hero-art-arc" viewBox="0 0 500 500" fill="none"><path d="M240 12 A245 245 0 0 1 395 460" stroke="currentColor" stroke-width="1.5"/></svg>
         <div class="hero-art-glass"></div>
         <p class="hero-art-note">起源于一份激情</p>
