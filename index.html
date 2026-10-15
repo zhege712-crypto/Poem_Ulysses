@@ -736,10 +736,10 @@ html body .side-theme {box-shadow:0 8px 24px color-mix(in srgb,var(--ui-ink) 8%,
  html body .recent-item .ri-meta {font-size:13px}
 }
 
-/* Homepage art: paper, restrained native geometry, and existing transparent layers. */
+/* Homepage: text-led composition, without a decorative art column. */
 html body .page-content>.wrap {max-width:1280px;padding-inline:32px}
-html body .hero {display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:40px;align-items:center;padding:132px 0 48px}
-.hero-copy {min-width:0;position:relative;z-index:1}
+html body .hero {display:block;padding:132px 0 48px}
+.hero-copy {min-width:0;max-width:640px;position:relative;z-index:1}
 html body .hero h1 {font-size:clamp(64px,7vw,96px);font-weight:500;letter-spacing:.025em;line-height:1.2;white-space:nowrap}
 html body .hero h1 span,.intro-title span:nth-child(3) {color:var(--ink)!important}
 html body .hero .greek-divider {width:112px;height:12px;margin:24px 0;opacity:1}
@@ -752,30 +752,15 @@ html body .hero-actions {gap:12px;flex-wrap:wrap}
 html body .hero-actions .btn {padding:12px 24px;font-size:15px}
 html body .hero-action-note {margin-top:18px}
 html body .writer-links {margin-top:10px;gap:8px 24px}
-.hero-art {position:relative;width:min(100%,460px);aspect-ratio:1/1;justify-self:center;min-width:0;isolation:isolate;pointer-events:none}
-.hero-art-paper {position:absolute;left:8%;top:17%;width:62%;height:66%;background:color-mix(in srgb,var(--paper-dark) 70%,transparent);transform:rotate(-7deg);z-index:-2}
-.hero-art-band {position:absolute;inset:4% 15% 5% 20%;background:var(--ui-art-rust);clip-path:polygon(73% 0,100% 0,28% 100%,0 100%);opacity:.36;z-index:-1}
-.hero-art-arc {position:absolute;inset:3% 0 0 0;width:100%;height:94%;color:var(--gold);opacity:.65}
-.hero-art-glass {position:absolute;right:3%;bottom:13%;width:43%;height:42%;background:color-mix(in srgb,var(--paper) 42%,transparent);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);border:1px solid color-mix(in srgb,var(--paper) 65%,transparent)}
-.hero-art-note {position:absolute;right:1%;top:9%;font-family:var(--font-kai),serif;font-size:24px;line-height:1.5;letter-spacing:.06em;transform:rotate(-10deg);color:var(--ink)}
-.hero-art-note::after {content:"";display:block;margin-top:5px;height:1px;background:currentColor;transform:rotate(-4deg)}
-/* Pointer depth: edit these two distances to tune the paper/glass separation. */
-.hero-art {--hero-depth-x:0;--hero-depth-y:0;--hero-glass-travel:6px;--hero-line-travel:3px}
-@media (hover:hover) and (pointer:fine) and (min-width:641px) and (prefers-reduced-motion:no-preference) {
- .hero-art-glass {transform:translate(calc(var(--hero-depth-x) * var(--hero-glass-travel)),calc(var(--hero-depth-y) * var(--hero-glass-travel)));transition:transform 280ms var(--ui-ease)}
- .hero-art-arc {transform:translate(calc(var(--hero-depth-x) * var(--hero-line-travel) * -1),calc(var(--hero-depth-y) * var(--hero-line-travel) * -1));transition:transform 240ms var(--ui-ease)}
-}
 html body .recent-section {padding:32px 0 40px}
 html body .submit-note {margin-top:12px;padding:24px 0;gap:20px;font-size:15px}
 @media(min-width:641px) and (max-width:1000px) {
- html body .hero {gap:24px;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
  html body .hero h1 {font-size:clamp(52px,7vw,70px)}
  html body .hero-desc {font-size:21px}
- .hero-art-note {font-size:20px;right:0}
 }
 @media(max-width:640px) {
  html body .page-content>.wrap {padding-inline:22px}
- html body .hero {grid-template-columns:minmax(0,1fr);gap:22px;padding-top:142px;padding-bottom:28px}
+ html body .hero {padding-top:142px;padding-bottom:28px}
  html body .hero h1 {font-size:clamp(44px,12.5vw,60px);letter-spacing:.025em}
  html body .hero .greek-divider {width:88px;height:10px;margin:20px 0}
  html body .hero-desc {font-size:21px;line-height:1.55}
@@ -785,8 +770,6 @@ html body .submit-note {margin-top:12px;padding:24px 0;gap:20px;font-size:15px}
  html body .hero-actions {gap:10px}
  html body .hero-actions .btn {padding:11px 17px;font-size:14px}
  html body .writer-links {gap:2px 18px}
- .hero-art {width:min(100%,240px)}
- .hero-art-note {font-size:18px;right:-4px;top:8%}
  html body .submit-note {display:flex;align-items:flex-start;font-size:14px;gap:14px}
 }
 
@@ -971,13 +954,6 @@ html body header {position:fixed}
         <a href="https://poem-submissions-review.zhege712-872.workers.dev/partner-security"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 15v2"/></svg>账号安全</a>
       </nav>
 
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <div class="hero-art-paper"></div>
-        <div class="hero-art-band"></div>
-        <svg class="hero-art-arc" viewBox="0 0 500 500" fill="none"><path d="M240 12 A245 245 0 0 1 395 460" stroke="currentColor" stroke-width="1.5"/></svg>
-        <div class="hero-art-glass"></div>
-        <p class="hero-art-note">起源于一份激情</p>
       </div>
     </section>
 
@@ -1418,69 +1394,6 @@ fetch(dataUrl)
 })();
 </script>
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-<script id="hero-art-depth">
-(function () {
-  var art = document.querySelector('.hero-art');
-  var hero = art && art.closest('.hero');
-  if (!hero || !window.matchMedia || !window.PointerEvent) return;
-  var allowed = matchMedia('(hover: hover) and (pointer: fine) and (min-width: 641px) and (prefers-reduced-motion: no-preference)');
-  var bounds = null;
-  var frame = 0;
-  var x = 0;
-  var y = 0;
-
-  function reset() {
-    if (frame) cancelAnimationFrame(frame);
-    frame = 0;
-    x = y = 0;
-    art.style.removeProperty('--hero-depth-x');
-    art.style.removeProperty('--hero-depth-y');
-  }
-
-  function measure() {
-    bounds = art.getBoundingClientRect();
-  }
-
-  function invalidate() {
-    reset();
-    bounds = null;
-  }
-
-  function move(event) {
-    if (!allowed.matches || event.pointerType !== 'mouse' || document.hidden || document.body.classList.contains('intro-active')) return;
-    if (!bounds) measure();
-    if (!bounds.width || !bounds.height || event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
-      reset();
-      return;
-    }
-    x = (event.clientX - bounds.left) / bounds.width * 2 - 1;
-    y = (event.clientY - bounds.top) / bounds.height * 2 - 1;
-    // Bound the total distance, including diagonal movement, to the CSS travel.
-    var length = Math.max(1, Math.hypot(x, y));
-    x /= length;
-    y /= length;
-    if (!frame) frame = requestAnimationFrame(function () {
-      frame = 0;
-      art.style.setProperty('--hero-depth-x', x.toFixed(4));
-      art.style.setProperty('--hero-depth-y', y.toFixed(4));
-    });
-  }
-
-  // The decorative art stays pointer-events:none; its existing section receives events.
-  hero.addEventListener('pointerenter', function (event) {
-    if (allowed.matches && event.pointerType === 'mouse') measure();
-  });
-  hero.addEventListener('pointermove', move, {passive: true});
-  hero.addEventListener('pointerleave', invalidate);
-  hero.addEventListener('pointercancel', invalidate);
-  window.addEventListener('blur', invalidate);
-  window.addEventListener('resize', invalidate, {passive: true});
-  window.addEventListener('scroll', invalidate, {passive: true});
-  document.addEventListener('visibilitychange', invalidate);
-  if (allowed.addEventListener) allowed.addEventListener('change', invalidate);
-  else allowed.addListener(invalidate);
-})();
-</script>
 <script id="public-ui-motion">
 (function(){
   var reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
