@@ -264,21 +264,101 @@ html body .recent-item {margin-inline:0}
  html body .recent-item .ri-title,html body .recent-item .ri-meta {max-width:100%;white-space:normal;overflow-wrap:anywhere}
 }
 </style>
+<style id="public-shell-design">
+/* Shared public shell, 2026-10-15: quiet header controls and consistent spacing. */
+html {--shell-paper:var(--paper);--shell-ink:var(--ink);--shell-muted:var(--ink-light);--shell-width:1280px;--shell-gutter:32px;--shell-line:var(--gold-light);--shell-ease:cubic-bezier(.16,1,.3,1)}
+html body {padding-bottom:0}
+html body header {position:sticky;top:0;left:0;right:0;z-index:300;padding:12px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 13%,transparent);background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(24px) saturate(130%);-webkit-backdrop-filter:blur(24px) saturate(130%)}
+html body header .wrap {box-sizing:border-box;position:relative;z-index:auto;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:24px;max-width:var(--shell-width);width:100%;margin:0 auto;padding:0 var(--shell-gutter)}
+html body header .logo {font-family:var(--font-serif,var(--serif,Georgia)),serif;font-size:24px;line-height:1.4;font-weight:500;letter-spacing:.06em;white-space:nowrap;color:var(--ink);text-decoration:none}
+html body header .logo span {color:inherit}
+html body header .site-nav {display:block;width:auto;justify-self:end;margin:0}
+html body header .site-nav ul {display:flex;align-items:center;flex-wrap:nowrap;gap:20px;list-style:none;margin:0;padding:0}
+html body header .site-nav a {position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 0;font:400 15px/1.4 var(--font-sans,var(--sans,system-ui)),sans-serif;letter-spacing:.02em;color:var(--ink-light);text-decoration:none;white-space:nowrap;border-radius:999px;box-sizing:border-box}
+html body header .site-nav a::after {content:"";position:absolute;left:0;right:0;bottom:0;width:100%;height:1px;background:var(--clay);transform:scaleX(0);transform-origin:left;transition:transform 240ms var(--shell-ease)}
+html body header .site-nav a:is(:hover,.active,[aria-current="page"]) {color:var(--ink)}
+html body header .site-nav a:is(:hover,.active,[aria-current="page"])::after {transform:scaleX(1)}
+html body header .site-nav a[href="submit.html"] {padding-inline:20px;background:var(--clay);color:var(--paper)}
+html body header .site-nav a[href="submit.html"]::after {display:none}
+html body .appearance {position:relative;justify-self:end;align-self:center;z-index:1}
+html body .appearance summary {display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;box-sizing:border-box;padding:8px 12px;list-style:none;border:1px solid var(--shell-line);border-radius:999px;color:var(--ink-light);background:transparent;font:14px/1.4 system-ui,sans-serif;cursor:pointer;user-select:none;transition:background-color 180ms ease,color 180ms ease}
+html body .appearance summary::-webkit-details-marker {display:none}
+html body .appearance summary:hover,html body .appearance[open] summary {background:var(--paper-dark);color:var(--ink)}
+html body .appearance summary>svg {width:18px;height:18px;flex-shrink:0}
+html body .appearance summary>.appearance-chevron {width:12px;height:12px;transition:transform 180ms var(--shell-ease)}
+html body .appearance[open] .appearance-chevron {transform:rotate(180deg)}
+html body .appearance:not([open]) #theme-side {display:none}
+html body .appearance #theme-side {position:absolute;display:flex;align-items:center;flex-direction:row;inset:auto 0 auto auto;top:calc(100% + 12px);left:auto;bottom:auto;right:0;transform:none;width:288px;max-width:calc(100vw - 40px);margin:0;gap:4px;padding:5px;isolation:isolate;box-sizing:border-box;border:1px solid var(--shell-line);border-radius:999px;background:var(--paper);color:var(--ink);backdrop-filter:blur(24px) saturate(135%);-webkit-backdrop-filter:blur(24px) saturate(135%);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 10%,transparent);z-index:2}
+html body .appearance #theme-side::before {content:"";position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 18px)/3);border-radius:999px;background:var(--ink);transform:translateX(0);transition:transform 240ms var(--shell-ease);z-index:-1;pointer-events:none}
+html body .appearance #theme-side:has(.theme-btn:nth-of-type(2).active)::before {transform:translateX(calc(100% + 4px))}
+html body .appearance #theme-side:has(.theme-btn:nth-of-type(3).active)::before {transform:translateX(calc(200% + 8px))}
+html body .appearance #theme-side .theme-btn,html body .appearance #theme-side .theme-btn.active {display:flex;align-items:center;justify-content:center;flex:1 1 0;gap:7px;width:0;min-width:0;height:44px;margin:0;padding:0 8px;box-sizing:border-box;border:0;border-radius:999px;background:transparent;color:var(--shell-muted);font:13px/1.4 system-ui,sans-serif;white-space:nowrap;transform:none;box-shadow:none;cursor:pointer;transition:color 180ms ease}
+html body .appearance #theme-side .theme-btn.active {color:var(--shell-paper)}
+html body .appearance #theme-side .theme-btn span {color:inherit;white-space:nowrap}
+html body .appearance #theme-side .theme-btn svg {display:block;width:17px;height:17px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.5}
+html body header :focus-visible {outline:2px solid var(--clay);outline-offset:4px}
+html body .back-link {margin-top:16px}
+html body .page-head {padding:24px 0 20px}
+html body .page-head .line {margin:16px 0 0}
+html body footer {padding-bottom:32px}
+@media(max-width:760px) {
+ html {--shell-gutter:20px}
+ html body header {padding:8px 0}
+ html body header .wrap {grid-template-columns:1fr auto;gap:4px 16px}
+ html body header .logo {grid-column:1;grid-row:1}
+ html body header .appearance {grid-column:2;grid-row:1;position:static}
+ html body .appearance #theme-side {top:calc(100% + 8px);right:var(--shell-gutter)}
+ html body header .site-nav {grid-column:1/-1;grid-row:2;justify-self:stretch;width:100%}
+ html body header .site-nav ul {justify-content:space-between;gap:4px;width:100%;margin:0}
+ html body header .site-nav a {font-size:14px;letter-spacing:0;padding:8px 2px}
+ html body header .site-nav a[href="submit.html"] {padding-inline:12px}
+ html body .appearance summary {font-size:13px;padding-inline:10px}
+ html body .back-link {margin-top:12px}
+ html body .page-head {padding:20px 0 16px}
+}
+@media(prefers-reduced-motion:reduce) {
+ html body header .site-nav a::after,html body .appearance summary,html body .appearance-chevron,html body .appearance #theme-side::before,html body .appearance #theme-side .theme-btn {transition:none}
+}
+</style>
+<style id="public-shell-page-spacing">
+html body main {padding-top:40px}
+</style>
 </head>
 <body>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
-<header><a href="index.html">诗歌<span>漂流</span></a></header>
+<header>
+  <div class="wrap">
+    <a class="logo" href="index.html">诗歌<span>漂流</span></a>
+<nav class="site-nav" aria-label="主导航">
+      <ul>
+        <li><a href="index.html">首页</a></li>
+        <li><a href="directory.html">目录</a></li>
+        <li><a href="authors.html">同志们</a></li>
+        <li><a href="voyage.html">漂流</a></li>
+        <li><a href="about.html">关于</a></li>
+        <li><a href="submit.html">投稿</a></li>
+      </ul>
+    </nav>
+<details class="appearance"><summary><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M5 19l1.4-1.4M17.6 6.4L19 5"/></svg><span>外观</span><svg class="appearance-chevron" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4"/></svg></summary>
+<div class="side-theme" id="theme-side" role="group" aria-label="页面主题">
+  <button class="theme-btn" data-theme="light" aria-label="日间模式" type="button">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  <span>浅色</span></button>
+  <button class="theme-btn" data-theme="dark" aria-label="夜间模式" type="button">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/></svg>
+  <span>深色</span></button>
+  <button class="theme-btn" data-theme="eye-care" aria-label="护眼模式" type="button">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+  <span>护眼</span></button>
+</div>
+</details>
+  </div>
+</header>
 <main><h1>投稿的下一程</h1><p class="intro">这里仅显示投稿进度。请勿公开分享此链接。</p>
   <section class="panel" aria-live="polite"><div class="state" id="state">正在查询…</div><div class="muted" id="time"></div><p class="note" id="note"></p><div class="actions"><a id="read-link" class="primary" hidden target="_blank" rel="noopener noreferrer">阅读已发表作品 →</a><button id="withdraw" class="danger" hidden type="button">撤回投稿</button><a href="submit.html">再投一首</a></div><div class="muted" id="feedback" role="status"></div></section>
   <p class="privacy">查询链接包含一段私密凭据。页面不会展示未公开的正文或联系方式；稿件被撤回或未采用后，记录将在决定后 30 天内删除。超过 180 天仍未处理的稿件也会删除。</p>
 </main>
-<div class="side-theme" id="theme-side" aria-label="页面主题">
-  <button class="theme-btn" type="button" data-theme="light" aria-label="日间模式"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg><span>浅色</span></button>
-  <div class="line" aria-hidden="true"></div>
-  <button class="theme-btn" type="button" data-theme="dark" aria-label="夜间模式"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0 0 20 10 10 0 0 0 0-20z"/></svg><span>深色</span></button>
-  <div class="line" aria-hidden="true"></div>
-  <button class="theme-btn" type="button" data-theme="eye-care" aria-label="护眼模式"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><span>护眼</span></button>
-</div>
+
 <script src="submission-config.js"></script>
 <script>
 (function(){
@@ -315,6 +395,21 @@ html body .recent-item {margin-inline:0}
   var toggle=document.getElementById('view-toggle');if(!toggle)return;
   var running;
   toggle.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;requestAnimationFrame(function(){sync();if(running)running.cancel();if(reduced.matches)return;running=catalog.animate([{opacity:.88,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,easing:'cubic-bezier(.16,1,.3,1)'});})});
+})();
+</script>
+<script id="public-shell-behavior">
+(function(){
+  var menu=document.querySelector('.appearance');
+  if(!menu)return;
+  var summary=menu.querySelector('summary');
+  var themes=menu.querySelector('#theme-side');
+  function sync(){themes.querySelectorAll('.theme-btn').forEach(function(button){var pressed=String(button.classList.contains('active'));if(button.getAttribute('aria-pressed')!==pressed)button.setAttribute('aria-pressed',pressed)})}
+  sync();
+  new MutationObserver(sync).observe(themes,{subtree:true,attributes:true,attributeFilter:['class']});
+  menu.addEventListener('toggle',sync);
+  themes.addEventListener('click',function(event){if(!event.target.closest('button[data-theme]'))return;sync();menu.open=false;summary.focus({preventScroll:true})});
+  document.addEventListener('pointerdown',function(event){if(menu.open&&!menu.contains(event.target))menu.open=false});
+  document.addEventListener('keydown',function(event){if(event.key==='Escape'&&menu.open){event.preventDefault();event.stopPropagation();menu.open=false;summary.focus({preventScroll:true})}},true);
 })();
 </script>
 </body>

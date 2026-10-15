@@ -14,6 +14,8 @@ Current homepage art supersedes that historical relief: the user requested its r
 
 ## No toolchain
 
+Local public-shell refinement (not yet published) is documented in `docs/design/public-shell-2026-10-15.md`: ten public pages share the header grid and a native details appearance selector in place of the fixed bottom theme bar. Keep the existing theme storage and page behavior; the index header remains fixed for intro measurements. Preserve the shell color aliases because button `data-theme` attributes also match historical theme selectors. This local draft does not change Worker workspaces.
+
 - There is **no `package.json`, no bundler, no build step**. The `.opencode/.gitignore` explicitly ignores `package.json`, `package-lock.json`, and `bun.lock` — never add these.
 - Local preview: `python -m http.server` (or any static file server) from the repo root.
 - Page CSS and behavior live inline in each `.html` file. The public, secret-free `submission-config.js` supplies the submission API URL and Turnstile site key to `submit.html` and `status.html`.
