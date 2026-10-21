@@ -14,6 +14,8 @@ Current homepage art supersedes that historical relief: the user requested its r
 
 ## No toolchain
 
+The October 21 reading refinement is documented in `docs/design/reading-refinement-2026-10-21.md`: the homepage pairs real recent works with the title at desktop widths, the catalog supports combined collection/search filters persisted in the URL, and the three reading entry pages provide recoverable loading states. Preserve the text-led homepage without hero-art and the existing poem ordering. The user authorized publishing this refinement on October 21.
+
 The October 15 public-shell refinement is documented in `docs/design/public-shell-2026-10-15.md`: ten public pages share the header grid and a native details appearance selector in place of the fixed bottom theme bar. Keep the existing theme storage and page behavior; the index header remains fixed for intro measurements. Preserve the shell color aliases because button `data-theme` attributes also match historical theme selectors. A subsequent user screenshot explicitly removes the entire homepage hero-art group and its pointer-depth controller; retain the text-led homepage and the other October 12 interactions. This public-page refinement does not change Worker workspaces.
 
 - There is **no `package.json`, no bundler, no build step**. The `.opencode/.gitignore` explicitly ignores `package.json`, `package-lock.json`, and `bun.lock` — never add these.

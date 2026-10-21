@@ -872,8 +872,54 @@ html body footer {padding-bottom:32px}
 <style id="public-shell-page-spacing">
 html body header {position:fixed}
 </style>
+
+<style id="reading-refinement">
+.skip-reading {position:fixed;top:8px;left:20px;z-index:10000;padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:999px;transform:translateY(-160%)}
+.skip-reading:focus {transform:none;outline:2px solid var(--clay);outline-offset:3px}
+html body .load-retry {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;margin-top:16px;border:1px solid var(--ui-line);border-radius:999px;background:var(--paper);color:var(--ink);font:14px/1.5 var(--font-sans,system-ui);cursor:pointer}
+html body .load-retry:hover {background:var(--paper-dark)}
+html body .load-retry:focus-visible {outline:2px solid var(--clay);outline-offset:4px}
+html body :is(.recent-item,.catalog-row,.tree-leaf):focus-visible {outline:2px solid var(--clay);outline-offset:4px;background:color-mix(in srgb,var(--clay) 5%,transparent)}
+[id="reading-main"] {scroll-margin-top:128px}
+
+html body .hero {padding:124px 0 40px}
+html body .hero h1 {font-size:clamp(56px,6.5vw,84px)}
+html body .hero-desc {font-size:22px;line-height:1.5;max-width:38ch}
+html body .hero-stats {gap:16px 28px}
+html body .recent-heading {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+html body .recent-heading h2 {font-size:28px;margin:0;display:block}
+html body .recent-heading h2::after {content:none}
+.recent-more {display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--ink-light);font:14px/1.5 var(--font-sans,system-ui);white-space:nowrap}
+.recent-more svg {width:16px;height:16px}
+.recent-more:hover {color:var(--clay)}
+.recent-more:focus-visible {outline:2px solid var(--clay);outline-offset:4px;border-radius:4px}
+html body .recent-item {min-width:0;gap:8px;align-items:flex-start;flex-direction:column;padding:16px 0;min-height:82px}
+html body .recent-item .ri-title {font-size:22px;line-height:1.5;overflow-wrap:anywhere}
+html body .recent-item .ri-meta {font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+@media(min-width:1050px) {
+ html body .page-content>.wrap {display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);column-gap:clamp(48px,6vw,88px);padding-top:136px}
+ html body .hero {padding:0 0 48px}
+ html body .hero .greek-divider {margin:20px 0}
+ html body .recent-section {padding:0 0 40px;border-top:0;min-width:0}
+ html body .recent-heading {padding-bottom:16px;margin:0;border-bottom:1px solid var(--ui-line)}
+ html body .submit-note {grid-column:1/-1;margin:0;border-top:1px solid var(--ui-line)}
+}
+@media(max-width:760px) {
+ html body .hero {padding:144px 0 32px}
+ html body .hero h1 {font-size:clamp(42px,12vw,64px)}
+ html body .hero-desc {font-size:20px;max-width:38ch}
+ html body .hero .greek-divider {margin:16px 0}
+ html body .hero-stats {margin:20px 0;gap:12px 24px}
+ html body .hero-actions {gap:8px}
+ html body .hero-actions .btn {padding:11px 16px}
+ html body .recent-heading h2 {font-size:26px}
+ html body .recent-section {padding:24px 0}
+ html body .recent-item .ri-title {font-size:21px}
+}
+</style>
 </head>
 <body>
+<a class="skip-reading" href="#reading-main">跳到正文</a>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
 
 <!-- ===== 开幕专属：原生平面构成，非外部图片 ===== -->
@@ -921,14 +967,13 @@ html body header {position:fixed}
 </header>
 
 <!-- ===== 页面内容 ===== -->
-<div class="page-content">
+<main class="page-content" id="reading-main" tabindex="-1">
   <div class="wrap">
     <section class="hero">
       <div class="hero-copy">
-      <div class="hero-eyebrow">Poem's Ulysses</div>
       <h1>诗歌<span style="color:var(--gold);">漂</span>流</h1>
       <svg class="greek-divider" viewBox="0 0 100 10" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M0 5 H8 V0 H16 V10 H24 V0 H32 V10 H40 V0 H48 V10 H56 V0 H64 V10 H72 V0 H80 V10 H88 V0 H100"/></svg>
-      <p class="hero-desc">Είθε να πλεύσεις μέσα στα κύματα του Ποσειδώνα και να φτάσεις στον τόπο που επιθυμείς.</p>
+      <p class="hero-desc" lang="el">Είθε να πλεύσεις μέσα στα κύματα του Ποσειδώνα και να φτάσεις στον τόπο που επιθυμείς.</p>
       <div class="hero-stats">
         <div><span class="num" id="stat-count">—</span><span class="label">已收录</span></div>
         <div><span class="num" id="stat-latest">—</span><span class="label">最近更新</span></div>
@@ -958,15 +1003,15 @@ html body header {position:fixed}
     </section>
 
     <section class="recent-section">
-      <h2>最近的诗</h2>
-      <div id="recent-list"><div class="empty-state">加载中…</div></div>
+      <div class="recent-heading"><h2>最近的诗</h2><a class="recent-more" href="directory.html">全部作品<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></a></div>
+      <div id="recent-list" aria-busy="true"><div class="empty-state">加载中…</div></div>
     </section>
 
     <div class="submit-note">
       <b class="note-tag">投稿</b><span>在站内写下诗题、笔名和正文，预览后直接送出。无需 GitHub 账号；审核通过后作品才会出现在目录中。请保存提交后的私密查询链接。</span>
     </div>
   </div>
-</div>
+</main>
 
 <footer>
   <p>© 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
@@ -1134,11 +1179,19 @@ function escapeHtml(s) {
 // ============================================================
 // 加载数据 & 渲染
 // ============================================================
-var dataUrl = 'data/poems.json?t=' + Date.now();
-
-fetch(dataUrl)
-  .then(function(r) { return r.json(); })
+var homeLoading = false;
+function loadHomePoems() {
+  if (homeLoading) return;
+  homeLoading = true;
+  var list = document.getElementById('recent-list');
+  list.setAttribute('aria-busy', 'true');
+  list.innerHTML = '<div class="empty-state" role="status">正在读取诗集…</div>';
+  var controller = new AbortController();
+  var timeout = setTimeout(function() { controller.abort(); }, 12000);
+  fetch('data/poems.json?t=' + Date.now(), {signal: controller.signal})
+  .then(function(r) { if (!r.ok) throw new Error('load'); return r.json(); })
   .then(function(poems) {
+    if (!Array.isArray(poems)) throw new Error('load');
     var count = document.getElementById('stat-count');
     var latest = document.getElementById('stat-latest');
     count.textContent = poems.length;
@@ -1181,9 +1234,19 @@ fetch(dataUrl)
     }
   })
   .catch(function() {
-    document.getElementById('recent-list').innerHTML = '<div class="empty-state">加载失败，请检查 data/poems.json 是否存在。</div>';
-    document.getElementById('stat-count').textContent = '0';
+    list.innerHTML = '<div class="empty-state" role="status">暂时无法读取诗集，请检查网络后重试。<br><button class="load-retry" type="button">重新加载诗集</button></div>';
+    document.getElementById('stat-count').textContent = '—';
+    document.getElementById('stat-latest').textContent = '—';
+  }).finally(function() {
+    clearTimeout(timeout);
+    homeLoading = false;
+    list.setAttribute('aria-busy', 'false');
   });
+}
+document.getElementById('recent-list').addEventListener('click', function(event) {
+  if (event.target.closest('.load-retry')) loadHomePoems();
+});
+loadHomePoems();
 
 // ============================================================
 // 随机阅读

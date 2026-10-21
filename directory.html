@@ -897,8 +897,43 @@ html body .catalog-row,html body .catalog-row:hover {padding-left:4px;padding-ri
 html body .tree-leaf,html body .tree-leaf:hover {padding-left:10px}
 @media(prefers-reduced-motion:reduce) {html body .tree-leaf {transition:none}}
 </style>
+
+<style id="reading-refinement">
+.skip-reading {position:fixed;top:8px;left:20px;z-index:10000;padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:999px;transform:translateY(-160%)}
+.skip-reading:focus {transform:none;outline:2px solid var(--clay);outline-offset:3px}
+html body .load-retry {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;margin-top:16px;border:1px solid var(--ui-line);border-radius:999px;background:var(--paper);color:var(--ink);font:14px/1.5 var(--font-sans,system-ui);cursor:pointer}
+html body .load-retry:hover {background:var(--paper-dark)}
+html body .load-retry:focus-visible {outline:2px solid var(--clay);outline-offset:4px}
+html body :is(.recent-item,.catalog-row,.tree-leaf):focus-visible {outline:2px solid var(--clay);outline-offset:4px;background:color-mix(in srgb,var(--clay) 5%,transparent)}
+[id="reading-main"] {scroll-margin-top:128px}
+
+.catalog-tools {display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,200px);gap:12px;align-items:end}
+html body .catalog-tools .search-box {margin:0;min-width:0;position:relative}
+html body .search-box input {padding-right:52px}
+html body .search-box .icon {display:block;z-index:1;pointer-events:none;color:var(--ink-light);stroke:currentColor}
+html body .search-box input::-webkit-search-cancel-button {-webkit-appearance:none;appearance:none}
+.catalog-filter {display:grid;gap:6px;color:var(--ink-light);font:14px/1.5 var(--font-sans,system-ui)}
+.catalog-filter select {width:100%;height:52px;min-width:0;padding:10px 14px;border:1px solid var(--ui-line);border-radius:16px;background:var(--paper);color:var(--ink);font:15px/1.5 var(--font-sans,system-ui);color-scheme:light}
+html[data-theme="dark"] .catalog-filter select {color-scheme:dark}
+.catalog-filter select:focus-visible {outline:2px solid var(--clay);outline-offset:3px}
+.search-clear {position:absolute;right:6px;top:50%;transform:translateY(-50%);width:44px;height:44px;display:grid;place-items:center;border:0;background:transparent;color:var(--ink-light);border-radius:50%;cursor:pointer}
+.search-clear[hidden] {display:none}
+.search-clear svg {width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.5}
+.search-clear:hover {background:var(--paper-dark);color:var(--ink)}
+.search-clear:focus-visible {outline:2px solid var(--clay);outline-offset:0}
+html body .search-hint {min-height:24px;margin:12px 0 8px;font-size:14px}
+html body .random-btn:disabled {opacity:.5;cursor:wait;transform:none}
+@media(max-width:540px) {
+ .catalog-tools {grid-template-columns:minmax(0,1fr)}
+ .catalog-filter {display:flex;align-items:center;gap:12px}
+ .catalog-filter select {flex:1;height:44px;max-width:100%}
+ .catalog-filter span {white-space:nowrap}
+ html body .search-hint {margin:10px 0 4px}
+}
+</style>
 </head>
 <body>
+<a class="skip-reading" href="#reading-main">跳到正文</a>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
 
 <header>
@@ -930,7 +965,7 @@ html body .tree-leaf,html body .tree-leaf:hover {padding-left:10px}
   </div>
 </header>
 
-<div class="wrap">
+<main class="wrap" id="reading-main" tabindex="-1">
   <a class="back-link" href="index.html" id="back-link">
     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.2"><path d="M15 18l-6-6 6-6"/></svg>
     <span id="back-label">返回</span>
@@ -948,22 +983,26 @@ html body .tree-leaf,html body .tree-leaf:hover {padding-left:10px}
         <button type="button" data-view="tree">树状</button>
       </div>
     </div>
-    <button class="random-btn" id="random-btn" type="button">
+    <button class="random-btn" id="random-btn" type="button" disabled>
       <svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="1"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg>
       随机一首
     </button>
   </div>
 
+  <div class="catalog-tools">
   <div class="search-box">
     <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-    <input type="text" id="search-input" aria-label="搜索诗题、作者或正文" placeholder="搜索标题、正文、作者或分类…">
+    <input type="search" id="search-input" aria-label="搜索诗题、作者或正文" placeholder="搜索标题、正文、作者或分类…" aria-controls="catalog-list" aria-describedby="search-hint">
+    <button class="search-clear" id="search-clear" type="button" aria-label="清空搜索" hidden><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></svg></button>
+  </div>
+  <label class="catalog-filter"><span>合集</span><select id="series-filter" aria-controls="catalog-list" disabled><option value="">全部合集</option></select></label>
   </div>
   <div class="search-hint" id="search-hint" role="status" aria-live="polite"></div>
 
-  <div class="catalog-list" id="catalog-list">
+  <div class="catalog-list" id="catalog-list" aria-busy="true">
     <div class="empty-state">加载中…</div>
   </div>
-</div>
+</main>
 
 <footer>
   <p>© 2026 诗歌漂流 · 由 <a href="https://github.com/zhege712-crypto" target="_blank" rel="noopener noreferrer">@zhege712-crypto</a> 维护 ·
@@ -1033,7 +1072,14 @@ function escapeHtml(s) {
 var allPoems = [];
 var listEl = document.getElementById('catalog-list');
 var hintEl = document.getElementById('search-hint');
-var dataUrl = 'data/poems.json?t=' + Date.now();
+var searchInput = document.getElementById('search-input');
+var seriesFilter = document.getElementById('series-filter');
+var searchClear = document.getElementById('search-clear');
+var catalogReady = false;
+var catalogLoading = false;
+var initialFilters = new URLSearchParams(location.search);
+searchInput.value = initialFilters.get('q') || '';
+function branchIsClosed(key) { return !searchInput.value.trim() && !!collapsed[key]; }
 
 // One reusable sheet; poem text never enters HTML or data attributes.
 var catalogPreview = (function() {
@@ -1328,13 +1374,13 @@ function renderTree(poems) {
     });
     inner += subOrder.map(function(sub) {
       var subKey = series + '/' + sub;
-      return '<div class="tree-branch sub' + (collapsed[subKey] ? ' collapsed' : '') + '" data-key="' + escapeHtml(subKey) + '">' +
+      return '<div class="tree-branch sub' + (branchIsClosed(subKey) ? ' collapsed' : '') + '" data-key="' + escapeHtml(subKey) + '">' +
           '<button class="branch-head" type="button"><span class="tri">▾</span>' + escapeHtml(sub) +
             '<span class="branch-count">' + subGroups[sub].length + '</span></button>' +
           '<div class="branch-children"><div class="branch-inner">' + subGroups[sub].map(leafHtml).join('') + '</div></div>' +
         '</div>';
     }).join('');
-    return '<div class="tree-branch' + (collapsed[series] ? ' collapsed' : '') + '" data-key="' + escapeHtml(series) + '">' +
+    return '<div class="tree-branch' + (branchIsClosed(series) ? ' collapsed' : '') + '" data-key="' + escapeHtml(series) + '">' +
         '<button class="branch-head" type="button"><span class="tri">▾</span>' + escapeHtml(series) +
           '<span class="branch-count">' + list.length + '</span></button>' +
         '<div class="branch-children"><div class="branch-inner">' + inner + '</div></div>' +
@@ -1380,58 +1426,81 @@ document.getElementById('random-btn').addEventListener('click', function() {
 
 // ===== 搜索 =====
 function doSearch(query) {
-  query = query.trim().toLowerCase();
-  if (!query) {
-    hintEl.textContent = '';
-    render(allPoems);
-    return;
-  }
+  var rawQuery = query.trim();
+  query = rawQuery.toLowerCase();
+  searchClear.hidden = !searchInput.value;
+  if (!catalogReady) return;
+  var series = seriesFilter.value;
   var matched = allPoems.filter(function(p) {
-    return (p.title || '').toLowerCase().indexOf(query) !== -1 ||
-           (p.content || '').toLowerCase().indexOf(query) !== -1 ||
-           (p.author || '').toLowerCase().indexOf(query) !== -1 ||
-           (p.series || '').toLowerCase().indexOf(query) !== -1 ||
-           (p.subseries || '').toLowerCase().indexOf(query) !== -1;
+    if (series && (p.series || '未分类') !== series) return false;
+    return !query || [p.title, p.content, p.author, p.series, p.subseries].some(function(value) {
+      return String(value || '').toLowerCase().indexOf(query) !== -1;
+    });
   });
-  hintEl.textContent = '找到 ' + matched.length + ' 首';
+  hintEl.textContent = query || series ? '找到 ' + matched.length + ' 首 · 共 ' + allPoems.length + ' 首' : '共 ' + allPoems.length + ' 首';
   render(matched);
+  if (!matched.length && allPoems.length) {
+    listEl.innerHTML = '<div class="empty-state">没有匹配的诗，可以换个关键词或查看全部合集。<br><button class="load-retry" id="reset-catalog" type="button">清除筛选</button></div>';
+  }
+  if (!allPoems.length) listEl.innerHTML = '<div class="empty-state">暂时还没有诗，敬请期待。</div>';
+  var url = new URL(location.href);
+  if (rawQuery) url.searchParams.set('q', rawQuery); else url.searchParams.delete('q');
+  if (series) url.searchParams.set('series', series); else url.searchParams.delete('series');
+  try { history.replaceState(null, '', url); } catch (_) {}
 }
-document.getElementById('search-input').addEventListener('input', function(e) {
-  doSearch(e.target.value);
+searchInput.addEventListener('input', function() { doSearch(searchInput.value); });
+searchClear.addEventListener('click', function() {
+  searchInput.value = '';
+  doSearch('');
+  searchInput.focus();
 });
-
-// ===== 加载数据 =====
-fetch(dataUrl)
-  .then(function(r) { return r.json(); })
-  .then(function(poems) {
-    allPoems = poems || [];
-    catalogPreview.load(allPoems);
-    if (allPoems.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">暂时还没有诗，敬请期待。</div>';
-      return;
-    }
-    doSearch(document.getElementById('search-input').value);
-
-    // 入场渐显
-    if (!window.matchMedia || !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      var rows = listEl.querySelectorAll('.catalog-row, .tree-leaf, .series-block');
-      rows.forEach(function(el, idx) {
-        el.classList.add('reveal-up');
-        var io = new IntersectionObserver(function(entries) {
-          entries.forEach(function(en) {
-            if (en.isIntersecting) {
-              setTimeout(function() { el.classList.add('in-view'); }, (idx % 12) * 60);
-              io.disconnect();
-            }
-          });
-        }, { threshold: 0.1 });
-        io.observe(el);
+seriesFilter.addEventListener('change', function() { doSearch(searchInput.value); });
+listEl.addEventListener('click', function(event) {
+  if (event.target.closest('#retry-catalog')) loadCatalog();
+  if (event.target.closest('#reset-catalog')) {
+    searchInput.value = '';
+    seriesFilter.value = '';
+    doSearch('');
+    searchInput.focus();
+  }
+});
+// Loading failures keep the reader's filters and offer an in-place retry.
+function loadCatalog() {
+  if (catalogLoading) return;
+  catalogLoading = true;
+  catalogReady = false;
+  listEl.setAttribute('aria-busy', 'true');
+  listEl.innerHTML = '<div class="empty-state" role="status">正在读取诗集…</div>';
+  hintEl.textContent = '';
+  var controller = new AbortController();
+  var timeout = setTimeout(function() { controller.abort(); }, 12000);
+  fetch('data/poems.json?t=' + Date.now(), {signal: controller.signal})
+    .then(function(response) { if (!response.ok) throw new Error('load'); return response.json(); })
+    .then(function(poems) {
+      if (!Array.isArray(poems)) throw new Error('load');
+      allPoems = poems;
+      catalogPreview.load(allPoems);
+      var selected = new URLSearchParams(location.search).get('series') || '';
+      seriesFilter.replaceChildren(new Option('全部合集', ''));
+      Array.from(new Set(allPoems.map(function(p) { return p.series || '未分类'; }))).forEach(function(series) {
+        seriesFilter.add(new Option(series, series));
       });
-    }
-  })
-  .catch(function() {
-    listEl.innerHTML = '<div class="empty-state">目录加载失败，检查 data/poems.json 是否存在。</div>';
-  });
+      seriesFilter.value = Array.from(seriesFilter.options).some(function(o) { return o.value === selected; }) ? selected : '';
+      seriesFilter.disabled = false;
+      document.getElementById('random-btn').disabled = !allPoems.length;
+      catalogReady = true;
+      doSearch(searchInput.value);
+    })
+    .catch(function() {
+      listEl.innerHTML = '<div class="empty-state" role="status">暂时无法读取目录，请检查网络后重试。<br><button class="load-retry" id="retry-catalog" type="button">重新加载目录</button></div>';
+      hintEl.textContent = '目录尚未加载';
+    }).finally(function() {
+      clearTimeout(timeout);
+      catalogLoading = false;
+      listEl.setAttribute('aria-busy', 'false');
+    });
+}
+loadCatalog();
 
 // ============================================================
 // 主题切换

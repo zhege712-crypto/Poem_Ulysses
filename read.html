@@ -720,8 +720,22 @@ html body footer {padding-bottom:32px}
  html body header .site-nav a::after,html body .appearance summary,html body .appearance-chevron,html body .appearance #theme-side::before,html body .appearance #theme-side .theme-btn {transition:none}
 }
 </style>
+
+<style id="reading-refinement">
+.skip-reading {position:fixed;top:8px;left:20px;z-index:10000;padding:12px 20px;background:var(--ink);color:var(--paper);border-radius:999px;transform:translateY(-160%)}
+.skip-reading:focus {transform:none;outline:2px solid var(--clay);outline-offset:3px}
+html body .load-retry {display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 20px;margin-top:16px;border:1px solid var(--ui-line);border-radius:999px;background:var(--paper);color:var(--ink);font:14px/1.5 var(--font-sans,system-ui);cursor:pointer}
+html body .load-retry:hover {background:var(--paper-dark)}
+html body .load-retry:focus-visible {outline:2px solid var(--clay);outline-offset:4px}
+html body :is(.recent-item,.catalog-row,.tree-leaf):focus-visible {outline:2px solid var(--clay);outline-offset:4px;background:color-mix(in srgb,var(--clay) 5%,transparent)}
+[id="poem-detail"] {scroll-margin-top:128px}
+
+html body .poem-content {overflow-wrap:anywhere}
+html body .poem-nav a {min-height:48px;display:inline-flex;align-items:center}
+</style>
 </head>
 <body>
+<a class="skip-reading" href="#poem-detail">跳到诗歌正文</a>
 <!-- public-ui contract: Read / Operate. Approved manuscript palette, short Greek geometry, restrained rust accents. Real content leads; clear navigation and named theme controls. Intro and data semantics preserved. Finish: independent review and task-specific documentation. -->
 
 <header>
@@ -758,7 +772,7 @@ html body footer {padding-bottom:32px}
     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.2"><path d="M15 18l-6-6 6-6"/></svg>
     <span id="back-label">返回</span>
   </a>
-  <div class="poem-detail" id="poem-detail">
+  <div class="poem-detail" id="poem-detail" tabindex="-1" role="main" aria-busy="true">
     <div class="empty-state">加载中…</div>
   </div>
 </div>
@@ -861,12 +875,15 @@ var id = new URLSearchParams(window.location.search).get('id');
 var dataUrl = 'data/poems.json?t=' + Date.now();
 var authorsUrl = 'data/authors.json?t=' + Date.now();
 
+var readController = new AbortController();
+var readTimeout = setTimeout(function() { readController.abort(); }, 12000);
 Promise.all([
-  fetch(dataUrl).then(function(r) { return r.json(); }),
-  fetch(authorsUrl).then(function(r) { return r.ok ? r.json() : []; })
+  fetch(dataUrl, {signal: readController.signal}).then(function(r) { if (!r.ok) throw new Error('load'); return r.json(); }),
+  fetch(authorsUrl, {signal: readController.signal}).then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
 ]).then(function(res) {
   var poems = res[0];
-  var authors = res[1];
+  if (!Array.isArray(poems)) throw new Error('load');
+  var authors = Array.isArray(res[1]) ? res[1] : [];
     var poem = poems.find(function(p) { return p.id === id; });
     var detail = document.getElementById('poem-detail');
     if (!poem) {
@@ -946,11 +963,16 @@ Promise.all([
 
     // ===== 键盘翻页 =====
     document.addEventListener('keydown', function(e) {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+      if (e.target.closest('input,textarea,select,button,a,summary,[contenteditable]:not([contenteditable="false"]),[role="textbox"],[role="slider"],[role="combobox"]')) return;
+      if (document.querySelector('.appearance[open]') || String(window.getSelection()).length) return;
       var lb = document.getElementById('lightbox');
       if (lb && lb.classList.contains('active')) return;
       if (e.key === 'ArrowLeft' && prevPoem) {
+        e.preventDefault();
         window.location.href = 'read.html?id=' + encodeURIComponent(prevPoem.id);
       } else if (e.key === 'ArrowRight' && nextPoem) {
+        e.preventDefault();
         window.location.href = 'read.html?id=' + encodeURIComponent(nextPoem.id);
       }
     });
@@ -1006,8 +1028,14 @@ Promise.all([
     container.appendChild(script);
   })
   .catch(function() {
-    document.getElementById('poem-detail').innerHTML = '<div class="empty-state">加载失败，检查 data/poems.json 是否存在。</div>';
+    document.getElementById('poem-detail').innerHTML = '<div class="empty-state" role="status">暂时无法读取这首诗，请检查网络后重试。<br><button class="load-retry" id="retry-read" type="button">重新加载诗歌</button></div>';
+  }).finally(function() {
+    clearTimeout(readTimeout);
+    document.getElementById('poem-detail').setAttribute('aria-busy', 'false');
   });
+document.getElementById('poem-detail').addEventListener('click', function(event) {
+  if (event.target.closest('#retry-read')) location.reload();
+});
 
 // ============================================================
 // 主题切换
