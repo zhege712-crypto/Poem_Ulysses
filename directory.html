@@ -8,7 +8,8 @@
 <meta name="description" content="诗歌漂流目录 — 按系列和子分类浏览所有诗歌。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" media="print" data-optional-fonts>
+<script src="optional-fonts.js" defer></script>
 <style>
 :root {
   --paper: #F7F5F0;
@@ -1464,6 +1465,32 @@ listEl.addEventListener('click', function(event) {
     searchInput.focus();
   }
 });
+// Only keep a catalog return position in this tab; no reading history is stored.
+var catalogPositionKey = 'poem_catalog_position_v1';
+var catalogRestoreKey = 'poem_catalog_restore_v1';
+document.addEventListener('click', function(event) {
+  var link = event.target.closest('a[href]');
+  if (event.button !== 0 || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+  if (event.target.closest('#random-btn') && catalogReady) {
+    try {sessionStorage.setItem(catalogPositionKey, JSON.stringify({url:location.pathname + location.search, y:window.scrollY}));} catch (_) {}
+    return;
+  }
+  if (!link) return;
+  var target = new URL(link.href);
+  if (target.origin !== location.origin || target.pathname !== new URL('read.html', location.href).pathname) return;
+  try {sessionStorage.setItem(catalogPositionKey, JSON.stringify({url:location.pathname + location.search, y:window.scrollY}));} catch (_) {}
+}, true);
+function restoreCatalogPosition() {
+  try {
+    var requested = sessionStorage.getItem(catalogRestoreKey);
+    var position = JSON.parse(sessionStorage.getItem(catalogPositionKey) || 'null');
+    if (requested !== location.pathname + location.search) return;
+    sessionStorage.removeItem(catalogRestoreKey);
+    if (!position || position.url !== requested || !Number.isFinite(position.y) || position.y < 0) return;
+    requestAnimationFrame(function() {window.scrollTo({top:position.y, behavior:'instant'});});
+  } catch (_) {}
+}
+window.addEventListener('pageshow', function(event) {if (event.persisted) restoreCatalogPosition();});
 // Loading failures keep the reader's filters and offer an in-place retry.
 function loadCatalog() {
   if (catalogLoading) return;
@@ -1490,6 +1517,7 @@ function loadCatalog() {
       document.getElementById('random-btn').disabled = !allPoems.length;
       catalogReady = true;
       doSearch(searchInput.value);
+      restoreCatalogPosition();
     })
     .catch(function() {
       listEl.innerHTML = '<div class="empty-state" role="status">暂时无法读取目录，请检查网络后重试。<br><button class="load-retry" id="retry-catalog" type="button">重新加载目录</button></div>';

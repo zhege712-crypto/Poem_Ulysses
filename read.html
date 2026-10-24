@@ -8,7 +8,8 @@
 <meta name="description" content="待到山花烂漫时">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&family=Noto+Sans+SC:wght@300;400;500&family=Noto+Serif+SC:wght@300;400;500&display=swap" rel="stylesheet" media="print" data-optional-fonts>
+<script src="optional-fonts.js" defer></script>
 <style>
 :root {
   --paper: #F7F5F0;
@@ -733,6 +734,42 @@ html body :is(.recent-item,.catalog-row,.tree-leaf):focus-visible {outline:2px s
 html body .poem-content {overflow-wrap:anywhere}
 html body .poem-nav a {min-height:48px;display:inline-flex;align-items:center}
 </style>
+
+<style id="reader-comfort">
+html {--reader-font-size:20px;--reader-leading:2.15;--reader-width:720px;--reader-measure:640px}
+html[data-reader-size="large"] {--reader-font-size:22px}
+html[data-reader-size="larger"] {--reader-font-size:24px}
+html[data-reader-leading="compact"] {--reader-leading:1.85}
+html[data-reader-leading="roomy"] {--reader-leading:2.5}
+html[data-reader-width="narrow"] {--reader-width:620px;--reader-measure:564px}
+html[data-reader-width="wide"] {--reader-width:920px;--reader-measure:808px}
+html body .reader-wrap {max-width:var(--reader-width)}
+html body .poem-content {font-size:var(--reader-font-size);line-height:var(--reader-leading);max-width:var(--reader-measure);white-space:pre-wrap;tab-size:4}
+html body .appearance:not([open]) .appearance-panel {display:none}
+html body .appearance .appearance-panel {position:absolute;top:calc(100% + 12px);right:0;width:320px;max-width:calc(100vw - 40px);max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow-y:auto;padding:12px 16px 16px;border:1px solid var(--shell-line);border-radius:18px;background:var(--paper);color:var(--ink);box-shadow:0 8px 24px color-mix(in srgb,var(--ink) 10%,transparent)}
+html body .appearance .appearance-panel #theme-side {position:relative;inset:auto;width:100%;max-width:none;margin:0 0 12px;padding:5px;border:0;border-radius:999px;background:var(--paper-dark);box-shadow:none;backdrop-filter:none}
+html body .reader-settings {border:0;margin:0;padding:12px 0 0;border-top:1px solid var(--shell-line);min-width:0}
+html body .reader-settings legend {float:left;width:100%;margin-bottom:10px;font:15px/1.6 var(--font-sans,system-ui);color:var(--ink)}
+html body .reader-settings label {display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:12px;clear:both;font:14px/1.6 var(--font-sans,system-ui);color:var(--ink-light);margin-top:8px}
+html body .reader-settings select {width:100%;max-width:160px;justify-self:end;min-width:0;min-height:44px;padding:8px 12px;border:1px solid var(--shell-line);border-radius:8px;background:var(--paper);color:var(--ink);font:16px/1.5 var(--font-sans,system-ui)}
+html body .reader-settings button {min-height:44px;margin-top:8px;padding:8px 0;border:0;background:transparent;color:var(--ui-accent);font:14px/1.6 var(--font-sans,system-ui);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+html body .reader-settings p {font:13px/1.6 var(--font-sans,system-ui);color:var(--ink-light)}
+html body .poem-meta .p-series {text-decoration:underline;text-decoration-color:var(--gold-light);text-underline-offset:4px}
+html body .poem-meta .p-series:hover {color:var(--ui-accent)}
+html body .poem-nav {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+html body .poem-nav .poem-nav-link,html body .poem-nav .poem-nav-end {display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;gap:6px;min-width:0;min-height:88px;padding:14px 0;border:0;border-radius:0;background:transparent;letter-spacing:normal}
+html body .poem-nav .pn-next {grid-column:2;margin:0;align-items:flex-end;text-align:right}
+html body .poem-nav .nav-direction,html body .poem-nav .nav-title {display:block;min-width:0;padding:0;border:0;border-radius:0;letter-spacing:normal;background:transparent;color:var(--ink-light);font:14px/1.6 var(--font-sans,system-ui)}
+html body .poem-nav .nav-title {color:var(--ink);font:18px/1.6 var(--font-serif,serif);overflow-wrap:anywhere}
+html body .poem-nav-link:hover .nav-title {color:var(--ui-accent);text-decoration:underline;text-underline-offset:5px}
+html body .poem-nav .poem-nav-end {color:var(--ink-light);font:14px/1.6 var(--font-sans,system-ui)}
+html body .comments-note,html body .comments-feedback {color:var(--ink-light);font:14px/1.8 var(--font-sans,system-ui);margin:0 0 12px}
+html body .comments-section .load-retry {margin:0 0 16px}
+html body .comments-section [hidden] {display:none}
+@media(max-width:760px) {html body .appearance .appearance-panel {top:calc(100% + 8px);right:var(--shell-gutter)}}
+@media(max-width:640px) {html:not([data-reader-size]) {--reader-font-size:19px}}
+@media(max-width:400px) {html body .poem-nav {gap:16px}html body .poem-nav .nav-title {font-size:17px}}
+</style>
 </head>
 <body>
 <a class="skip-reading" href="#poem-detail">跳到诗歌正文</a>
@@ -752,6 +789,7 @@ html body .poem-nav a {min-height:48px;display:inline-flex;align-items:center}
       </ul>
     </nav>
 <details class="appearance"><summary><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.4 1.4M17.6 17.6L19 19M5 19l1.4-1.4M17.6 6.4L19 5"/></svg><span>外观</span><svg class="appearance-chevron" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m4 6 4 4 4-4"/></svg></summary>
+<div class="appearance-panel">
 <div class="side-theme" id="theme-side" role="group" aria-label="页面主题">
   <button class="theme-btn" data-theme="light" aria-label="日间模式" type="button">
     <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
@@ -763,11 +801,20 @@ html body .poem-nav a {min-height:48px;display:inline-flex;align-items:center}
     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
   <span>护眼</span></button>
 </div>
+<fieldset class="reader-settings">
+  <legend>阅读排版</legend>
+  <label for="reader-size">字号<select id="reader-size"><option value="normal">标准</option><option value="large">稍大</option><option value="larger">大字</option></select></label>
+  <label for="reader-leading">行距<select id="reader-leading"><option value="compact">紧凑</option><option value="normal">标准</option><option value="roomy">宽松</option></select></label>
+  <label for="reader-width">正文宽度<select id="reader-width"><option value="narrow">窄一些</option><option value="normal">标准</option><option value="wide">宽一些</option></select></label>
+  <button type="button" id="reset-reading">恢复默认排版</button>
+  <p id="reader-settings-note" role="status">排版设置仅保存在此浏览器。</p>
+</fieldset>
+</div>
 </details>
   </div>
 </header>
 
-<div class="wrap">
+<div class="wrap reader-wrap">
   <a class="back-link" href="index.html" id="back-link">
     <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.2"><path d="M15 18l-6-6 6-6"/></svg>
     <span id="back-label">返回</span>
@@ -777,9 +824,12 @@ html body .poem-nav a {min-height:48px;display:inline-flex;align-items:center}
   </div>
 </div>
 
-<div class="wrap comments-section" id="comments-wrap" style="display:none;">
+<div class="wrap reader-wrap comments-section" id="comments-wrap" style="display:none;">
   <h2>留言</h2>
-  <div id="giscus-container"></div>
+  <p class="comments-note">留言由 GitHub Discussions 提供，展开后才连接评论服务。</p>
+  <button class="load-retry" id="load-comments" type="button" aria-controls="giscus-container" aria-expanded="false">展开留言</button>
+  <p class="comments-feedback" id="comments-feedback" role="status" aria-live="polite" hidden></p>
+  <div id="giscus-container" aria-busy="false" hidden></div>
 </div>
 
 <footer>
@@ -815,25 +865,85 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-// ===== 返回按钮（浏览器后退式，无历史回首页） =====
+// ===== 阅读排版：仅保存显示偏好，不保存作品或阅读记录 =====
+(function() {
+  var key = 'poem_reader_preferences_v1';
+  var choices = {size:['normal','large','larger'],leading:['normal','compact','roomy'],width:['normal','narrow','wide']};
+  var values = {size:'normal',leading:'normal',width:'normal'};
+  try {
+    var saved = JSON.parse(localStorage.getItem(key) || 'null');
+    if (saved && typeof saved === 'object') Object.keys(choices).forEach(function(name) {
+      if (choices[name].includes(saved[name])) values[name] = saved[name];
+    });
+  } catch (_) {}
+  function apply() {
+    Object.keys(choices).forEach(function(name) {
+      document.getElementById('reader-' + name).value = values[name];
+      var attr = 'data-reader-' + name;
+      if (values[name] === 'normal') document.documentElement.removeAttribute(attr);
+      else document.documentElement.setAttribute(attr, values[name]);
+    });
+  }
+  function save(reset) {
+    try {
+      if (reset) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify(values));
+      document.getElementById('reader-settings-note').textContent = reset ? '已恢复默认排版。' : '排版设置仅保存在此浏览器。';
+    } catch (_) {
+      document.getElementById('reader-settings-note').textContent = '设置已应用，浏览器未能保存；下次打开会使用默认排版。';
+    }
+  }
+  apply();
+  Object.keys(choices).forEach(function(name) {
+    document.getElementById('reader-' + name).addEventListener('change', function() {
+      if (!choices[name].includes(this.value)) return;
+      values[name] = this.value;
+      apply(); save(false);
+    });
+  });
+  document.getElementById('reset-reading').addEventListener('click', function() {
+    values = {size:'normal',leading:'normal',width:'normal'};
+    apply(); save(true);
+  });
+})();
+
+// ===== 在连续换诗后，仍能返回最初的公开目录或作者页面 =====
 (function() {
   var back = document.getElementById('back-link');
-  if (!back) return;
-  back.addEventListener('click', function(e) {
-    if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) {
-      e.preventDefault();
-      history.back();
+  var key = 'poem_reading_origin_v1';
+  var labels = {'index.html':'回到首页','directory.html':'回到目录','authors.html':'回到同志们','author.html':'回到作者','voyage.html':'回到漂流'};
+  var base = new URL('.', location.href).pathname;
+  function originFrom(url) {
+    if (url.origin !== location.origin || !url.pathname.startsWith(base)) return null;
+    var page = url.pathname.slice(base.length);
+    if (!Object.prototype.hasOwnProperty.call(labels, page)) return null;
+    var search = new URLSearchParams();
+    (page === 'directory.html' ? ['q','series'] : page === 'author.html' ? ['id'] : []).forEach(function(name) {
+      if (url.searchParams.has(name)) search.set(name, url.searchParams.get(name));
+    });
+    return {page:page, search:search.toString()};
+  }
+  var origin = null;
+  try {
+    var ref = document.referrer ? new URL(document.referrer) : null;
+    if (ref && ref.origin === location.origin && ref.pathname === base + 'read.html') {
+      var saved = JSON.parse(sessionStorage.getItem(key) || 'null');
+      if (saved && typeof saved.page === 'string' && typeof saved.search === 'string') {
+        origin = originFrom(new URL(saved.page + (saved.search ? '?' + saved.search : ''), location.href));
+      }
+    } else if (ref) origin = originFrom(ref);
+    if (origin) sessionStorage.setItem(key, JSON.stringify(origin));
+    else sessionStorage.removeItem(key);
+  } catch (_) {}
+  if (!origin) origin = {page:'index.html',search:''};
+  back.href = origin.page + (origin.search ? '?' + origin.search : '');
+  document.getElementById('back-label').textContent = labels[origin.page];
+  back.addEventListener('click', function(event) {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    if (origin.page === 'directory.html') {
+      try {sessionStorage.setItem('poem_catalog_restore_v1', back.pathname + back.search);} catch (_) {}
     }
   });
-  var ref = document.referrer || '';
-  var label = document.getElementById('back-label');
-  if (ref.indexOf('directory.html') !== -1) {
-    label.textContent = '回到目录';
-  } else if (ref.indexOf('authors.html') !== -1 || ref.indexOf('author.html') !== -1) {
-    label.textContent = '回到同志们';
-  } else if (ref.indexOf('index.html') !== -1) {
-    label.textContent = '返回';
-  }
 })();
 
 // ===== 灯箱 =====
@@ -877,13 +987,17 @@ var authorsUrl = 'data/authors.json?t=' + Date.now();
 
 var readController = new AbortController();
 var readTimeout = setTimeout(function() { readController.abort(); }, 12000);
-Promise.all([
-  fetch(dataUrl, {signal: readController.signal}).then(function(r) { if (!r.ok) throw new Error('load'); return r.json(); }),
-  fetch(authorsUrl, {signal: readController.signal}).then(function(r) { return r.ok ? r.json() : []; }).catch(function() { return []; })
-]).then(function(res) {
-  var poems = res[0];
+// Author metadata has its own deadline and never holds the poem behind it.
+var authorsController = new AbortController();
+var authorsTimeout = setTimeout(function() {authorsController.abort();}, 5000);
+var authorsRequest = fetch(authorsUrl, {signal:authorsController.signal})
+  .then(function(r) {return r.ok ? r.json() : [];})
+  .catch(function() {return [];})
+  .finally(function() {clearTimeout(authorsTimeout);});
+fetch(dataUrl, {signal:readController.signal})
+  .then(function(r) {if (!r.ok) throw new Error('load'); return r.json();})
+  .then(function(poems) {
   if (!Array.isArray(poems)) throw new Error('load');
-  var authors = Array.isArray(res[1]) ? res[1] : [];
     var poem = poems.find(function(p) { return p.id === id; });
     var detail = document.getElementById('poem-detail');
     if (!poem) {
@@ -891,15 +1005,6 @@ Promise.all([
       return;
     }
     document.title = poem.title + ' · 诗歌漂流';
-
-    // ===== 署名 → 作者 id 映射（用于作者名链接；name 也参与匹配） =====
-    var aliasMap = Object.create(null);
-    authors.forEach(function(a) {
-      (a.aliases || []).forEach(function(al) { aliasMap[al] = a.id; });
-      if (a.name) aliasMap[a.name] = a.id;
-    });
-    var authorId = poem.author ? aliasMap[poem.author] : null;
-    var authorHref = authorId ? 'author.html?id=' + encodeURIComponent(authorId) : null;
 
     // ===== 目录顺序（系列 → 系列内日期降序，与目录页一致） =====
     function getDateWeight(dateStr) {
@@ -941,10 +1046,10 @@ Promise.all([
     // ===== 构建详情 =====
     detail.innerHTML =
       '<div class="poem-meta">' +
-        (poem.author ? (authorHref ? '<a class="p-author" href="' + authorHref + '">' + escapeHtml(poem.author) + '</a>' : '<span class="p-author">' + escapeHtml(poem.author) + '</span>') : '') +
+        (poem.author ? '<span class="p-author">' + escapeHtml(poem.author) + '</span>' : '') +
         (poem.author ? ' · ' : '') +
-        metaDate +
-        (poem.series ? ' · ' + escapeHtml(poem.series) : '') +
+        escapeHtml(metaDate) +
+        (poem.series ? ' · <a class="p-series" href="directory.html?series=' + encodeURIComponent(poem.series) + '">' + escapeHtml(poem.series) + '</a>' : '') +
         (poem.subseries ? ' · ' + escapeHtml(poem.subseries) : '') +
         '<button class="random-icon" id="random-btn" type="button" title="随机换一首" aria-label="随机换一首">' +
           '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="1"/><circle cx="8" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="16" cy="12" r="1.5"/></svg>' +
@@ -956,10 +1061,21 @@ Promise.all([
       '<div class="poem-content">' + escapeHtml(poem.content) + '</div>' +
       (poem.writing && [poem.writing.start,poem.writing.end,poem.writing.place].some(Boolean) ? '<p class="poem-writing">'+escapeHtml([poem.writing.start && '起稿于 '+poem.writing.start,poem.writing.end && '完稿于 '+poem.writing.end,poem.writing.place && '写于 '+poem.writing.place].filter(Boolean).join(' · '))+'</p>' : '') +
       imgHtml +
-      '<div class="poem-nav">' +
-        (prevPoem ? '<a class="pn-prev" href="read.html?id=' + encodeURIComponent(prevPoem.id) + '" title="键盘 ←">← 上一篇</a>' : '<span class="pn-prev disabled">← 上一篇</span>') +
-        (nextPoem ? '<a class="pn-next" href="read.html?id=' + encodeURIComponent(nextPoem.id) + '" title="键盘 →">下一篇 →</a>' : '<span class="pn-next disabled">下一篇 →</span>') +
-      '</div>';
+      '<nav class="poem-nav" aria-label="相邻作品">' +
+        (prevPoem ? '<a class="poem-nav-link pn-prev" href="read.html?id=' + encodeURIComponent(prevPoem.id) + '" title="键盘 ←"><span class="nav-direction">← 上一篇</span><span class="nav-title">' + escapeHtml(prevPoem.title) + '</span></a>' : '<div class="poem-nav-end">已是第一首</div>') +
+        (nextPoem ? '<a class="poem-nav-link pn-next" href="read.html?id=' + encodeURIComponent(nextPoem.id) + '" title="键盘 →"><span class="nav-direction">下一篇 →</span><span class="nav-title">' + escapeHtml(nextPoem.title) + '</span></a>' : '<div class="poem-nav-end pn-next">已是最后一首</div>') +
+      '</nav>';
+
+    authorsRequest.then(function(authors) {
+      if (!Array.isArray(authors) || !poem.author) return;
+      var author = authors.find(function(a) {return a && (a.name === poem.author || (Array.isArray(a.aliases) && a.aliases.includes(poem.author)));});
+      var name = detail.querySelector('.p-author');
+      if (!author || !author.id || !name) return;
+      var link = document.createElement('a');
+      link.className = 'p-author'; link.textContent = poem.author;
+      link.href = 'author.html?id=' + encodeURIComponent(author.id);
+      name.replaceWith(link);
+    });
 
     // ===== 键盘翻页 =====
     document.addEventListener('keydown', function(e) {
@@ -1005,27 +1121,62 @@ Promise.all([
       window.location.href = 'read.html?id=' + encodeURIComponent(pick.id);
     });
 
-    // ===== Giscus =====
-    var commentsWrap = document.getElementById('comments-wrap');
-    commentsWrap.style.display = 'block';
+    // ===== Giscus：读者展开后才连接；失败可单独重试 =====
+    document.getElementById('comments-wrap').style.display = 'block';
     var container = document.getElementById('giscus-container');
-    var script = document.createElement('script');
-    script.src = 'https://giscus.app/client.js';
-    script.setAttribute('data-repo', 'zhege712-crypto/Poem_Ulysses');
-    script.setAttribute('data-repo-id', 'R_kgDOTo0tAw');
-    script.setAttribute('data-category', 'Announcements');
-    script.setAttribute('data-category-id', 'DIC_kwDOTo0tA84DCXH7');
-    script.setAttribute('data-mapping', 'specific');
-    script.setAttribute('data-term', 'poem-' + poem.id);
-    script.setAttribute('data-strict', '0');
-    script.setAttribute('data-reactions-enabled', '1');
-    script.setAttribute('data-emit-metadata', '0');
-    script.setAttribute('data-input-position', 'bottom');
-    script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
-    script.setAttribute('data-lang', 'zh-CN');
-    script.crossOrigin = 'anonymous';
-    script.async = true;
-    container.appendChild(script);
+    var commentsButton = document.getElementById('load-comments');
+    var commentsFeedback = document.getElementById('comments-feedback');
+    var commentsLoading = false;
+    commentsButton.addEventListener('click', function() {
+      if (commentsLoading) return;
+      commentsLoading = true;
+      commentsButton.disabled = true;
+      commentsButton.textContent = '正在加载留言…';
+      commentsButton.setAttribute('aria-expanded', 'true');
+      container.hidden = false;
+      container.setAttribute('aria-busy', 'true');
+      commentsFeedback.hidden = false;
+      commentsFeedback.textContent = '正在连接留言服务…';
+      var timer;
+      function cleanup() {clearTimeout(timer); window.removeEventListener('message', onMessage);}
+      function failed() {
+        cleanup(); commentsLoading = false;
+        container.replaceChildren(); container.hidden = true;
+        container.setAttribute('aria-busy', 'false');
+        commentsButton.disabled = false;
+        commentsButton.textContent = '重试加载留言';
+        commentsButton.setAttribute('aria-expanded', 'false');
+        commentsFeedback.textContent = '留言暂时无法加载。诗歌仍可正常阅读，可以稍后重试。';
+      }
+      function onMessage(event) {
+        var iframe = container.querySelector('iframe.giscus-frame');
+        if (event.origin !== 'https://giscus.app' || !iframe || event.source !== iframe.contentWindow || !event.data || !event.data.giscus || !event.data.giscus.resizeHeight) return;
+        cleanup();
+        container.setAttribute('aria-busy', 'false');
+        commentsFeedback.hidden = true;
+        commentsButton.hidden = true;
+        iframe.contentWindow.postMessage({giscus:{setConfig:{theme:document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'}}}, 'https://giscus.app');
+      }
+      window.addEventListener('message', onMessage);
+      var script = document.createElement('script');
+      script.src = 'https://giscus.app/client.js';
+      script.setAttribute('data-repo', 'zhege712-crypto/Poem_Ulysses');
+      script.setAttribute('data-repo-id', 'R_kgDOTo0tAw');
+      script.setAttribute('data-category', 'Announcements');
+      script.setAttribute('data-category-id', 'DIC_kwDOTo0tA84DCXH7');
+      script.setAttribute('data-mapping', 'specific');
+      script.setAttribute('data-term', 'poem-' + poem.id);
+      script.setAttribute('data-strict', '0');
+      script.setAttribute('data-reactions-enabled', '1');
+      script.setAttribute('data-emit-metadata', '0');
+      script.setAttribute('data-input-position', 'bottom');
+      script.setAttribute('data-theme', document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+      script.setAttribute('data-lang', 'zh-CN');
+      script.crossOrigin = 'anonymous'; script.async = true;
+      script.onerror = failed;
+      timer = setTimeout(failed, 12000);
+      container.appendChild(script);
+    });
   })
   .catch(function() {
     document.getElementById('poem-detail').innerHTML = '<div class="empty-state" role="status">暂时无法读取这首诗，请检查网络后重试。<br><button class="load-retry" id="retry-read" type="button">重新加载诗歌</button></div>';

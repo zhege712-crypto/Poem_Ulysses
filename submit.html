@@ -431,11 +431,11 @@ html body .form-intro {margin-bottom:16px}
       <div id="writing-host"></div>
       <div class="field"><label for="contact">联系方式（选填）</label><input id="contact" name="contact" maxlength="120" autocomplete="email"><small>只用于联系你处理这篇投稿，不会随作品公开。</small></div>
       <div class="honey" aria-hidden="true"><label for="website">网站</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
-      <div class="draft-tools"><label for="save-draft"><input id="save-draft" type="checkbox">在此标签页暂存草稿</label><button id="clear-draft" type="button" hidden>清除暂存</button><small id="draft-note">暂存诗题、笔名、正文及作品信息，刷新可恢复；不保存联系方式。关闭标签页后通常会清除。</small></div>
+      <div class="draft-tools"><label for="save-draft"><input id="save-draft" type="checkbox">在此标签页暂存草稿</label><button id="clear-draft" type="button" hidden>清除暂存</button><button id="download-draft" type="button">下载稿件备份</button><small id="draft-note">暂存诗题、笔名、正文及作品信息，刷新可恢复；不保存联系方式。关闭标签页后通常会清除。下载备份包含当前稿件及写作信息，不含联系方式。</small></div>
     <div id="turnstile-slot" aria-label="防刷验证"></div><div class="verification-help"><button id="retry-verification" type="button" hidden>重试验证</button></div>
       <label class="consent"><input id="consent" type="checkbox" required aria-describedby="consent-error"><span>我确认有权投稿此作品，并同意在审核通过后按上述笔名公开展示诗题、正文及审核确认的作品日期、合集和子分类。审核前稿件仅供维护者查看。</span></label><small class="field-error consent-error" id="consent-error" hidden></small>
       <button class="button" id="submit-button" type="submit" disabled>正在检查投稿服务…</button><div class="feedback" id="feedback" role="status" aria-live="polite"></div>
-      <details class="mail-fallback" id="mail-fallback"><summary>验证无法完成？使用邮件投稿</summary><p>如果防刷验证长时间无法加载，可以把稿件从自己的邮箱发给维护者。邮件会显示你的发件地址；这条备用通道不进入站内审核箱，也不会生成私密状态链接。</p><div class="mail-actions"><button id="copy-email" type="button">复制邮件稿件</button><a id="email-link" href="mailto:zhege712@gmail.com?subject=%E8%AF%97%E6%AD%8C%E6%BC%82%E6%B5%81%E6%8A%95%E7%A8%BF">打开邮箱写信</a></div><p class="mail-feedback" id="mail-feedback" role="status" aria-live="polite">先复制稿件，再打开邮箱并粘贴到正文；确认收件人是 <code>zhege712@gmail.com</code> 后自行发送。</p><textarea id="mail-copy-text" aria-label="待复制的邮件稿件" readonly hidden></textarea></details>
+      <details class="mail-fallback" id="mail-fallback"><summary>验证无法完成？使用邮件投稿</summary><p id="mail-fallback-reason" role="status" hidden></p><p>如果防刷验证长时间无法加载，可以把稿件从自己的邮箱发给维护者。邮件会显示你的发件地址；这条备用通道不进入站内审核箱，也不会生成私密状态链接。</p><div class="mail-actions"><button id="copy-email" type="button">复制邮件稿件</button><a id="email-link" href="mailto:zhege712@gmail.com?subject=%E8%AF%97%E6%AD%8C%E6%BC%82%E6%B5%81%E6%8A%95%E7%A8%BF">打开邮箱写信</a></div><p class="mail-feedback" id="mail-feedback" role="status" aria-live="polite">先复制稿件，再打开邮箱并粘贴到正文；确认收件人是 <code>zhege712@gmail.com</code> 后自行发送。</p><textarea id="mail-copy-text" aria-label="待复制的邮件稿件" readonly hidden></textarea></details>
     </form><p class="privacy">投稿后会提供无需登录的私密查询链接。请妥善保存；拿到链接的人可以查看状态，并在审核前撤回稿件。草稿暂存默认关闭；开启后仅写入此标签页的浏览器会话，投稿成功会清除。未采用或撤回的稿件会在决定后 30 天内删除；超过 180 天仍未处理的稿件也会删除。已发表作品在待审库中的正文副本于发表 30 天后清除。防刷验证会处理必要的访问设备信号；投稿页不加载访问统计脚本。</p></section>
     <aside class="preview-section" aria-label="诗歌排版预览"><h2>排版预览</h2><div class="paper"><div class="paper-title" id="preview-title">未题</div><div class="paper-author" id="preview-author">你的笔名</div><div class="paper-meta" id="preview-meta"></div><div class="paper-divider"></div><div class="paper-body" id="preview-content">写下诗行，预览会出现在这里。</div></div><p class="preview-note">此处只在你的浏览器中预览，提交前不会上传。作品日期、合集和子分类以审核结果为准。</p></aside>
   </div>
@@ -458,6 +458,15 @@ html body .form-intro {margin-bottom:16px}
   function setFeedback(message,error,fromWriting){writingFeedback=fromWriting===true;$('feedback').textContent=message;$('feedback').classList.toggle('error',!!error)}
   function preview(){var content=$('content').value;$('preview-title').textContent=$('title').value.trim()||'未题';$('preview-author').textContent=$('author').value.trim()||'你的笔名';$('preview-meta').textContent=[$('date').value,$('series').value.trim(),$('subseries').value.trim()].filter(Boolean).join(' · ');$('preview-content').textContent=content||'在左侧写下诗行，预览会出现在这里。';$('content-count').textContent=content.length+' / 12000 字'}
   function invalidateEmailDraft(){emailPrepared=false;$('mail-copy-text').hidden=true;$('mail-copy-text').value='';$('mail-feedback').textContent='内容已修改。请重新复制稿件，再打开邮箱发送。'}
+  function offerMailFallback(message){$('mail-fallback').open=true;$('mail-fallback-reason').hidden=false;$('mail-fallback-reason').textContent=message}
+  $('download-draft').addEventListener('click',function(){
+    var writing=writingForm.raw();
+    var lines=['诗题：'+$('title').value,'发表笔名：'+$('author').value,'作品日期：'+$('date').value,'合集：'+$('series').value,'子分类：'+$('subseries').value,'起稿日期：'+writing.start,'完稿日期：'+writing.end,'写作地点：'+writing.place,'写作信息公开许可：'+(writing.public?'同意审核后公开':'不公开，仅供审核处理'),'','正文：',$('content').value];
+    var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/plain;charset=utf-8'});
+    var url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='诗歌漂流-稿件备份.txt';document.body.appendChild(link);link.click();link.remove();
+    setTimeout(function(){URL.revokeObjectURL(url)},10000);
+  });
   function fieldError(id,message){var field=$(id),error=$(id+'-error');error.textContent=message;error.hidden=!message;if(message)field.setAttribute('aria-invalid','true');else field.removeAttribute('aria-invalid')}
   function saveDraft(){if(!$('save-draft').checked)return;try{sessionStorage.setItem(draftKey,JSON.stringify(Object.assign(Object.fromEntries(draftFields.map(function(id){return [id,$(id).value]})),{writing:writingForm.raw()})));$('clear-draft').hidden=false}catch(_){removeDraft();$('save-draft').checked=false;$('draft-note').textContent='浏览器未能暂存草稿；请先在别处备份正文。'}}
   function removeDraft(){try{sessionStorage.removeItem(draftKey)}catch(_){}$('clear-draft').hidden=true}
@@ -486,9 +495,9 @@ html body .form-intro {margin-bottom:16px}
     emailPrepared=true;
   });
   $('email-link').addEventListener('click',function(e){if(!emailPrepared){e.preventDefault();$('mail-feedback').textContent='请先填写并复制邮件稿件，再打开邮箱。';$('copy-email').focus()}});
-  if(!cfg.apiBase||!cfg.siteKey){$('submit-button').textContent='投稿服务准备中';setFeedback('站内投稿服务尚未启用；可以使用下方邮件备用投稿。',true);return}
+  if(!cfg.apiBase||!cfg.siteKey){$('submit-button').textContent='投稿服务准备中';setFeedback('站内投稿服务尚未启用；可以使用下方邮件备用投稿。',true);offerMailFallback('站内投稿暂未启用。你可以下载稿件备份，或复制稿件后自行发邮件。');return}
   var apiBase=cfg.apiBase.replace(/\/$/,'');
-  function verificationProblem(message){clearTimeout(loadTimer);clearTimeout(verifyTimer);turnstileReady=false;$('submit-button').disabled=true;$('submit-button').textContent='验证未完成';$('retry-verification').hidden=false;setFeedback(message+' 可点击“重试验证”，或使用下方邮件投稿。',true)}
+  function verificationProblem(message){clearTimeout(loadTimer);clearTimeout(verifyTimer);turnstileReady=false;$('submit-button').disabled=true;$('submit-button').textContent='验证未完成';$('retry-verification').hidden=false;setFeedback(message+' 可点击“重试验证”，或使用下方邮件投稿。',true);offerMailFallback('验证未完成不会清除稿件。可以先下载备份，或使用下面的邮件方式投稿。')}
   function startVerification(){
     clearTimeout(loadTimer);clearTimeout(verifyTimer);turnstileReady=false;$('submit-button').disabled=true;$('submit-button').textContent='正在加载验证…';$('retry-verification').hidden=true;setFeedback('');
     if(widgetId!==null&&window.turnstile){try{window.turnstile.reset(widgetId);verifyTimer=setTimeout(function(){if(!turnstileReady)verificationProblem('防刷验证仍未完成。')},20000);return}catch(_){widgetId=null}}
@@ -511,7 +520,7 @@ html body .form-intro {margin-bottom:16px}
       var response=await fetch(apiBase+'/api/submissions',{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json'},body:JSON.stringify({title:title,author:author,content:content,date:$('date').value,series:$('series').value.trim(),subseries:$('subseries').value.trim(),writing:writingForm.read(),contact:$('contact').value.trim(),website:$('website').value,consent:true,turnstileToken:window.turnstile.getResponse(widgetId)})});
       var result=await response.json().catch(function(){throw new Error('投稿服务返回异常，请稍后再试')});if(!response.ok||!result.statusUrl)throw new Error(result.error||'提交失败，请稍后重试');
       removeDraft();$('save-draft').checked=false;$('form-layout').hidden=true;$('success').hidden=false;$('status-link').href=result.statusUrl;$('status-link').textContent=result.statusUrl;$('submission-number').textContent='投稿编号：'+result.id;window.scrollTo({top:0,behavior:'smooth'});
-    }catch(error){var message=error.name==='AbortError'?'连接超时，无法确认是否收到稿件。请勿立即重复提交；可通过邮件备用通道说明刚才可能已提交。':error instanceof TypeError?'无法连接投稿服务，请检查网络；也可以使用下方邮件投稿。':error.message;setFeedback(message+' 你写下的内容仍保留在本页。',true);turnstileReady=false;$('retry-verification').hidden=false;if(window.turnstile&&widgetId!==null)window.turnstile.reset(widgetId)}
+    }catch(error){var message=error.name==='AbortError'?'连接超时，无法确认是否收到稿件。请勿立即重复提交；可通过邮件备用通道说明刚才可能已提交。':error instanceof TypeError?'无法连接投稿服务，请检查网络；也可以使用下方邮件投稿。':error.message;setFeedback(message+' 你写下的内容仍保留在本页。',true);offerMailFallback(error.name==='AbortError'?'这次投递是否成功尚不确定。请先下载备份；若改用邮件，请注明刚才可能已提交，避免重复处理。':'内容仍保留在表单中。可以先下载备份，再重试验证或自行发邮件。');turnstileReady=false;$('retry-verification').hidden=false;if(window.turnstile&&widgetId!==null)window.turnstile.reset(widgetId)}
     finally{clearTimeout(requestTimer);sending=false;$('submit-button').disabled=!turnstileReady;$('submit-button').textContent=turnstileReady?'送出投稿':'验证未完成'}
   });
   $('copy-link').addEventListener('click',async function(){try{await navigator.clipboard.writeText($('status-link').href);this.textContent='已复制'}catch{this.textContent='复制失败，请手动保存链接'}});
